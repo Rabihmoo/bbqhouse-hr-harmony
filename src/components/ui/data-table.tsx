@@ -107,13 +107,13 @@ export function DataTable<T extends { id: string }>({
                 >
                   {columns.map((column) => (
                     <td
-                      key={`${row.id}-${column.key.toString()}`}
+                      key={`${row.id}-${String(column.key)}`}
                       className="px-6 py-4 whitespace-nowrap text-sm"
                     >
                       {column.render
                         ? column.render(row)
                         : column.key !== 'actions'
-                        ? String(row[column.key])
+                        ? String((row as any)[column.key])
                         : null}
                     </td>
                   ))}

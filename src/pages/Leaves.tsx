@@ -2,68 +2,58 @@
 import { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable } from "@/components/ui/data-table";
+import { leaveRequests as leaveRequestsData, departmentColors, statusColors } from "@/lib/data";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { departmentColors, leaveRequests as leaveRequestsData, statusColors } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import LeaveRequestForm from "@/components/leaves/LeaveRequestForm";
+import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { LeaveRequest, LeaveStatus } from "@/lib/data";
 
 const Leaves = () => {
   const [leaveRequests, setLeaveRequests] = useState(leaveRequestsData);
-  const [showRequestForm, setShowRequestForm] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editingLeaveRequest, setEditingLeaveRequest] = useState<LeaveRequest | null>(null);
   const { toast } = useToast();
 
-  const handleAddLeaveRequest = (data: any) => {
-    const employee = data.employeeId;
-    const newLeaveRequest = {
+  const handleAddLeaveRequest = (data: Omit<LeaveRequest, 'id' | 'createdAt' | 'status'>) => {
+    const newLeaveRequest: LeaveRequest = {
+      ...data,
       id: String(leaveRequests.length + 1),
-      employeeId: employee.id,
-      employeeName: employee.fullName,
-      department: employee.department,
-      startDate: data.startDate,
-      endDate: data.endDate,
-      type: data.type,
-      status: "Pending",
-      reason: data.reason,
+      status: 'Pending' as LeaveStatus,
       createdAt: new Date().toISOString().split('T')[0],
-      documentUrl: data.documentFile ? URL.createObjectURL(data.documentFile) : undefined,
     };
     
     setLeaveRequests([...leaveRequests, newLeaveRequest]);
     toast({
-      title: "Leave request submitted",
-      description: "The leave request has been submitted successfully.",
+      title: "Leave request added",
+      description: `Leave request has been successfully submitted.`,
     });
   };
 
-  const handleStatusChange = (leaveId: string, newStatus: string) => {
-    const updatedLeaveRequests = leaveRequests.map(leave => 
-      leave.id === leaveId ? { ...leave, status: newStatus } : leave
+  const handleUpdateStatus = (id: string, newStatus: LeaveStatus) => {
+    const updatedLeaveRequests = leaveRequests.map(request => 
+      request.id === id ? { ...request, status: newStatus } : request
     );
     
     setLeaveRequests(updatedLeaveRequests);
     toast({
       title: "Status updated",
-      description: `Leave request status changed to ${newStatus}.`,
+      description: `Leave request status has been updated to ${newStatus}.`,
     });
   };
 
   return (
-    <DashboardLayout 
-      title="Leave Management" 
-      subtitle="Track and manage employee leave requests"
-    >
+    <DashboardLayout title="Leave Management" subtitle="Manage employee leave requests">
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Leave Requests</h2>
           <p className="text-muted-foreground">
-            Manage employee leave applications and approvals
+            Total {leaveRequests.length} leave requests
           </p>
         </div>
-        <Button onClick={() => setShowRequestForm(true)}>
+        <Button onClick={() => setShowAddForm(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          New Leave Request
+          New Request
         </Button>
       </div>
 
@@ -107,62 +97,12 @@ const Leaves = () => {
               ),
             },
             {
-              key: "actions",
-              header: "Actions",
-              render: (row) => (
-                <div className="flex items-center gap-2">
-                  {row.status === "Pending" && (
-                    <>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="h-8 bg-green-500 hover:bg-green-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStatusChange(row.id, "Approved");
-                        }}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        variant="default"
-                        size="sm"
-                        className="h-8 bg-red-500 hover:bg-red-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleStatusChange(row.id, "Rejected");
-                        }}
-                      >
-                        Reject
-                      </Button>
-                    </>
-                  )}
-                  
-                  {row.status === "Approved" && (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      className="h-8 bg-purple-500 hover:bg-purple-600"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleStatusChange(row.id, "Completed");
-                      }}
-                    >
-                      Mark Completed
-                    </Button>
-                  )}
-                </div>
-              ),
+              key: "createdAt",
+              header: "Request Date",
             },
           ]}
         />
       </div>
-
-      <LeaveRequestForm
-        open={showRequestForm}
-        onClose={() => setShowRequestForm(false)}
-        onSubmit={handleAddLeaveRequest}
-      />
     </DashboardLayout>
   );
 };

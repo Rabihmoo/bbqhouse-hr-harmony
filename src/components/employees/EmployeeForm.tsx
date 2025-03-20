@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,18 +24,52 @@ const EmployeeForm = ({
   isEditing = false 
 }: EmployeeFormProps) => {
   const [formData, setFormData] = useState({
-    fullName: initialData.fullName || "",
-    biNumber: initialData.biNumber || "",
-    address: initialData.address || "",
-    position: initialData.position || "",
-    department: initialData.department || "",
-    salary: initialData.salary || "",
-    healthCardValid: initialData.healthCardValid || false,
-    biValid: initialData.biValid || false,
-    email: initialData.email || "",
-    phone: initialData.phone || "",
-    hireDate: initialData.hireDate || "",
+    fullName: "",
+    biNumber: "",
+    address: "",
+    position: "",
+    department: "",
+    salary: "",
+    healthCardValid: false,
+    biValid: false,
+    email: "",
+    phone: "",
+    hireDate: "",
   });
+
+  // Update form data when initialData changes
+  useEffect(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      setFormData({
+        fullName: initialData.fullName || "",
+        biNumber: initialData.biNumber || "",
+        address: initialData.address || "",
+        position: initialData.position || "",
+        department: initialData.department || "",
+        salary: initialData.salary || "",
+        healthCardValid: initialData.healthCardValid || false,
+        biValid: initialData.biValid || false,
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        hireDate: initialData.hireDate || "",
+      });
+    } else {
+      // Reset form when not editing
+      setFormData({
+        fullName: "",
+        biNumber: "",
+        address: "",
+        position: "",
+        department: "",
+        salary: "",
+        healthCardValid: false,
+        biValid: false,
+        email: "",
+        phone: "",
+        hireDate: "",
+      });
+    }
+  }, [initialData, isEditing]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -64,7 +98,7 @@ const EmployeeForm = ({
     onSubmit({ 
       ...formData,
       salary: Number(formData.salary), 
-      id: initialData.id || undefined 
+      id: initialData?.id || undefined 
     });
     onClose();
   };
