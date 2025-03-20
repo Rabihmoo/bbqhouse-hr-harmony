@@ -81,7 +81,7 @@ export function DataTable<T extends { id: string }>({
             <tr className="border-b bg-muted/40">
               {columns.map((column) => (
                 <th
-                  key={String(column.key)}
+                  key={typeof column.key === 'string' ? column.key : String(column.key)}
                   className={cn(
                     "px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider",
                     column.width
@@ -107,7 +107,7 @@ export function DataTable<T extends { id: string }>({
                 >
                   {columns.map((column) => (
                     <td
-                      key={`${row.id}-${String(column.key)}`}
+                      key={`${row.id}-${typeof column.key === 'string' ? column.key : String(column.key)}`}
                       className="px-6 py-4 whitespace-nowrap text-sm"
                     >
                       {column.render
