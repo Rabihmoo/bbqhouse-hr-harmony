@@ -81,7 +81,7 @@ export function DataTable<T extends { id: string }>({
             <tr className="border-b bg-muted/40">
               {columns.map((column) => (
                 <th
-                  key={column.key.toString()}
+                  key={String(column.key)}
                   className={cn(
                     "px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider",
                     column.width
