@@ -28,7 +28,7 @@ const EmploymentInfoFields = ({
   handleDateChange 
 }: EmploymentInfoFieldsProps) => {
   return (
-    <>
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="grid gap-2">
           <Label htmlFor="position">Position</Label>
@@ -83,7 +83,7 @@ const EmploymentInfoFields = ({
                 selected={formData.hireDate ? new Date(formData.hireDate) : undefined}
                 onSelect={(date) => handleDateChange('hireDate', date)}
                 initialFocus
-                className={cn("p-3 pointer-events-auto")}
+                className="p-3 pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
@@ -101,7 +101,7 @@ const EmploymentInfoFields = ({
           />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

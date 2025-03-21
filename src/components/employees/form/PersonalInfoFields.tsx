@@ -28,7 +28,7 @@ const PersonalInfoFields = ({
   handleDateChange 
 }: PersonalInfoFieldsProps) => {
   return (
-    <>
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="grid gap-2">
           <Label htmlFor="fullName">Full Name</Label>
@@ -74,7 +74,7 @@ const PersonalInfoFields = ({
               selected={formData.biValidUntil ? new Date(formData.biValidUntil) : undefined}
               onSelect={(date) => handleDateChange('biValidUntil', date)}
               initialFocus
-              className={cn("p-3 pointer-events-auto")}
+              className="p-3 pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
@@ -125,7 +125,7 @@ const PersonalInfoFields = ({
           />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

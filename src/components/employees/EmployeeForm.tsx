@@ -40,11 +40,9 @@ const EmployeeForm = ({
     picture: "",
   });
 
-  // Initialize form data based on initialData and isEditing
   useEffect(() => {
     if (open) {
       if (isEditing && initialData && Object.keys(initialData).length > 0) {
-        // Only set form data once when the dialog opens for editing
         setFormData({
           fullName: initialData.fullName || "",
           biNumber: initialData.biNumber || "",
@@ -129,7 +127,7 @@ const EmployeeForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] max-h-[90vh] overflow-y-auto bg-white dark:bg-black/40">
+      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit Employee" : "Add New Employee"}
@@ -139,7 +137,7 @@ const EmployeeForm = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="overflow-y-auto">
           <div className="grid gap-6 py-4">
             <PersonalInfoFields 
               formData={formData} 
