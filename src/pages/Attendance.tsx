@@ -5,21 +5,22 @@ import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { attendanceRecords as attendanceData, statusColors } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { Upload } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { AttendanceUploader } from "@/components/employees/AttendanceUploader";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const Attendance = () => {
   const [attendanceRecords, setAttendanceRecords] = useState(attendanceData);
-  const { toast } = useToast();
+  const [showAttendanceUploader, setShowAttendanceUploader] = useState(false);
+  const [reportData, setReportData] = useState<any>(null);
   
   const handleUpload = () => {
-    toast({
-      title: "Attendance data upload",
-      description: "Please select a file to upload attendance data.",
-    });
-    
-    // In a real implementation, this would open a file dialog
-    // and process the uploaded attendance data
+    setShowAttendanceUploader(true);
+  };
+  
+  const handleAttendanceReport = (data: any) => {
+    setReportData(data);
+    // In a production app, we would update attendance records with the processed data
+    // For now, we'll just show the dialog
   };
 
   return (
@@ -34,10 +35,7 @@ const Attendance = () => {
             Track time entries and manage attendance records
           </p>
         </div>
-        <Button onClick={handleUpload}>
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Attendance Data
-        </Button>
+        <AttendanceUploader onFileUploaded={handleAttendanceReport} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">

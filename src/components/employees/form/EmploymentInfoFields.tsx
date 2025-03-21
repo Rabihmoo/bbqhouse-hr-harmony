@@ -49,10 +49,10 @@ const EmploymentInfoFields = ({
             value={formData.department}
             onValueChange={(value) => handleSelectChange("department", value)}
           >
-            <SelectTrigger id="department" className="h-10">
+            <SelectTrigger id="department">
               <SelectValue placeholder="Select department" />
             </SelectTrigger>
-            <SelectContent position="popper" align="start" side="bottom" sideOffset={4}>
+            <SelectContent position="popper" align="start" sideOffset={8} className="z-[100]">
               <SelectItem value="Kitchen">Kitchen</SelectItem>
               <SelectItem value="Sala">Sala</SelectItem>
               <SelectItem value="Bar">Bar</SelectItem>
@@ -81,12 +81,13 @@ const EmploymentInfoFields = ({
                 {formData.hireDate ? format(new Date(formData.hireDate), 'PPP') : <span>Pick a date</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start" side="bottom" sideOffset={4}>
+            <PopoverContent className="w-auto p-0 z-[100]" align="start">
               <Calendar
                 mode="single"
                 selected={formData.hireDate ? new Date(formData.hireDate) : undefined}
                 onSelect={(date) => handleDateChange('hireDate', date)}
                 initialFocus
+                className="pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
