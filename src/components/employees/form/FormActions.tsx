@@ -9,7 +9,7 @@ interface FormActionsProps {
 
 const FormActions = ({ isEditing, onCancel }: FormActionsProps) => {
   return (
-    <DialogFooter>
+    <DialogFooter className="mt-6">
       <Button variant="outline" type="button" onClick={onCancel}>
         Cancel
       </Button>

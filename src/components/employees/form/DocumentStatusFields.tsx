@@ -42,7 +42,7 @@ const DocumentStatusFields = ({
               {formData.healthCardValidUntil ? format(new Date(formData.healthCardValidUntil), 'PPP') : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 z-50" align="start">
+          <PopoverContent className="w-auto p-0 z-[100]" align="start">
             <Calendar
               mode="single"
               selected={formData.healthCardValidUntil ? new Date(formData.healthCardValidUntil) : undefined}

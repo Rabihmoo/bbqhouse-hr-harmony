@@ -47,6 +47,7 @@ export const useEmployeeForm = ({ initialData = {}, isEditing = false, open }: U
     inssNumber: "",
   });
 
+  // Reset form when dialog opens/closes
   useEffect(() => {
     if (open) {
       if (isEditing && initialData && Object.keys(initialData).length > 0) {
