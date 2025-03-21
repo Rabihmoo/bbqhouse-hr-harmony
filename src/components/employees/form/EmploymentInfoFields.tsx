@@ -49,7 +49,7 @@ const EmploymentInfoFields = ({
             value={formData.department}
             onValueChange={(value) => handleSelectChange("department", value)}
           >
-            <SelectTrigger id="department">
+            <SelectTrigger id="department" className="h-11 text-base">
               <SelectValue placeholder="Select department" />
             </SelectTrigger>
             <SelectContent position="popper" align="start" sideOffset={8} className="z-[100]">
@@ -72,7 +72,7 @@ const EmploymentInfoFields = ({
                 id="hireDate"
                 variant="outline"
                 className={cn(
-                  "w-full justify-start text-left font-normal",
+                  "w-full justify-start text-left font-normal h-11 px-4 text-base",
                   !formData.hireDate && "text-muted-foreground"
                 )}
                 type="button"

@@ -43,9 +43,9 @@ const EmployeeForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] max-h-[85vh] overflow-y-auto p-6 gap-4">
-        <DialogHeader className="mb-4">
-          <DialogTitle className="text-xl">
+      <DialogContent className="sm:max-w-[640px] md:max-w-[700px] max-h-[85vh] overflow-y-auto p-6 gap-6">
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold">
             {isEditing ? "Edit Employee" : "Add New Employee"}
           </DialogTitle>
           <DialogDescription>

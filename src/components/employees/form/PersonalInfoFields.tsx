@@ -63,7 +63,7 @@ const PersonalInfoFields = ({
               id="biValidUntil"
               variant="outline"
               className={cn(
-                "w-full justify-start text-left font-normal",
+                "w-full justify-start text-left font-normal h-11 px-4 text-base",
                 !formData.biValidUntil && "text-muted-foreground"
               )}
               type="button"
