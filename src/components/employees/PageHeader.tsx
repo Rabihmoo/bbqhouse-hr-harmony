@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { AttendanceUploader } from "@/components/employees/AttendanceUploader";
+import AttendanceUploader from "@/components/employees/AttendanceUploader";
 
 interface PageHeaderProps {
   employeeCount: number;

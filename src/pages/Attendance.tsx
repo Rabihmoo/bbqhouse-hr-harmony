@@ -5,7 +5,7 @@ import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { attendanceRecords as attendanceData, statusColors } from "@/lib/data";
 import { cn } from "@/lib/utils";
-import { AttendanceUploader } from "@/components/employees/AttendanceUploader";
+import AttendanceUploader from "@/components/employees/AttendanceUploader";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 const Attendance = () => {
