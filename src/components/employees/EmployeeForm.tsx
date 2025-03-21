@@ -1,15 +1,18 @@
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import ImageUploadField from "./form/ImageUploadField";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 interface EmployeeFormProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: any) => void;
-  initialData?: any;
+  initialData?: any | null;
   isEditing?: boolean;
 }
 
@@ -17,71 +20,74 @@ const EmployeeForm = ({
   open,
   onClose,
   onSubmit,
-  initialData = {},
+  initialData = null,
   isEditing = false
 }: EmployeeFormProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
-    fullName: initialData.fullName || "",
-    biNumber: initialData.biNumber || "",
-    biValidUntil: initialData.biValidUntil || "",
-    biValid: initialData.biValid || false,
-    address: initialData.address || "",
-    secondAddress: initialData.secondAddress || "",
-    email: initialData.email || "",
-    phone: initialData.phone || "",
-    position: initialData.position || "",
-    department: initialData.department || "",
-    salary: initialData.salary ? String(initialData.salary) : "",
-    hireDate: initialData.hireDate || "",
-    healthCardValid: initialData.healthCardValid || false,
-    healthCardValidUntil: initialData.healthCardValidUntil || "",
-    picture: initialData.picture || "",
-    inssNumber: initialData.inssNumber || "",
+    fullName: "",
+    biNumber: "",
+    biValidUntil: "",
+    biValid: false,
+    address: "",
+    secondAddress: "",
+    email: "",
+    phone: "",
+    position: "",
+    department: "",
+    salary: "",
+    hireDate: "",
+    healthCardValid: false,
+    healthCardValidUntil: "",
+    picture: "",
+    inssNumber: "",
   });
 
-  // Reset form when dialog opens/closes
-  useState(() => {
-    if (open && isEditing && initialData) {
-      setFormData({
-        fullName: initialData.fullName || "",
-        biNumber: initialData.biNumber || "",
-        biValidUntil: initialData.biValidUntil || "",
-        biValid: initialData.biValid || false,
-        address: initialData.address || "",
-        secondAddress: initialData.secondAddress || "",
-        email: initialData.email || "",
-        phone: initialData.phone || "",
-        position: initialData.position || "",
-        department: initialData.department || "",
-        salary: initialData.salary ? String(initialData.salary) : "",
-        hireDate: initialData.hireDate || "",
-        healthCardValid: initialData.healthCardValid || false,
-        healthCardValidUntil: initialData.healthCardValidUntil || "",
-        picture: initialData.picture || "",
-        inssNumber: initialData.inssNumber || "",
-      });
-    } else if (!isEditing) {
-      setFormData({
-        fullName: "",
-        biNumber: "",
-        biValidUntil: "",
-        biValid: false,
-        address: "",
-        secondAddress: "",
-        email: "",
-        phone: "",
-        position: "",
-        department: "",
-        salary: "",
-        hireDate: "",
-        healthCardValid: false,
-        healthCardValidUntil: "",
-        picture: "",
-        inssNumber: "",
-      });
+  // Reset form when dialog opens/closes or when in edit mode and initialData changes
+  useEffect(() => {
+    if (open) {
+      if (isEditing && initialData) {
+        setFormData({
+          fullName: initialData.fullName || "",
+          biNumber: initialData.biNumber || "",
+          biValidUntil: initialData.biValidUntil || "",
+          biValid: initialData.biValid || false,
+          address: initialData.address || "",
+          secondAddress: initialData.secondAddress || "",
+          email: initialData.email || "",
+          phone: initialData.phone || "",
+          position: initialData.position || "",
+          department: initialData.department || "",
+          salary: initialData.salary ? String(initialData.salary) : "",
+          hireDate: initialData.hireDate || "",
+          healthCardValid: initialData.healthCardValid || false,
+          healthCardValidUntil: initialData.healthCardValidUntil || "",
+          picture: initialData.picture || "",
+          inssNumber: initialData.inssNumber || "",
+        });
+      } else {
+        // Reset form for new employee
+        setFormData({
+          fullName: "",
+          biNumber: "",
+          biValidUntil: "",
+          biValid: false,
+          address: "",
+          secondAddress: "",
+          email: "",
+          phone: "",
+          position: "",
+          department: "",
+          salary: "",
+          hireDate: "",
+          healthCardValid: false,
+          healthCardValidUntil: "",
+          picture: "",
+          inssNumber: "",
+        });
+      }
     }
-  });
+  }, [open, isEditing, initialData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -91,8 +97,7 @@ const EmployeeForm = ({
     });
   };
 
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
+  const handleCheckboxChange = (name: string, checked: boolean) => {
     setFormData({
       ...formData,
       [name]: checked,
@@ -132,6 +137,24 @@ const EmployeeForm = ({
     }
   };
 
+  // Simple image preview component
+  const ImagePreview = () => {
+    if (!formData.picture) return null;
+    
+    return (
+      <div className="h-20 w-20 rounded-full overflow-hidden border">
+        <img 
+          src={formData.picture} 
+          alt="Employee" 
+          className="h-full w-full object-cover" 
+        />
+      </div>
+    );
+  };
+
+  // If not open, don't render anything
+  if (!open) return null;
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
@@ -146,11 +169,23 @@ const EmployeeForm = ({
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Image Upload */}
-          <div className="mb-6">
-            <ImageUploadField
-              picture={formData.picture}
-              onImageChange={handleImageChange}
-            />
+          <div className="mb-6 flex items-center gap-4">
+            <ImagePreview />
+            <div>
+              <Label htmlFor="picture-upload">Employee Picture</Label>
+              <Input
+                id="picture-upload"
+                type="file"
+                accept="image/*"
+                className="mt-1"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    const imageUrl = URL.createObjectURL(e.target.files[0]);
+                    handleImageChange(imageUrl);
+                  }
+                }}
+              />
+            </div>
           </div>
 
           {/* Form Content */}
@@ -161,33 +196,29 @@ const EmployeeForm = ({
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="fullName" className="block text-sm font-medium mb-1">
+                  <Label htmlFor="fullName" className="mb-1">
                     Full Name*
-                  </label>
-                  <input
-                    type="text"
+                  </Label>
+                  <Input
                     id="fullName"
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 border rounded-md"
                     placeholder="Enter full name"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="biNumber" className="block text-sm font-medium mb-1">
+                  <Label htmlFor="biNumber" className="mb-1">
                     BI Number*
-                  </label>
-                  <input
-                    type="text"
+                  </Label>
+                  <Input
                     id="biNumber"
                     name="biNumber"
                     value={formData.biNumber}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 border rounded-md"
                     placeholder="Enter BI number"
                   />
                 </div>
@@ -195,95 +226,90 @@ const EmployeeForm = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label htmlFor="biValidUntil" className="block text-sm font-medium mb-1">
+                  <Label htmlFor="biValidUntil" className="mb-1">
                     BI Validity Date*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="date"
                     id="biValidUntil"
                     name="biValidUntil"
                     value={formData.biValidUntil}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 border rounded-md"
                   />
                 </div>
 
                 <div className="flex items-center mt-6">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="biValid"
-                    name="biValid"
                     checked={formData.biValid}
-                    onChange={handleCheckboxChange}
-                    className="h-4 w-4 mr-2"
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange("biValid", checked === true)
+                    }
+                    className="mr-2"
                   />
-                  <label htmlFor="biValid" className="text-sm font-medium">
+                  <Label htmlFor="biValid">
                     BI Valid
-                  </label>
+                  </Label>
                 </div>
               </div>
 
               <div className="mt-4">
-                <label htmlFor="address" className="block text-sm font-medium mb-1">
+                <Label htmlFor="address" className="mb-1">
                   Address*
-                </label>
-                <textarea
+                </Label>
+                <Textarea
                   id="address"
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
                   required
-                  className="w-full p-3 border rounded-md"
-                  rows={2}
                   placeholder="Enter address"
+                  rows={2}
                 />
               </div>
 
               <div className="mt-4">
-                <label htmlFor="secondAddress" className="block text-sm font-medium mb-1">
+                <Label htmlFor="secondAddress" className="mb-1">
                   Secondary Address (optional)
-                </label>
-                <textarea
+                </Label>
+                <Textarea
                   id="secondAddress"
                   name="secondAddress"
                   value={formData.secondAddress}
                   onChange={handleInputChange}
-                  className="w-full p-3 border rounded-md"
-                  rows={2}
                   placeholder="Enter secondary address"
+                  rows={2}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-1">
+                  <Label htmlFor="email" className="mb-1">
                     Email*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="email"
                     id="email"
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 border rounded-md"
                     placeholder="example@email.com"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium mb-1">
+                  <Label htmlFor="phone" className="mb-1">
                     Phone*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="text"
                     id="phone"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 border rounded-md"
                     placeholder="Enter phone number"
                   />
                 </div>
@@ -296,32 +322,31 @@ const EmployeeForm = ({
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="position" className="block text-sm font-medium mb-1">
+                  <Label htmlFor="position" className="mb-1">
                     Position*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="text"
                     id="position"
                     name="position"
                     value={formData.position}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 border rounded-md"
                     placeholder="Enter position"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="department" className="block text-sm font-medium mb-1">
+                  <Label htmlFor="department" className="mb-1">
                     Department*
-                  </label>
+                  </Label>
                   <select
                     id="department"
                     name="department"
                     value={formData.department}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 border rounded-md"
+                    className="flex h-11 w-full rounded-md border border-input bg-background px-4 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="">Select department</option>
                     <option value="Kitchen">Kitchen</option>
@@ -335,48 +360,45 @@ const EmployeeForm = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div>
-                  <label htmlFor="hireDate" className="block text-sm font-medium mb-1">
+                  <Label htmlFor="hireDate" className="mb-1">
                     Hire Date*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="date"
                     id="hireDate"
                     name="hireDate"
                     value={formData.hireDate}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 border rounded-md"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="salary" className="block text-sm font-medium mb-1">
+                  <Label htmlFor="salary" className="mb-1">
                     Salary (KZ)*
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="number"
                     id="salary"
                     name="salary"
                     value={formData.salary}
                     onChange={handleInputChange}
                     required
-                    className="w-full p-3 border rounded-md"
                     placeholder="Enter salary amount"
                   />
                 </div>
               </div>
 
               <div className="mt-4">
-                <label htmlFor="inssNumber" className="block text-sm font-medium mb-1">
+                <Label htmlFor="inssNumber" className="mb-1">
                   INSS Number
-                </label>
-                <input
+                </Label>
+                <Input
                   type="text"
                   id="inssNumber"
                   name="inssNumber"
                   value={formData.inssNumber}
                   onChange={handleInputChange}
-                  className="w-full p-3 border rounded-md"
                   placeholder="Enter INSS number"
                 />
               </div>
@@ -388,31 +410,30 @@ const EmployeeForm = ({
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="healthCardValidUntil" className="block text-sm font-medium mb-1">
+                  <Label htmlFor="healthCardValidUntil" className="mb-1">
                     Health Card Validity Date
-                  </label>
-                  <input
+                  </Label>
+                  <Input
                     type="date"
                     id="healthCardValidUntil"
                     name="healthCardValidUntil"
                     value={formData.healthCardValidUntil}
                     onChange={handleInputChange}
-                    className="w-full p-3 border rounded-md"
                   />
                 </div>
 
                 <div className="flex items-center mt-6">
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     id="healthCardValid"
-                    name="healthCardValid"
                     checked={formData.healthCardValid}
-                    onChange={handleCheckboxChange}
-                    className="h-4 w-4 mr-2"
+                    onCheckedChange={(checked) => 
+                      handleCheckboxChange("healthCardValid", checked === true)
+                    }
+                    className="mr-2"
                   />
-                  <label htmlFor="healthCardValid" className="text-sm font-medium">
+                  <Label htmlFor="healthCardValid">
                     Health Card Valid
-                  </label>
+                  </Label>
                 </div>
               </div>
             </section>
