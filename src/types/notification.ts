@@ -28,4 +28,7 @@ export interface LeaveRecord {
   type: 'annual' | 'sick' | 'unpaid' | 'other';
   status: 'completed' | 'scheduled';
   notes?: string;
+  employeeId?: string;
+  employeeName?: string;
 }
+

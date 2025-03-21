@@ -11,3 +11,4 @@ export { Calendar } from "./calendar";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 export { Alert, AlertTitle, AlertDescription } from "./alert";
 export { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "./table";
+export { ToastProvider, ToastViewport, Toast, ToastTitle, ToastDescription, ToastClose, ToastAction } from "./toast";

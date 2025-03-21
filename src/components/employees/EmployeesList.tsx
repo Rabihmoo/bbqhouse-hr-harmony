@@ -35,10 +35,52 @@ const EmployeesList = ({ employees, onRowClick }: EmployeesListProps) => {
     const currentYearAllowance = employee.leaveAllowances?.find((a: LeaveAllowance) => a.year === currentYear);
     
     if (!currentYearAllowance) {
-      return `${employee.remainingLeaves} days`;
+      return `${employee.remainingLeaves || 0} days`;
     }
     
     return `${currentYearAllowance.remaining}/${currentYearAllowance.daysEntitled} days`;
+  };
+
+  // Function to display leave status with color coding
+  const formatLeaveStatus = (employee: any) => {
+    if (!employee.hireDate) return null;
+    
+    const yearsEmployed = getEmployeeYearsOfService(employee.hireDate);
+    if (yearsEmployed < 1) return (
+      <span className="text-gray-500">Not eligible</span>
+    );
+    
+    const currentYear = new Date().getFullYear();
+    const previousYear = currentYear - 1;
+    
+    // Check for current and previous year allowances
+    const currentYearAllowance = employee.leaveAllowances?.find((a: LeaveAllowance) => a.year === currentYear);
+    const previousYearAllowance = employee.leaveAllowances?.find((a: LeaveAllowance) => a.year === previousYear);
+    
+    return (
+      <div className="flex flex-col gap-1">
+        {currentYearAllowance && (
+          <div className="flex items-center gap-1">
+            <span className={cn(
+              "w-2 h-2 rounded-full",
+              currentYearAllowance.status === 'unused' ? "bg-red-500" : 
+              currentYearAllowance.status === 'partially-used' ? "bg-amber-500" : "bg-green-500"
+            )}></span>
+            <span className="text-xs">{currentYear}: {currentYearAllowance.remaining}/{currentYearAllowance.daysEntitled}</span>
+          </div>
+        )}
+        {previousYearAllowance && (
+          <div className="flex items-center gap-1">
+            <span className={cn(
+              "w-2 h-2 rounded-full",
+              previousYearAllowance.status === 'unused' ? "bg-red-500" : 
+              previousYearAllowance.status === 'partially-used' ? "bg-amber-500" : "bg-green-500"
+            )}></span>
+            <span className="text-xs">{previousYear}: {previousYearAllowance.remaining}/{previousYearAllowance.daysEntitled}</span>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -124,7 +166,9 @@ const EmployeesList = ({ employees, onRowClick }: EmployeesListProps) => {
             key: "leaveInfo",
             header: "Annual Leave",
             render: (row) => (
-              <span className="font-medium">{formatLeaveInfo(row)}</span>
+              <div className="font-medium">
+                {formatLeaveStatus(row)}
+              </div>
             ),
           },
         ]}
