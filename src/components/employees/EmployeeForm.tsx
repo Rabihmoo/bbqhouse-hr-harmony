@@ -43,7 +43,7 @@ const EmployeeForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] outline-none max-h-[90vh] overflow-hidden">
+      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit Employee" : "Add New Employee"}
@@ -53,40 +53,38 @@ const EmployeeForm = ({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-[calc(90vh-180px)] overflow-y-auto py-4 px-1">
-          <form id="employee-form" onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid gap-6">
-              <ImageUploadField 
-                picture={formData.picture} 
-                onImageChange={handleImageChange} 
-              />
-              
-              <PersonalInfoFields 
-                formData={formData} 
-                handleInputChange={handleInputChange} 
-                handleDateChange={handleDateChange} 
-              />
-              
-              <EmploymentInfoFields 
-                formData={formData} 
-                handleInputChange={handleInputChange}
-                handleSelectChange={handleSelectChange}
-                handleDateChange={handleDateChange}
-              />
-              
-              <DocumentStatusFields 
-                formData={formData}
-                handleSwitchChange={handleSwitchChange}
-                handleDateChange={handleDateChange}
-              />
-            </div>
-
-            <FormActions 
-              isEditing={isEditing} 
-              onCancel={onClose} 
+        <form id="employee-form" onSubmit={handleSubmit} className="space-y-6 overflow-visible pt-4">
+          <div className="grid gap-6">
+            <ImageUploadField 
+              picture={formData.picture} 
+              onImageChange={handleImageChange} 
             />
-          </form>
-        </div>
+            
+            <PersonalInfoFields 
+              formData={formData} 
+              handleInputChange={handleInputChange} 
+              handleDateChange={handleDateChange} 
+            />
+            
+            <EmploymentInfoFields 
+              formData={formData} 
+              handleInputChange={handleInputChange}
+              handleSelectChange={handleSelectChange}
+              handleDateChange={handleDateChange}
+            />
+            
+            <DocumentStatusFields 
+              formData={formData}
+              handleSwitchChange={handleSwitchChange}
+              handleDateChange={handleDateChange}
+            />
+          </div>
+
+          <FormActions 
+            isEditing={isEditing} 
+            onCancel={onClose} 
+          />
+        </form>
       </DialogContent>
     </Dialog>
   );
