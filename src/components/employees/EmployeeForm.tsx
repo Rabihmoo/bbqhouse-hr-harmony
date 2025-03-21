@@ -151,7 +151,7 @@ const EmployeeForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] md:max-w-[800px]">
+      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] outline-none border-none">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit Employee" : "Add New Employee"}
@@ -162,7 +162,7 @@ const EmployeeForm = ({
         </DialogHeader>
 
         <div className="max-h-[calc(80vh-180px)] overflow-y-auto py-4 px-1">
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form id="employee-form" onSubmit={handleSubmit} className="space-y-6">
             <div className="grid gap-6">
               <div className="grid gap-4">
                 <Label>Employee Picture</Label>

@@ -42,18 +42,19 @@ const DocumentStatusFields = ({
               {formData.healthCardValidUntil ? format(new Date(formData.healthCardValidUntil), 'PPP') : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
+          <PopoverContent className="w-auto p-0 z-50" align="start">
             <Calendar
               mode="single"
               selected={formData.healthCardValidUntil ? new Date(formData.healthCardValidUntil) : undefined}
               onSelect={(date) => handleDateChange('healthCardValidUntil', date)}
               initialFocus
+              className="pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
         <div className="flex items-center gap-2">
           <Switch
             id="healthCardValid"

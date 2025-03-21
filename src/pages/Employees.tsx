@@ -30,6 +30,8 @@ const Employees = () => {
     };
     
     setEmployees([...employees, newEmployee]);
+    setShowAddForm(false);
+    
     toast({
       title: "Employee added",
       description: `${data.fullName} has been successfully added.`,
@@ -42,6 +44,8 @@ const Employees = () => {
     );
     
     setEmployees(updatedEmployees);
+    setEditingEmployee(null);
+    
     toast({
       title: "Employee updated",
       description: `${data.fullName}'s information has been updated.`,
