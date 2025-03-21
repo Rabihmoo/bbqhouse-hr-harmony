@@ -6,6 +6,25 @@ export type LeaveType = 'Annual' | 'Sick' | 'Unpaid' | 'Other';
 
 export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected' | 'Completed';
 
+export interface LeaveAllowance {
+  year: number;
+  daysEntitled: number;
+  daysTaken: number;
+  remaining: number;
+  status: 'unused' | 'partially-used' | 'fully-used';
+}
+
+export interface LeaveRecord {
+  id: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  year: number;
+  type: 'annual' | 'sick' | 'unpaid' | 'other';
+  status: 'completed' | 'scheduled';
+  notes?: string;
+}
+
 export interface Employee {
   id: string;
   fullName: string;
@@ -26,6 +45,8 @@ export interface Employee {
   remainingLeaves: number;
   picture?: string;
   inssNumber?: string;
+  leaveAllowances?: LeaveAllowance[];
+  leaveRecords?: LeaveRecord[];
 }
 
 export interface LeaveRequest {
@@ -53,7 +74,6 @@ export interface Attendance {
   reason?: string;
 }
 
-// Sample data
 export const employees: Employee[] = [
   {
     id: '1',
@@ -73,7 +93,27 @@ export const employees: Employee[] = [
     email: 'joao.silva@bbqhouse.com',
     phone: '+244 923 456 789',
     remainingLeaves: 23,
-    inssNumber: 'INSS12345678'
+    inssNumber: 'INSS12345678',
+    leaveAllowances: [
+      {
+        year: 2023,
+        daysEntitled: 12,
+        daysTaken: 5,
+        remaining: 7,
+        status: 'partially-used'
+      }
+    ],
+    leaveRecords: [
+      {
+        id: 'l1',
+        startDate: '2023-06-10',
+        endDate: '2023-06-15',
+        days: 5,
+        year: 2023,
+        type: 'annual',
+        status: 'completed'
+      }
+    ]
   },
   {
     id: '2',
@@ -290,4 +330,17 @@ export const calculateDashboardStats = () => {
       { name: 'Takeaway', count: getDepartmentEmployeeCount('Takeaway'), color: departmentColors['Takeaway'] }
     ]
   };
+};
+
+export const calculateLeaveAllowance = (yearsEmployed: number): number => {
+  if (yearsEmployed < 1) return 0;
+  if (yearsEmployed < 2) return 12; // First year: 12 days
+  return 30; // 2+ years: 30 days
+};
+
+export const getEmployeeYearsOfService = (hireDate: string): number => {
+  const today = new Date();
+  const hire = new Date(hireDate);
+  const differenceInMs = today.getTime() - hire.getTime();
+  return Math.floor(differenceInMs / (1000 * 60 * 60 * 24 * 365));
 };

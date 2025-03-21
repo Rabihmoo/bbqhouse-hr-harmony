@@ -10,3 +10,4 @@ export { Switch } from "./switch";
 export { Calendar } from "./calendar";
 export { Tabs, TabsContent, TabsList, TabsTrigger } from "./tabs";
 export { Alert, AlertTitle, AlertDescription } from "./alert";
+export { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "./table";

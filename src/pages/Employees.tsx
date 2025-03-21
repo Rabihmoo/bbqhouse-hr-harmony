@@ -1,15 +1,13 @@
-
 import { useState, useRef, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { employees as initialEmployeesData } from "@/lib/data";
-import { useToast } from "@/components/ui/use-toast";
+import { employees as initialEmployeesData, calculateLeaveAllowance, getEmployeeYearsOfService } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
 import EmployeeForm from "@/components/employees/EmployeeForm";
 import EmployeesList from "@/components/employees/EmployeesList";
 import PageHeader from "@/components/employees/PageHeader";
 import AttendanceUploader from "@/components/employees/AttendanceUploader";
 import { format, addYears, differenceInYears, parseISO, isBefore } from "date-fns";
-import NotificationCenter from "@/components/notifications/NotificationCenter";
-import { Notification } from "@/types/notification";
+import { LeaveAllowance, LeaveRecord, Notification } from "@/types/notification";
 
 const LOCAL_STORAGE_KEY = 'restaurant-employees-data';
 
@@ -31,16 +29,90 @@ const Employees = () => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employees));
   }, [employees]);
 
+  // Calculate and update leave allowances for all employees
+  useEffect(() => {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    
+    const updatedEmployees = employees.map(employee => {
+      if (!employee.hireDate) return employee;
+      
+      const hireDate = parseISO(employee.hireDate);
+      const yearsEmployed = getEmployeeYearsOfService(employee.hireDate);
+      
+      // Skip if less than a year employed
+      if (yearsEmployed < 1) return employee;
+      
+      // Initialize arrays if they don't exist
+      const leaveAllowances = employee.leaveAllowances || [];
+      const leaveRecords = employee.leaveRecords || [];
+      
+      // Check each employment year starting from hire year
+      const updatedAllowances: LeaveAllowance[] = [];
+      
+      for (let year = hireDate.getFullYear() + 1; year <= currentYear; year++) {
+        // Check if we already have an allowance record for this year
+        const existingAllowance = leaveAllowances.find(a => a.year === year);
+        
+        if (existingAllowance) {
+          // Update existing allowance with current records
+          const recordsForYear = leaveRecords.filter(r => r.year === year && r.type === 'annual');
+          const daysTaken = recordsForYear.reduce((sum, record) => sum + record.days, 0);
+          
+          const yearsAtStartOfYear = year - hireDate.getFullYear();
+          const daysEntitled = calculateLeaveAllowance(yearsAtStartOfYear);
+          const remaining = daysEntitled - daysTaken;
+          
+          updatedAllowances.push({
+            ...existingAllowance,
+            daysEntitled,
+            daysTaken,
+            remaining,
+            status: daysTaken === 0 ? 'unused' : 
+                   daysTaken < daysEntitled ? 'partially-used' : 'fully-used'
+          });
+        } else {
+          // Create new allowance record
+          const yearsAtStartOfYear = year - hireDate.getFullYear();
+          const daysEntitled = calculateLeaveAllowance(yearsAtStartOfYear);
+          
+          // Check if there are any leave records for this year
+          const recordsForYear = leaveRecords.filter(r => r.year === year && r.type === 'annual');
+          const daysTaken = recordsForYear.reduce((sum, record) => sum + record.days, 0);
+          const remaining = daysEntitled - daysTaken;
+          
+          updatedAllowances.push({
+            year,
+            daysEntitled,
+            daysTaken,
+            remaining,
+            status: daysTaken === 0 ? 'unused' : 
+                   daysTaken < daysEntitled ? 'partially-used' : 'fully-used'
+          });
+        }
+      }
+      
+      return {
+        ...employee,
+        leaveAllowances: updatedAllowances,
+        leaveRecords: leaveRecords
+      };
+    });
+    
+    setEmployees(updatedEmployees);
+  }, []);
+
   // Check for various employee notifications
   useEffect(() => {
     const today = new Date();
+    const currentYear = today.getFullYear();
     const newNotifications: Notification[] = [];
     
     employees.forEach(employee => {
       const employeeId = employee.id;
       const employeeName = employee.fullName;
       
-      // Check for annual leave eligibility (after one year)
+      // Check for annual leave eligibility and unused leave
       if (employee.hireDate) {
         const hireDate = parseISO(employee.hireDate);
         const yearsEmployed = differenceInYears(today, hireDate);
@@ -54,6 +126,34 @@ const Employees = () => {
             message: `${employeeName} is eligible for annual leave.`,
             employeeId: employeeId,
             timestamp: new Date().toISOString(),
+            actionType: 'view-employee'
+          });
+        }
+        
+        // Check for unused leave allowances
+        if (employee.leaveAllowances && employee.leaveAllowances.length > 0) {
+          employee.leaveAllowances.forEach(allowance => {
+            if (allowance.status === 'unused') {
+              newNotifications.push({
+                id: `unused-leave-${employeeId}-${allowance.year}`,
+                type: 'warning',
+                title: 'Unused Annual Leave',
+                message: `${employeeName} has not taken any of their ${allowance.daysEntitled} days of leave for ${allowance.year}.`,
+                employeeId: employeeId,
+                timestamp: new Date().toISOString(),
+                actionType: 'view-employee'
+              });
+            } else if (allowance.status === 'partially-used' && allowance.year < currentYear) {
+              newNotifications.push({
+                id: `partial-leave-${employeeId}-${allowance.year}`,
+                type: 'info',
+                title: 'Partially Used Leave',
+                message: `${employeeName} has ${allowance.remaining} remaining days of leave from ${allowance.year}.`,
+                employeeId: employeeId,
+                timestamp: new Date().toISOString(),
+                actionType: 'view-employee'
+              });
+            }
           });
         }
         
@@ -70,6 +170,7 @@ const Employees = () => {
             message: `Today marks ${yearsEmployed} year${yearsEmployed > 1 ? 's' : ''} since ${employeeName} joined.`,
             employeeId: employeeId,
             timestamp: new Date().toISOString(),
+            actionType: 'view-employee'
           });
         }
       }
@@ -206,6 +307,31 @@ const Employees = () => {
         setEditingEmployee(employee);
       }
     }
+  };
+
+  // Handle adding a leave record to an employee
+  const handleAddLeaveRecord = (employeeId: string, leaveRecord: Omit<LeaveRecord, 'id'>) => {
+    const updatedEmployees = employees.map(emp => {
+      if (emp.id === employeeId) {
+        const leaveRecords = emp.leaveRecords || [];
+        const newRecord = {
+          ...leaveRecord,
+          id: `leave-${Date.now()}`
+        };
+        
+        return {
+          ...emp,
+          leaveRecords: [...leaveRecords, newRecord]
+        };
+      }
+      return emp;
+    });
+    
+    setEmployees(updatedEmployees);
+    toast({
+      title: "Leave record added",
+      description: `Leave record has been added successfully.`,
+    });
   };
 
   // Get employees grouped by department

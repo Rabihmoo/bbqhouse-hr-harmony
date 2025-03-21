@@ -1,8 +1,9 @@
 
 import { DataTable } from "@/components/ui/data-table";
 import { cn } from "@/lib/utils";
-import { departmentColors, statusColors } from "@/lib/data";
+import { departmentColors, statusColors, getEmployeeYearsOfService } from "@/lib/data";
 import { format, isValid, parseISO } from "date-fns";
+import { LeaveAllowance } from "@/types/notification";
 
 interface EmployeesListProps {
   employees: any[];
@@ -21,6 +22,23 @@ const EmployeesList = ({ employees, onRowClick }: EmployeesListProps) => {
     } catch (e) {
       return "Invalid date";
     }
+  };
+
+  // Function to display leave information
+  const formatLeaveInfo = (employee: any) => {
+    if (!employee.hireDate) return "N/A";
+    
+    const yearsEmployed = getEmployeeYearsOfService(employee.hireDate);
+    if (yearsEmployed < 1) return "Not eligible yet";
+    
+    const currentYear = new Date().getFullYear();
+    const currentYearAllowance = employee.leaveAllowances?.find((a: LeaveAllowance) => a.year === currentYear);
+    
+    if (!currentYearAllowance) {
+      return `${employee.remainingLeaves} days`;
+    }
+    
+    return `${currentYearAllowance.remaining}/${currentYearAllowance.daysEntitled} days`;
   };
 
   return (
@@ -103,10 +121,10 @@ const EmployeesList = ({ employees, onRowClick }: EmployeesListProps) => {
             ),
           },
           {
-            key: "remainingLeaves",
-            header: "Leaves",
+            key: "leaveInfo",
+            header: "Annual Leave",
             render: (row) => (
-              <span className="font-medium">{row.remainingLeaves} days</span>
+              <span className="font-medium">{formatLeaveInfo(row)}</span>
             ),
           },
         ]}
