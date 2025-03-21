@@ -59,6 +59,12 @@ export function DataTable<T extends { id: string }>({
     ? filteredData.slice(startIndex, startIndex + itemsPerPage)
     : filteredData;
 
+  // Helper function to safely convert column.key to string
+  const getColumnKeyString = (key: keyof T | 'actions'): string => {
+    if (key === 'actions') return 'actions';
+    return String(key);
+  };
+
   return (
     <div className="bg-white dark:bg-black/40 rounded-xl shadow-sm glass overflow-hidden">
       {searchable && (
@@ -81,7 +87,7 @@ export function DataTable<T extends { id: string }>({
             <tr className="border-b bg-muted/40">
               {columns.map((column) => (
                 <th
-                  key={typeof column.key === 'string' ? column.key : String(column.key)}
+                  key={getColumnKeyString(column.key)}
                   className={cn(
                     "px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider",
                     column.width
@@ -107,7 +113,7 @@ export function DataTable<T extends { id: string }>({
                 >
                   {columns.map((column) => (
                     <td
-                      key={`${row.id}-${typeof column.key === 'string' ? column.key : String(column.key)}`}
+                      key={`${row.id}-${getColumnKeyString(column.key)}`}
                       className="px-6 py-4 whitespace-nowrap text-sm"
                     >
                       {column.render
