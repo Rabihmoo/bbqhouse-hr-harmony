@@ -52,7 +52,7 @@ const EmploymentInfoFields = ({
             <SelectTrigger id="department" className="h-11 text-base">
               <SelectValue placeholder="Select department" />
             </SelectTrigger>
-            <SelectContent position="popper" align="start" sideOffset={8} className="z-[100]">
+            <SelectContent position="popper" align="start" sideOffset={8} className="z-[9999]">
               <SelectItem value="Kitchen">Kitchen</SelectItem>
               <SelectItem value="Sala">Sala</SelectItem>
               <SelectItem value="Bar">Bar</SelectItem>
@@ -81,13 +81,13 @@ const EmploymentInfoFields = ({
                 {formData.hireDate ? format(new Date(formData.hireDate), 'PPP') : <span>Pick a date</span>}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 z-[100]" align="start">
+            <PopoverContent className="w-auto p-0 z-[9999]" align="start">
               <Calendar
                 mode="single"
                 selected={formData.hireDate ? new Date(formData.hireDate) : undefined}
                 onSelect={(date) => handleDateChange('hireDate', date)}
                 initialFocus
-                className="pointer-events-auto"
+                className="pointer-events-auto z-[9999]"
               />
             </PopoverContent>
           </Popover>

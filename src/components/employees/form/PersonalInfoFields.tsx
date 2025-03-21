@@ -72,13 +72,13 @@ const PersonalInfoFields = ({
               {formData.biValidUntil ? format(new Date(formData.biValidUntil), 'PPP') : <span>Pick a date</span>}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 z-[100]" align="start">
+          <PopoverContent className="w-auto p-0 z-[9999]" align="start">
             <Calendar
               mode="single"
               selected={formData.biValidUntil ? new Date(formData.biValidUntil) : undefined}
               onSelect={(date) => handleDateChange('biValidUntil', date)}
               initialFocus
-              className="pointer-events-auto"
+              className="pointer-events-auto z-[9999]"
             />
           </PopoverContent>
         </Popover>
