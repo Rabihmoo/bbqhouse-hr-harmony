@@ -47,65 +47,67 @@ const EmployeeForm = ({
     picture: "",
   });
 
-  // Update form data when initialData changes
+  // Update form data when initialData changes or when modal opens/closes
   useEffect(() => {
-    if (initialData && Object.keys(initialData).length > 0) {
-      setFormData({
-        fullName: initialData.fullName || "",
-        biNumber: initialData.biNumber || "",
-        biValidUntil: initialData.biValidUntil || "",
-        address: initialData.address || "",
-        secondAddress: initialData.secondAddress || "",
-        position: initialData.position || "",
-        department: initialData.department || "",
-        salary: initialData.salary ? String(initialData.salary) : "",
-        healthCardValid: initialData.healthCardValid || false,
-        healthCardValidUntil: initialData.healthCardValidUntil || "",
-        biValid: initialData.biValid || false,
-        email: initialData.email || "",
-        phone: initialData.phone || "",
-        hireDate: initialData.hireDate || "",
-        picture: initialData.picture || "",
-      });
-    } else {
-      // Reset form when not editing
-      setFormData({
-        fullName: "",
-        biNumber: "",
-        biValidUntil: "",
-        address: "",
-        secondAddress: "",
-        position: "",
-        department: "",
-        salary: "",
-        healthCardValid: false,
-        healthCardValidUntil: "",
-        biValid: false,
-        email: "",
-        phone: "",
-        hireDate: "",
-        picture: "",
-      });
+    if (open) {
+      if (initialData && Object.keys(initialData).length > 0) {
+        setFormData({
+          fullName: initialData.fullName || "",
+          biNumber: initialData.biNumber || "",
+          biValidUntil: initialData.biValidUntil || "",
+          address: initialData.address || "",
+          secondAddress: initialData.secondAddress || "",
+          position: initialData.position || "",
+          department: initialData.department || "",
+          salary: initialData.salary ? String(initialData.salary) : "",
+          healthCardValid: initialData.healthCardValid || false,
+          healthCardValidUntil: initialData.healthCardValidUntil || "",
+          biValid: initialData.biValid || false,
+          email: initialData.email || "",
+          phone: initialData.phone || "",
+          hireDate: initialData.hireDate || "",
+          picture: initialData.picture || "",
+        });
+      } else {
+        // Reset form when not editing
+        setFormData({
+          fullName: "",
+          biNumber: "",
+          biValidUntil: "",
+          address: "",
+          secondAddress: "",
+          position: "",
+          department: "",
+          salary: "",
+          healthCardValid: false,
+          healthCardValidUntil: "",
+          biValid: false,
+          email: "",
+          phone: "",
+          hireDate: "",
+          picture: "",
+        });
+      }
     }
   }, [initialData, open]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
   };
 
   const handleSwitchChange = (name: string, checked: boolean) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: checked,
     }));
@@ -113,7 +115,7 @@ const EmployeeForm = ({
 
   const handleDateChange = (name: string, date: Date | undefined) => {
     if (date) {
-      setFormData((prev) => ({
+      setFormData(prev => ({
         ...prev,
         [name]: format(date, "yyyy-MM-dd"),
       }));
