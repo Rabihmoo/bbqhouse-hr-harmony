@@ -1,8 +1,6 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable } from "@/components/ui/data-table";
-import { Button } from "@/components/ui/button";
 import { attendanceRecords as attendanceData, statusColors } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import AttendanceUploader from "@/components/employees/AttendanceUploader";
