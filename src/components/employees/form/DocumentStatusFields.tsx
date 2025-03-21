@@ -31,6 +31,7 @@ const DocumentStatusFields = ({
         <Popover>
           <PopoverTrigger asChild>
             <Button
+              id="healthCardValidUntil"
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
@@ -47,7 +48,6 @@ const DocumentStatusFields = ({
               selected={formData.healthCardValidUntil ? new Date(formData.healthCardValidUntil) : undefined}
               onSelect={(date) => handleDateChange('healthCardValidUntil', date)}
               initialFocus
-              className="p-3 pointer-events-auto"
             />
           </PopoverContent>
         </Popover>

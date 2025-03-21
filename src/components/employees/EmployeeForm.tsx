@@ -8,7 +8,6 @@ import PersonalInfoFields from "./form/PersonalInfoFields";
 import EmploymentInfoFields from "./form/EmploymentInfoFields";
 import DocumentStatusFields from "./form/DocumentStatusFields";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Upload } from "lucide-react";
 
 interface EmployeeFormProps {
@@ -43,7 +42,7 @@ const EmployeeForm = ({
     phone: "",
     hireDate: "",
     picture: "",
-    inssNumber: "", // Added INSS Number field
+    inssNumber: "",
   });
 
   useEffect(() => {
@@ -65,7 +64,7 @@ const EmployeeForm = ({
           phone: initialData.phone || "",
           hireDate: initialData.hireDate || "",
           picture: initialData.picture || "",
-          inssNumber: initialData.inssNumber || "", // Added INSS Number field
+          inssNumber: initialData.inssNumber || "",
         });
       } else if (!isEditing) {
         // Reset form when adding new employee
@@ -85,7 +84,7 @@ const EmployeeForm = ({
           phone: "",
           hireDate: "",
           picture: "",
-          inssNumber: "", // Added INSS Number field
+          inssNumber: "",
         });
       }
     }
@@ -152,7 +151,7 @@ const EmployeeForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] md:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit Employee" : "Add New Employee"}
@@ -162,65 +161,67 @@ const EmployeeForm = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="overflow-y-auto">
-          <div className="grid gap-6 py-4">
-            <div className="grid gap-4">
-              <Label>Employee Picture</Label>
-              <div className="flex items-center gap-4">
-                {formData.picture && (
-                  <div className="h-20 w-20 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
-                    <img 
-                      src={formData.picture} 
-                      alt="Employee" 
-                      className="h-full w-full object-cover"
+        <div className="max-h-[calc(80vh-180px)] overflow-y-auto py-4 px-1">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid gap-6">
+              <div className="grid gap-4">
+                <Label>Employee Picture</Label>
+                <div className="flex items-center gap-4">
+                  {formData.picture && (
+                    <div className="h-20 w-20 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                      <img 
+                        src={formData.picture} 
+                        alt="Employee" 
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  )}
+                  <label htmlFor="picture-upload" className="cursor-pointer">
+                    <div className="flex items-center gap-2 px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80">
+                      <Upload className="h-4 w-4" />
+                      <span>Upload Picture</span>
+                    </div>
+                    <input 
+                      id="picture-upload" 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={handleFileChange}
                     />
-                  </div>
-                )}
-                <label htmlFor="picture-upload" className="cursor-pointer">
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80">
-                    <Upload className="h-4 w-4" />
-                    <span>Upload Picture</span>
-                  </div>
-                  <input 
-                    id="picture-upload" 
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
-                    onChange={handleFileChange}
-                  />
-                </label>
+                  </label>
+                </div>
               </div>
+              
+              <PersonalInfoFields 
+                formData={formData} 
+                handleInputChange={handleInputChange} 
+                handleDateChange={handleDateChange} 
+              />
+              
+              <EmploymentInfoFields 
+                formData={formData} 
+                handleInputChange={handleInputChange}
+                handleSelectChange={handleSelectChange}
+                handleDateChange={handleDateChange}
+              />
+              
+              <DocumentStatusFields 
+                formData={formData}
+                handleSwitchChange={handleSwitchChange}
+                handleDateChange={handleDateChange}
+              />
             </div>
-            
-            <PersonalInfoFields 
-              formData={formData} 
-              handleInputChange={handleInputChange} 
-              handleDateChange={handleDateChange} 
-            />
-            
-            <EmploymentInfoFields 
-              formData={formData} 
-              handleInputChange={handleInputChange}
-              handleSelectChange={handleSelectChange}
-              handleDateChange={handleDateChange}
-            />
-            
-            <DocumentStatusFields 
-              formData={formData}
-              handleSwitchChange={handleSwitchChange}
-              handleDateChange={handleDateChange}
-            />
-          </div>
 
-          <DialogFooter className="pt-4">
-            <Button variant="outline" type="button" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit">
-              {isEditing ? "Save Changes" : "Add Employee"}
-            </Button>
-          </DialogFooter>
-        </form>
+            <DialogFooter>
+              <Button variant="outline" type="button" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {isEditing ? "Save Changes" : "Add Employee"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -15,7 +15,7 @@ interface EmploymentInfoFieldsProps {
     department: string;
     salary: string;
     hireDate: string;
-    inssNumber: string; // Added INSS Number field
+    inssNumber: string;
   };
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
@@ -38,6 +38,7 @@ const EmploymentInfoFields = ({
             name="position"
             value={formData.position}
             onChange={handleInputChange}
+            placeholder="Enter position"
             required
           />
         </div>
@@ -68,6 +69,7 @@ const EmploymentInfoFields = ({
           <Popover>
             <PopoverTrigger asChild>
               <Button
+                id="hireDate"
                 variant="outline"
                 className={cn(
                   "w-full justify-start text-left font-normal",
@@ -84,7 +86,6 @@ const EmploymentInfoFields = ({
                 selected={formData.hireDate ? new Date(formData.hireDate) : undefined}
                 onSelect={(date) => handleDateChange('hireDate', date)}
                 initialFocus
-                className="p-3 pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
@@ -98,6 +99,7 @@ const EmploymentInfoFields = ({
             type="number"
             value={formData.salary}
             onChange={handleInputChange}
+            placeholder="Enter salary amount"
             required
           />
         </div>
@@ -110,6 +112,7 @@ const EmploymentInfoFields = ({
           name="inssNumber"
           value={formData.inssNumber}
           onChange={handleInputChange}
+          placeholder="Enter INSS number"
           required
         />
       </div>

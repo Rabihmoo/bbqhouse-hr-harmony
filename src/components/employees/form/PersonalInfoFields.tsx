@@ -37,6 +37,7 @@ const PersonalInfoFields = ({
             name="fullName"
             value={formData.fullName}
             onChange={handleInputChange}
+            placeholder="Enter full name"
             required
           />
         </div>
@@ -48,6 +49,7 @@ const PersonalInfoFields = ({
             name="biNumber"
             value={formData.biNumber}
             onChange={handleInputChange}
+            placeholder="Enter BI number"
             required
           />
         </div>
@@ -58,6 +60,7 @@ const PersonalInfoFields = ({
         <Popover>
           <PopoverTrigger asChild>
             <Button
+              id="biValidUntil"
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
@@ -74,7 +77,6 @@ const PersonalInfoFields = ({
               selected={formData.biValidUntil ? new Date(formData.biValidUntil) : undefined}
               onSelect={(date) => handleDateChange('biValidUntil', date)}
               initialFocus
-              className="p-3 pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
@@ -87,6 +89,7 @@ const PersonalInfoFields = ({
           name="address"
           value={formData.address}
           onChange={handleInputChange}
+          placeholder="Enter address"
           required
         />
       </div>
@@ -98,6 +101,7 @@ const PersonalInfoFields = ({
           name="secondAddress"
           value={formData.secondAddress}
           onChange={handleInputChange}
+          placeholder="Enter secondary address"
         />
       </div>
 
@@ -110,6 +114,7 @@ const PersonalInfoFields = ({
             type="email"
             value={formData.email}
             onChange={handleInputChange}
+            placeholder="example@email.com"
             required
           />
         </div>
@@ -121,6 +126,7 @@ const PersonalInfoFields = ({
             name="phone"
             value={formData.phone}
             onChange={handleInputChange}
+            placeholder="Enter phone number"
             required
           />
         </div>
