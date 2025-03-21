@@ -1,8 +1,8 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { employees as employeesData } from "@/lib/data";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import EmployeeForm from "@/components/employees/EmployeeForm";
 import EmployeesList from "@/components/employees/EmployeesList";
 import PageHeader from "@/components/employees/PageHeader";
@@ -16,15 +16,7 @@ const Employees = () => {
   const { toast } = useToast();
   const attendanceUploaderRef = useRef<HTMLDivElement>(null);
 
-  // Check for employee work anniversaries and leave allocation
-  useEffect(() => {
-    // Check once on load and then daily
-    checkEmployeeAnniversaries();
-    const interval = setInterval(checkEmployeeAnniversaries, 86400000); // 24 hours
-    
-    return () => clearInterval(interval);
-  }, [employees]);
-
+  // We'll handle anniversaries in a simplified way for now
   const checkEmployeeAnniversaries = () => {
     const today = new Date();
     
@@ -42,33 +34,8 @@ const Employees = () => {
         if (isAnniversaryToday && yearsEmployed > 0) {
           toast({
             title: `Work Anniversary: ${employee.fullName}`,
-            description: `Today marks ${yearsEmployed} year${yearsEmployed > 1 ? 's' : ''} since ${employee.fullName} joined. Consider reviewing their leave allocation.`,
+            description: `Today marks ${yearsEmployed} year${yearsEmployed > 1 ? 's' : ''} since ${employee.fullName} joined.`,
           });
-          
-          // Update leave allocation based on years of service
-          const updatedEmployee = { ...employee };
-          
-          // Apply leave allocation rules
-          if (yearsEmployed === 1) {
-            updatedEmployee.remainingLeaves = 12;
-            toast({
-              title: "Leave Allocation Updated",
-              description: `${employee.fullName} has completed 1 year and is now eligible for 12 annual leave days.`
-            });
-          } else if (yearsEmployed >= 2 && employee.remainingLeaves < 30) {
-            updatedEmployee.remainingLeaves = 30;
-            toast({
-              title: "Leave Allocation Updated",
-              description: `${employee.fullName} has completed ${yearsEmployed} years and is now eligible for 30 annual leave days.`
-            });
-          }
-          
-          // Update employee in state if changed
-          if (updatedEmployee.remainingLeaves !== employee.remainingLeaves) {
-            setEmployees(prev => 
-              prev.map(emp => emp.id === employee.id ? updatedEmployee : emp)
-            );
-          }
         }
       }
     });
@@ -89,6 +56,9 @@ const Employees = () => {
       title: "Employee added",
       description: `${data.fullName} has been successfully added.`,
     });
+    
+    // Check anniversaries after adding
+    checkEmployeeAnniversaries();
   };
 
   const handleEditEmployee = (data: any) => {
@@ -163,13 +133,15 @@ const Employees = () => {
       />
 
       {/* Edit Employee Form */}
-      <EmployeeForm
-        open={!!editingEmployee}
-        onClose={() => setEditingEmployee(null)}
-        onSubmit={handleEditEmployee}
-        initialData={editingEmployee}
-        isEditing
-      />
+      {editingEmployee && (
+        <EmployeeForm
+          open={!!editingEmployee}
+          onClose={() => setEditingEmployee(null)}
+          onSubmit={handleEditEmployee}
+          initialData={editingEmployee}
+          isEditing
+        />
+      )}
     </DashboardLayout>
   );
 };
