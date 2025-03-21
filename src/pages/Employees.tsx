@@ -7,7 +7,9 @@ import EmployeeForm from "@/components/employees/EmployeeForm";
 import EmployeesList from "@/components/employees/EmployeesList";
 import PageHeader from "@/components/employees/PageHeader";
 import AttendanceUploader from "@/components/employees/AttendanceUploader";
-import { format, addYears, differenceInYears, parseISO } from "date-fns";
+import { format, addYears, differenceInYears, parseISO, isBefore } from "date-fns";
+import NotificationCenter from "@/components/notifications/NotificationCenter";
+import { Notification } from "@/types/notification";
 
 const LOCAL_STORAGE_KEY = 'restaurant-employees-data';
 
@@ -20,12 +22,112 @@ const Employees = () => {
   
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const { toast } = useToast();
   const attendanceUploaderRef = useRef<HTMLDivElement>(null);
 
   // Save to localStorage whenever employees data changes
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employees));
+  }, [employees]);
+
+  // Check for various employee notifications
+  useEffect(() => {
+    const today = new Date();
+    const newNotifications: Notification[] = [];
+    
+    employees.forEach(employee => {
+      const employeeId = employee.id;
+      const employeeName = employee.fullName;
+      
+      // Check for annual leave eligibility (after one year)
+      if (employee.hireDate) {
+        const hireDate = parseISO(employee.hireDate);
+        const yearsEmployed = differenceInYears(today, hireDate);
+        
+        // Annual leave eligibility notification (if 1+ year employed and 0 leave days)
+        if (yearsEmployed >= 1 && employee.remainingLeaves === 0) {
+          newNotifications.push({
+            id: `leave-${employeeId}`,
+            type: 'info',
+            title: 'Annual Leave Eligible',
+            message: `${employeeName} is eligible for annual leave.`,
+            employeeId: employeeId,
+            timestamp: new Date().toISOString(),
+          });
+        }
+        
+        // Work anniversary notification
+        const isAnniversaryToday = 
+          today.getDate() === hireDate.getDate() && 
+          today.getMonth() === hireDate.getMonth();
+        
+        if (isAnniversaryToday && yearsEmployed > 0) {
+          newNotifications.push({
+            id: `anniversary-${employeeId}`,
+            type: 'success',
+            title: 'Work Anniversary',
+            message: `Today marks ${yearsEmployed} year${yearsEmployed > 1 ? 's' : ''} since ${employeeName} joined.`,
+            employeeId: employeeId,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+      
+      // Check for expired BI
+      if (employee.biValidUntil) {
+        const biExpiryDate = parseISO(employee.biValidUntil);
+        if (isBefore(biExpiryDate, today) || !employee.biValid) {
+          newNotifications.push({
+            id: `bi-${employeeId}`,
+            type: 'warning',
+            title: 'BI Expired',
+            message: `${employeeName}'s BI has expired or is invalid.`,
+            employeeId: employeeId,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+      
+      // Check for expired Health Card
+      if (employee.healthCardValidUntil) {
+        const healthCardExpiryDate = parseISO(employee.healthCardValidUntil);
+        if (isBefore(healthCardExpiryDate, today) || !employee.healthCardValid) {
+          newNotifications.push({
+            id: `health-${employeeId}`,
+            type: 'warning',
+            title: 'Health Card Expired',
+            message: `${employeeName}'s Health Card has expired or is invalid.`,
+            employeeId: employeeId,
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+      
+      // Check for missing required information
+      const missingFields = [];
+      if (!employee.biNumber) missingFields.push('BI Number');
+      if (!employee.inssNumber) missingFields.push('INSS Number');
+      if (!employee.phone) missingFields.push('Phone');
+      if (!employee.address) missingFields.push('Address');
+      if (!employee.position) missingFields.push('Position');
+      if (!employee.department) missingFields.push('Department');
+      if (!employee.salary) missingFields.push('Salary');
+      if (!employee.picture) missingFields.push('Profile Picture');
+      
+      if (missingFields.length > 0) {
+        newNotifications.push({
+          id: `missing-${employeeId}`,
+          type: 'error',
+          title: 'Missing Information',
+          message: `${employeeName} is missing: ${missingFields.join(', ')}`,
+          employeeId: employeeId,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    });
+    
+    setNotifications(newNotifications);
   }, [employees]);
 
   // We'll handle anniversaries in a simplified way for now
@@ -96,6 +198,16 @@ const Employees = () => {
     console.log("Attendance report generated:", reportData);
   };
 
+  // Handle notification click to open the employee edit form
+  const handleNotificationClick = (notification: Notification) => {
+    if (notification.employeeId) {
+      const employee = employees.find(emp => emp.id === notification.employeeId);
+      if (employee) {
+        setEditingEmployee(employee);
+      }
+    }
+  };
+
   // Get employees grouped by department
   const getEmployeesByDepartment = () => {
     const departments = ["Kitchen", "Sala", "Bar", "Cleaning", "Takeaway"];
@@ -111,7 +223,12 @@ const Employees = () => {
   const departmentCounts = getEmployeesByDepartment();
 
   return (
-    <DashboardLayout title="Employees" subtitle="Manage employee records">
+    <DashboardLayout 
+      title="Employees" 
+      subtitle="Manage employee records"
+      notifications={notifications}
+      onNotificationClick={handleNotificationClick}
+    >
       <PageHeader 
         employeeCount={employees.length} 
         onAddEmployee={() => setShowAddForm(true)}

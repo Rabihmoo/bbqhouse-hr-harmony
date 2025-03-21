@@ -1,14 +1,23 @@
 
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import NotificationCenter from "@/components/notifications/NotificationCenter";
+import { Notification } from "@/types/notification";
 
 interface DashboardHeaderProps {
   title: string;
   subtitle?: string;
+  notifications?: Notification[];
+  onNotificationClick?: (notification: Notification) => void;
 }
 
-const DashboardHeader = ({ title, subtitle }: DashboardHeaderProps) => {
+const DashboardHeader = ({ 
+  title, 
+  subtitle, 
+  notifications = [],
+  onNotificationClick
+}: DashboardHeaderProps) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-4 px-6 border-b animate-fadeIn">
       <div>
@@ -22,10 +31,10 @@ const DashboardHeader = ({ title, subtitle }: DashboardHeaderProps) => {
           <Input placeholder="Search..." className="pl-10 w-full" />
         </div>
         
-        <Button variant="outline" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 bg-bbqred text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">3</span>
-        </Button>
+        <NotificationCenter 
+          notifications={notifications} 
+          onClick={onNotificationClick}
+        />
         
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-bbqblack flex items-center justify-center text-white font-medium">

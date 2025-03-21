@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { usePreventNavigation } from "@/hooks/use-prevent-navigation";
 
 interface EmployeeFormProps {
   open: boolean;
@@ -42,8 +42,14 @@ const EmployeeForm = ({
     picture: "",
     inssNumber: "",
   });
+  
+  const [isDirty, setIsDirty] = useState(false);
+  
+  usePreventNavigation({
+    enabled: open && isDirty,
+    message: "You have unsaved changes. Are you sure you want to leave?"
+  });
 
-  // Reset form when dialog opens/closes or when in edit mode and initialData changes
   useEffect(() => {
     if (open) {
       if (isEditing && initialData) {
@@ -65,8 +71,8 @@ const EmployeeForm = ({
           picture: initialData.picture || "",
           inssNumber: initialData.inssNumber || "",
         });
+        setIsDirty(false);
       } else {
-        // Reset form for new employee
         setFormData({
           fullName: "",
           biNumber: "",
@@ -85,6 +91,7 @@ const EmployeeForm = ({
           picture: "",
           inssNumber: "",
         });
+        setIsDirty(false);
       }
     }
   }, [open, isEditing, initialData]);
@@ -95,6 +102,7 @@ const EmployeeForm = ({
       ...formData,
       [name]: value,
     });
+    setIsDirty(true);
   };
 
   const handleCheckboxChange = (name: string, checked: boolean) => {
@@ -102,6 +110,7 @@ const EmployeeForm = ({
       ...formData,
       [name]: checked,
     });
+    setIsDirty(true);
   };
 
   const handleImageChange = (imageUrl: string) => {
@@ -109,6 +118,7 @@ const EmployeeForm = ({
       ...formData,
       picture: imageUrl,
     });
+    setIsDirty(true);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -126,6 +136,7 @@ const EmployeeForm = ({
         description: `${formData.fullName} has been successfully ${isEditing ? "updated" : "added"}.`,
       });
       
+      setIsDirty(false);
       onClose();
     } catch (error) {
       console.error("Form submission error:", error);
@@ -137,7 +148,6 @@ const EmployeeForm = ({
     }
   };
 
-  // Simple image preview component
   const ImagePreview = () => {
     if (!formData.picture) return null;
     
@@ -152,11 +162,18 @@ const EmployeeForm = ({
     );
   };
 
-  // If not open, don't render anything
   if (!open) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      if (!isOpen && isDirty) {
+        if (confirm("You have unsaved changes. Are you sure you want to close this form?")) {
+          onClose();
+        }
+      } else if (!isOpen) {
+        onClose();
+      }
+    }}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
@@ -168,7 +185,6 @@ const EmployeeForm = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Image Upload */}
           <div className="mb-6 flex items-center gap-4">
             <ImagePreview />
             <div>
@@ -188,9 +204,7 @@ const EmployeeForm = ({
             </div>
           </div>
 
-          {/* Form Content */}
           <div className="grid grid-cols-1 gap-8">
-            {/* Personal Information */}
             <section>
               <h3 className="text-lg font-semibold mb-4 pb-2 border-b">Personal Information</h3>
               
@@ -316,7 +330,6 @@ const EmployeeForm = ({
               </div>
             </section>
 
-            {/* Employment Information */}
             <section>
               <h3 className="text-lg font-semibold mb-4 pb-2 border-b">Employment Information</h3>
               
@@ -404,7 +417,6 @@ const EmployeeForm = ({
               </div>
             </section>
 
-            {/* Document Status */}
             <section>
               <h3 className="text-lg font-semibold mb-4 pb-2 border-b">Document Status</h3>
               
@@ -439,7 +451,6 @@ const EmployeeForm = ({
             </section>
           </div>
 
-          {/* Form Actions */}
           <div className="flex justify-end gap-2 pt-4 border-t mt-8">
             <Button variant="outline" type="button" onClick={onClose}>
               Cancel
