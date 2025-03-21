@@ -37,10 +37,11 @@ export function DataTable<T extends { id: string }>({
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Search functionality
+  // Search functionality - Fixed to ensure safe type checking
   const filteredData = searchTerm
     ? data.filter((row) =>
-        Object.entries(row).some(([key, value]) => {
+        Object.entries(row as Record<string, unknown>).some(([key, value]) => {
+          // Check if value is string or number and can be searched
           if (typeof value === "string") {
             return value.toLowerCase().includes(searchTerm.toLowerCase());
           }
