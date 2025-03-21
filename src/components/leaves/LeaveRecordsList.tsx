@@ -46,7 +46,7 @@ const LeaveRecordsList = ({ records }: LeaveRecordsListProps) => {
                 ),
               },
               {
-                key: "period",
+                key: "startDate",
                 header: "Period",
                 render: (row) => (
                   <span>
