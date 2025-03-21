@@ -1,14 +1,9 @@
 
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useEmployeeForm } from "@/hooks/use-employee-form";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import ImageUploadField from "./form/ImageUploadField";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import ImageUploadField from "./form/ImageUploadField";
 
 interface EmployeeFormProps {
   open: boolean;
@@ -18,56 +13,128 @@ interface EmployeeFormProps {
   isEditing?: boolean;
 }
 
-const EmployeeForm = ({ 
-  open, 
-  onClose, 
-  onSubmit, 
-  initialData = {}, 
-  isEditing = false 
+const EmployeeForm = ({
+  open,
+  onClose,
+  onSubmit,
+  initialData = {},
+  isEditing = false
 }: EmployeeFormProps) => {
-  const {
-    formData,
-    handleInputChange,
-    handleSelectChange,
-    handleSwitchChange,
-    handleDateChange,
-    handleImageChange,
-  } = useEmployeeForm({ initialData, isEditing, open });
-
-  // Store date inputs to avoid calendar issues
-  const [dateInputs, setDateInputs] = useState({
-    biValidUntil: formData.biValidUntil || '',
-    healthCardValidUntil: formData.healthCardValidUntil || '',
-    hireDate: formData.hireDate || ''
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    fullName: initialData.fullName || "",
+    biNumber: initialData.biNumber || "",
+    biValidUntil: initialData.biValidUntil || "",
+    biValid: initialData.biValid || false,
+    address: initialData.address || "",
+    secondAddress: initialData.secondAddress || "",
+    email: initialData.email || "",
+    phone: initialData.phone || "",
+    position: initialData.position || "",
+    department: initialData.department || "",
+    salary: initialData.salary ? String(initialData.salary) : "",
+    hireDate: initialData.hireDate || "",
+    healthCardValid: initialData.healthCardValid || false,
+    healthCardValidUntil: initialData.healthCardValidUntil || "",
+    picture: initialData.picture || "",
+    inssNumber: initialData.inssNumber || "",
   });
 
-  // Handle date input changes directly
-  const handleDateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setDateInputs(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    
-    // Also update the form data with the selected date
-    if (value) {
-      handleDateChange(name, new Date(value));
+  // Reset form when dialog opens/closes
+  useState(() => {
+    if (open && isEditing && initialData) {
+      setFormData({
+        fullName: initialData.fullName || "",
+        biNumber: initialData.biNumber || "",
+        biValidUntil: initialData.biValidUntil || "",
+        biValid: initialData.biValid || false,
+        address: initialData.address || "",
+        secondAddress: initialData.secondAddress || "",
+        email: initialData.email || "",
+        phone: initialData.phone || "",
+        position: initialData.position || "",
+        department: initialData.department || "",
+        salary: initialData.salary ? String(initialData.salary) : "",
+        hireDate: initialData.hireDate || "",
+        healthCardValid: initialData.healthCardValid || false,
+        healthCardValidUntil: initialData.healthCardValidUntil || "",
+        picture: initialData.picture || "",
+        inssNumber: initialData.inssNumber || "",
+      });
+    } else if (!isEditing) {
+      setFormData({
+        fullName: "",
+        biNumber: "",
+        biValidUntil: "",
+        biValid: false,
+        address: "",
+        secondAddress: "",
+        email: "",
+        phone: "",
+        position: "",
+        department: "",
+        salary: "",
+        hireDate: "",
+        healthCardValid: false,
+        healthCardValidUntil: "",
+        picture: "",
+        inssNumber: "",
+      });
     }
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: checked,
+    });
+  };
+
+  const handleImageChange = (imageUrl: string) => {
+    setFormData({
+      ...formData,
+      picture: imageUrl,
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ 
-      ...formData,
-      salary: Number(formData.salary), 
-      id: initialData?.id || undefined 
-    });
-    onClose();
+    
+    try {
+      onSubmit({
+        ...formData,
+        salary: Number(formData.salary),
+        id: initialData?.id || undefined,
+      });
+      
+      toast({
+        title: isEditing ? "Employee Updated" : "Employee Added",
+        description: `${formData.fullName} has been successfully ${isEditing ? "updated" : "added"}.`,
+      });
+      
+      onClose();
+    } catch (error) {
+      console.error("Form submission error:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem saving the employee data.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[640px] md:max-w-[700px] max-h-[85vh] overflow-y-auto p-6 gap-6">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {isEditing ? "Edit Employee" : "Add New Employee"}
@@ -77,228 +144,282 @@ const EmployeeForm = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form id="employee-form" onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid gap-6">
-            {/* Image Upload */}
-            <ImageUploadField 
-              picture={formData.picture} 
-              onImageChange={handleImageChange} 
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Image Upload */}
+          <div className="mb-6">
+            <ImageUploadField
+              picture={formData.picture}
+              onImageChange={handleImageChange}
             />
-            
+          </div>
+
+          {/* Form Content */}
+          <div className="grid grid-cols-1 gap-8">
             {/* Personal Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Personal Information</h3>
+            <section>
+              <h3 className="text-lg font-semibold mb-4 pb-2 border-b">Personal Information</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
+                <div>
+                  <label htmlFor="fullName" className="block text-sm font-medium mb-1">
+                    Full Name*
+                  </label>
+                  <input
+                    type="text"
                     id="fullName"
                     name="fullName"
                     value={formData.fullName}
                     onChange={handleInputChange}
-                    placeholder="Enter full name"
                     required
+                    className="w-full p-3 border rounded-md"
+                    placeholder="Enter full name"
                   />
                 </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="biNumber">BI Number</Label>
-                  <Input
+                <div>
+                  <label htmlFor="biNumber" className="block text-sm font-medium mb-1">
+                    BI Number*
+                  </label>
+                  <input
+                    type="text"
                     id="biNumber"
                     name="biNumber"
                     value={formData.biNumber}
                     onChange={handleInputChange}
-                    placeholder="Enter BI number"
                     required
+                    className="w-full p-3 border rounded-md"
+                    placeholder="Enter BI number"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="biValidUntil">BI Validity Date</Label>
-                  <Input
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label htmlFor="biValidUntil" className="block text-sm font-medium mb-1">
+                    BI Validity Date*
+                  </label>
+                  <input
+                    type="date"
                     id="biValidUntil"
                     name="biValidUntil"
-                    type="date"
-                    value={dateInputs.biValidUntil}
-                    onChange={handleDateInputChange}
+                    value={formData.biValidUntil}
+                    onChange={handleInputChange}
                     required
+                    className="w-full p-3 border rounded-md"
                   />
                 </div>
 
-                <div className="flex items-center gap-2 pt-8">
-                  <Switch
+                <div className="flex items-center mt-6">
+                  <input
+                    type="checkbox"
                     id="biValid"
+                    name="biValid"
                     checked={formData.biValid}
-                    onCheckedChange={(checked) =>
-                      handleSwitchChange("biValid", checked)
-                    }
+                    onChange={handleCheckboxChange}
+                    className="h-4 w-4 mr-2"
                   />
-                  <Label htmlFor="biValid">BI Valid</Label>
+                  <label htmlFor="biValid" className="text-sm font-medium">
+                    BI Valid
+                  </label>
                 </div>
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="address">Address</Label>
-                <Textarea
+              <div className="mt-4">
+                <label htmlFor="address" className="block text-sm font-medium mb-1">
+                  Address*
+                </label>
+                <textarea
                   id="address"
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  placeholder="Enter address"
                   required
+                  className="w-full p-3 border rounded-md"
+                  rows={2}
+                  placeholder="Enter address"
                 />
               </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="secondAddress">Secondary Address (optional)</Label>
-                <Textarea
+
+              <div className="mt-4">
+                <label htmlFor="secondAddress" className="block text-sm font-medium mb-1">
+                  Secondary Address (optional)
+                </label>
+                <textarea
                   id="secondAddress"
                   name="secondAddress"
                   value={formData.secondAddress}
                   onChange={handleInputChange}
+                  className="w-full p-3 border rounded-md"
+                  rows={2}
                   placeholder="Enter secondary address"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium mb-1">
+                    Email*
+                  </label>
+                  <input
+                    type="email"
                     id="email"
                     name="email"
-                    type="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    placeholder="example@email.com"
                     required
+                    className="w-full p-3 border rounded-md"
+                    placeholder="example@email.com"
                   />
                 </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input
+                <div>
+                  <label htmlFor="phone" className="block text-sm font-medium mb-1">
+                    Phone*
+                  </label>
+                  <input
+                    type="text"
                     id="phone"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    placeholder="Enter phone number"
                     required
+                    className="w-full p-3 border rounded-md"
+                    placeholder="Enter phone number"
                   />
                 </div>
               </div>
-            </div>
-            
+            </section>
+
             {/* Employment Information */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Employment Information</h3>
+            <section>
+              <h3 className="text-lg font-semibold mb-4 pb-2 border-b">Employment Information</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="position">Position</Label>
-                  <Input
+                <div>
+                  <label htmlFor="position" className="block text-sm font-medium mb-1">
+                    Position*
+                  </label>
+                  <input
+                    type="text"
                     id="position"
                     name="position"
                     value={formData.position}
                     onChange={handleInputChange}
-                    placeholder="Enter position"
                     required
+                    className="w-full p-3 border rounded-md"
+                    placeholder="Enter position"
                   />
                 </div>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="department">Department</Label>
-                  <Select
+                <div>
+                  <label htmlFor="department" className="block text-sm font-medium mb-1">
+                    Department*
+                  </label>
+                  <select
+                    id="department"
+                    name="department"
                     value={formData.department}
-                    onValueChange={(value) => handleSelectChange("department", value)}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full p-3 border rounded-md"
                   >
-                    <SelectTrigger id="department" className="h-11">
-                      <SelectValue placeholder="Select department" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Kitchen">Kitchen</SelectItem>
-                      <SelectItem value="Sala">Sala</SelectItem>
-                      <SelectItem value="Bar">Bar</SelectItem>
-                      <SelectItem value="Cleaning">Cleaning</SelectItem>
-                      <SelectItem value="Takeaway">Takeaway</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <option value="">Select department</option>
+                    <option value="Kitchen">Kitchen</option>
+                    <option value="Sala">Sala</option>
+                    <option value="Bar">Bar</option>
+                    <option value="Cleaning">Cleaning</option>
+                    <option value="Takeaway">Takeaway</option>
+                  </select>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="hireDate">Hire Date</Label>
-                  <Input
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label htmlFor="hireDate" className="block text-sm font-medium mb-1">
+                    Hire Date*
+                  </label>
+                  <input
+                    type="date"
                     id="hireDate"
                     name="hireDate"
-                    type="date"
-                    value={dateInputs.hireDate}
-                    onChange={handleDateInputChange}
+                    value={formData.hireDate}
+                    onChange={handleInputChange}
                     required
+                    className="w-full p-3 border rounded-md"
                   />
                 </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="salary">Salary (KZ)</Label>
-                  <Input
+
+                <div>
+                  <label htmlFor="salary" className="block text-sm font-medium mb-1">
+                    Salary (KZ)*
+                  </label>
+                  <input
+                    type="number"
                     id="salary"
                     name="salary"
-                    type="number"
                     value={formData.salary}
                     onChange={handleInputChange}
-                    placeholder="Enter salary amount"
                     required
+                    className="w-full p-3 border rounded-md"
+                    placeholder="Enter salary amount"
                   />
                 </div>
               </div>
-              
-              <div className="grid gap-2">
-                <Label htmlFor="inssNumber">INSS Number</Label>
-                <Input
+
+              <div className="mt-4">
+                <label htmlFor="inssNumber" className="block text-sm font-medium mb-1">
+                  INSS Number
+                </label>
+                <input
+                  type="text"
                   id="inssNumber"
                   name="inssNumber"
                   value={formData.inssNumber}
                   onChange={handleInputChange}
+                  className="w-full p-3 border rounded-md"
                   placeholder="Enter INSS number"
                 />
               </div>
-            </div>
-            
+            </section>
+
             {/* Document Status */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-medium">Document Status</h3>
+            <section>
+              <h3 className="text-lg font-semibold mb-4 pb-2 border-b">Document Status</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="healthCardValidUntil">Health Card Validity Date</Label>
-                  <Input
+                <div>
+                  <label htmlFor="healthCardValidUntil" className="block text-sm font-medium mb-1">
+                    Health Card Validity Date
+                  </label>
+                  <input
+                    type="date"
                     id="healthCardValidUntil"
                     name="healthCardValidUntil"
-                    type="date"
-                    value={dateInputs.healthCardValidUntil}
-                    onChange={handleDateInputChange}
+                    value={formData.healthCardValidUntil}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border rounded-md"
                   />
                 </div>
 
-                <div className="flex items-center gap-2 pt-8">
-                  <Switch
+                <div className="flex items-center mt-6">
+                  <input
+                    type="checkbox"
                     id="healthCardValid"
+                    name="healthCardValid"
                     checked={formData.healthCardValid}
-                    onCheckedChange={(checked) =>
-                      handleSwitchChange("healthCardValid", checked)
-                    }
+                    onChange={handleCheckboxChange}
+                    className="h-4 w-4 mr-2"
                   />
-                  <Label htmlFor="healthCardValid">Health Card Valid</Label>
+                  <label htmlFor="healthCardValid" className="text-sm font-medium">
+                    Health Card Valid
+                  </label>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
 
           {/* Form Actions */}
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-2 pt-4 border-t mt-8">
             <Button variant="outline" type="button" onClick={onClose}>
               Cancel
             </Button>
