@@ -7,6 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Department } from "@/lib/data";
+import { Textarea } from "@/components/ui/textarea";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface EmployeeFormProps {
   open: boolean;
@@ -26,15 +32,19 @@ const EmployeeForm = ({
   const [formData, setFormData] = useState({
     fullName: "",
     biNumber: "",
+    biValidUntil: "",
     address: "",
+    secondAddress: "",
     position: "",
     department: "",
     salary: "",
     healthCardValid: false,
+    healthCardValidUntil: "",
     biValid: false,
     email: "",
     phone: "",
     hireDate: "",
+    picture: "",
   });
 
   // Update form data when initialData changes
@@ -43,39 +53,47 @@ const EmployeeForm = ({
       setFormData({
         fullName: initialData.fullName || "",
         biNumber: initialData.biNumber || "",
+        biValidUntil: initialData.biValidUntil || "",
         address: initialData.address || "",
+        secondAddress: initialData.secondAddress || "",
         position: initialData.position || "",
         department: initialData.department || "",
-        salary: initialData.salary || "",
+        salary: initialData.salary ? String(initialData.salary) : "",
         healthCardValid: initialData.healthCardValid || false,
+        healthCardValidUntil: initialData.healthCardValidUntil || "",
         biValid: initialData.biValid || false,
         email: initialData.email || "",
         phone: initialData.phone || "",
         hireDate: initialData.hireDate || "",
+        picture: initialData.picture || "",
       });
     } else {
       // Reset form when not editing
       setFormData({
         fullName: "",
         biNumber: "",
+        biValidUntil: "",
         address: "",
+        secondAddress: "",
         position: "",
         department: "",
         salary: "",
         healthCardValid: false,
+        healthCardValidUntil: "",
         biValid: false,
         email: "",
         phone: "",
         hireDate: "",
+        picture: "",
       });
     }
-  }, [initialData, isEditing]);
+  }, [initialData, open]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target as HTMLInputElement;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -93,6 +111,15 @@ const EmployeeForm = ({
     }));
   };
 
+  const handleDateChange = (name: string, date: Date | undefined) => {
+    if (date) {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: format(date, "yyyy-MM-dd"),
+      }));
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({ 
@@ -105,7 +132,7 @@ const EmployeeForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px] glass">
+      <DialogContent className="sm:max-w-[650px] glass max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit Employee" : "Add New Employee"}
@@ -124,7 +151,7 @@ const EmployeeForm = ({
                   id="fullName"
                   name="fullName"
                   value={formData.fullName}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -135,9 +162,63 @@ const EmployeeForm = ({
                   id="biNumber"
                   name="biNumber"
                   value={formData.biNumber}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                 />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="biValidUntil">BI Validity Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.biValidUntil && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.biValidUntil ? format(new Date(formData.biValidUntil), 'PPP') : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.biValidUntil ? new Date(formData.biValidUntil) : undefined}
+                      onSelect={(date) => handleDateChange('biValidUntil', date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="healthCardValidUntil">Health Card Validity Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.healthCardValidUntil && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.healthCardValidUntil ? format(new Date(formData.healthCardValidUntil), 'PPP') : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.healthCardValidUntil ? new Date(formData.healthCardValidUntil) : undefined}
+                      onSelect={(date) => handleDateChange('healthCardValidUntil', date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
@@ -147,8 +228,18 @@ const EmployeeForm = ({
                 id="address"
                 name="address"
                 value={formData.address}
-                onChange={handleChange}
+                onChange={handleInputChange}
                 required
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="secondAddress">Secondary Address (optional)</Label>
+              <Input
+                id="secondAddress"
+                name="secondAddress"
+                value={formData.secondAddress}
+                onChange={handleInputChange}
               />
             </div>
 
@@ -159,7 +250,7 @@ const EmployeeForm = ({
                   id="position"
                   name="position"
                   value={formData.position}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -187,16 +278,30 @@ const EmployeeForm = ({
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="hireDate">Hire Date</Label>
-                <Input
-                  id="hireDate"
-                  name="hireDate"
-                  type="date"
-                  value={formData.hireDate}
-                  onChange={handleChange}
-                  required
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !formData.hireDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.hireDate ? format(new Date(formData.hireDate), 'PPP') : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={formData.hireDate ? new Date(formData.hireDate) : undefined}
+                      onSelect={(date) => handleDateChange('hireDate', date)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
-
+              
               <div className="grid gap-2">
                 <Label htmlFor="salary">Salary (KZ)</Label>
                 <Input
@@ -204,7 +309,7 @@ const EmployeeForm = ({
                   name="salary"
                   type="number"
                   value={formData.salary}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -218,7 +323,7 @@ const EmployeeForm = ({
                   name="email"
                   type="email"
                   value={formData.email}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -229,7 +334,7 @@ const EmployeeForm = ({
                   id="phone"
                   name="phone"
                   value={formData.phone}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   required
                 />
               </div>

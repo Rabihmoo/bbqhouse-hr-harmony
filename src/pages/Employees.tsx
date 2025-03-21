@@ -9,9 +9,10 @@ import {
 } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import EmployeeForm from "@/components/employees/EmployeeForm";
 import { useToast } from "@/hooks/use-toast";
+import { format, isValid, parseISO } from "date-fns";
 
 const Employees = () => {
   const [employees, setEmployees] = useState(employeesData);
@@ -50,6 +51,19 @@ const Employees = () => {
     setEditingEmployee(employee);
   };
 
+  // Function to safely format dates or show a placeholder
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return "Not set";
+    
+    try {
+      const date = typeof dateString === 'string' ? parseISO(dateString) : new Date(dateString);
+      if (!isValid(date)) return "Invalid date";
+      return format(date, "dd/MM/yyyy");
+    } catch (e) {
+      return "Invalid date";
+    }
+  };
+
   return (
     <DashboardLayout title="Employees" subtitle="Manage employee records">
       <div className="mb-6 flex justify-between items-center">
@@ -59,10 +73,19 @@ const Employees = () => {
             Total {employees.length} employees across 5 departments
           </p>
         </div>
-        <Button onClick={() => setShowAddForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Employee
-        </Button>
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => toast({
+            title: "Feature Coming Soon",
+            description: "Upload attendance data functionality is under development",
+          })}>
+            <Upload className="h-4 w-4 mr-2" />
+            Upload Attendance Data
+          </Button>
+          <Button onClick={() => setShowAddForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Employee
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-black/40 glass rounded-xl shadow-sm overflow-hidden">
@@ -88,8 +111,37 @@ const Employees = () => {
               ),
             },
             {
+              key: "biNumber",
+              header: "BI Number",
+            },
+            {
+              key: "biValidUntil",
+              header: "BI Validity",
+              render: (row) => (
+                <span className={cn(
+                  row.biValid ? "text-green-600" : "text-red-600"
+                )}>
+                  {formatDate(row.biValidUntil)}
+                </span>
+              ),
+            },
+            {
+              key: "healthCardValidUntil",
+              header: "Health Card",
+              render: (row) => (
+                <span className={cn(
+                  row.healthCardValid ? "text-green-600" : "text-red-600"
+                )}>
+                  {formatDate(row.healthCardValidUntil)}
+                </span>
+              ),
+            },
+            {
               key: "hireDate",
               header: "Hire Date",
+              render: (row) => (
+                <span>{formatDate(row.hireDate)}</span>
+              ),
             },
             {
               key: "salary",
@@ -109,7 +161,7 @@ const Employees = () => {
             },
             {
               key: "remainingLeaves",
-              header: "Leaves Remaining",
+              header: "Leaves",
               render: (row) => (
                 <span className="font-medium">{row.remainingLeaves} days</span>
               ),

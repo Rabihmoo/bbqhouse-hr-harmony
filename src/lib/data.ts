@@ -1,4 +1,3 @@
-
 export type Department = 'Kitchen' | 'Sala' | 'Bar' | 'Cleaning' | 'Takeaway';
 
 export type EmployeeStatus = 'Active' | 'On Leave' | 'Terminated' | 'Suspended';
@@ -11,17 +10,21 @@ export interface Employee {
   id: string;
   fullName: string;
   biNumber: string;
+  biValidUntil?: string;
+  biValid: boolean;
   hireDate: string;
   address: string;
+  secondAddress?: string;
+  healthCardValidUntil?: string;
   position: string;
   department: Department;
   salary: number;
   healthCardValid: boolean;
-  biValid: boolean;
   status: EmployeeStatus;
   email: string;
   phone: string;
   remainingLeaves: number;
+  picture?: string;
 }
 
 export interface LeaveRequest {
@@ -55,12 +58,15 @@ export const employees: Employee[] = [
     id: '1',
     fullName: 'João Silva',
     biNumber: 'BI123456789',
+    biValidUntil: '2026-01-15',
     hireDate: '2022-01-15',
     address: 'Rua Principal 123, Luanda',
+    secondAddress: '',
     position: 'Head Chef',
     department: 'Kitchen',
     salary: 220000,
     healthCardValid: true,
+    healthCardValidUntil: '2025-01-15',
     biValid: true,
     status: 'Active',
     email: 'joao.silva@bbqhouse.com',
@@ -71,12 +77,15 @@ export const employees: Employee[] = [
     id: '2',
     fullName: 'Maria Santos',
     biNumber: 'BI987654321',
+    biValidUntil: '2025-03-10',
     hireDate: '2022-03-10',
     address: 'Avenida Central 45, Luanda',
+    secondAddress: '',
     position: 'Restaurant Manager',
     department: 'Sala',
     salary: 250000,
     healthCardValid: true,
+    healthCardValidUntil: '2024-06-15',
     biValid: true,
     status: 'Active',
     email: 'maria.santos@bbqhouse.com',
@@ -87,12 +96,15 @@ export const employees: Employee[] = [
     id: '3',
     fullName: 'Carlos Mendes',
     biNumber: 'BI456789123',
+    biValidUntil: '2024-08-20',
     hireDate: '2022-02-20',
     address: 'Rua do Sol 78, Luanda',
+    secondAddress: '',
     position: 'Bartender',
     department: 'Bar',
     salary: 180000,
     healthCardValid: true,
+    healthCardValidUntil: '2024-12-20',
     biValid: true,
     status: 'On Leave',
     email: 'carlos.mendes@bbqhouse.com',
@@ -103,12 +115,15 @@ export const employees: Employee[] = [
     id: '4',
     fullName: 'Ana Costa',
     biNumber: 'BI789123456',
+    biValidUntil: '2023-10-05',
     hireDate: '2022-04-05',
     address: 'Travessa da Lua 32, Luanda',
+    secondAddress: '',
     position: 'Cleaning Supervisor',
     department: 'Cleaning',
     salary: 150000,
     healthCardValid: true,
+    healthCardValidUntil: '2024-04-05',
     biValid: false,
     status: 'Active',
     email: 'ana.costa@bbqhouse.com',
@@ -119,12 +134,15 @@ export const employees: Employee[] = [
     id: '5',
     fullName: 'Pedro Neves',
     biNumber: 'BI321654987',
+    biValidUntil: '2024-05-12',
     hireDate: '2022-05-12',
     address: 'Rua das Flores 56, Luanda',
+    secondAddress: '',
     position: 'Takeaway Coordinator',
     department: 'Takeaway',
     salary: 170000,
     healthCardValid: false,
+    healthCardValidUntil: '2023-11-12',
     biValid: true,
     status: 'Active',
     email: 'pedro.neves@bbqhouse.com',
