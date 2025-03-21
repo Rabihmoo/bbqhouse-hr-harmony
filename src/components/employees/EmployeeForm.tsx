@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Department } from "@/lib/data";
 import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
@@ -47,10 +46,10 @@ const EmployeeForm = ({
     picture: "",
   });
 
-  // Update form data when initialData changes or when modal opens/closes
+  // Update form data only when opening the modal with new data
   useEffect(() => {
     if (open) {
-      if (initialData && Object.keys(initialData).length > 0) {
+      if (isEditing && initialData && Object.keys(initialData).length > 0) {
         setFormData({
           fullName: initialData.fullName || "",
           biNumber: initialData.biNumber || "",
@@ -68,8 +67,8 @@ const EmployeeForm = ({
           hireDate: initialData.hireDate || "",
           picture: initialData.picture || "",
         });
-      } else {
-        // Reset form when not editing
+      } else if (!isEditing) {
+        // Reset form when adding new employee
         setFormData({
           fullName: "",
           biNumber: "",
@@ -89,10 +88,11 @@ const EmployeeForm = ({
         });
       }
     }
-  }, [initialData, open]);
+  }, [initialData, open, isEditing]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target as HTMLInputElement;
+    
     setFormData(prev => ({
       ...prev,
       [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
@@ -134,7 +134,7 @@ const EmployeeForm = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[650px] glass max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] md:max-w-[800px] max-h-[90vh] overflow-y-auto bg-white dark:bg-black/40">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Edit Employee" : "Add New Employee"}
@@ -146,7 +146,7 @@ const EmployeeForm = ({
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="fullName">Full Name</Label>
                 <Input
@@ -170,7 +170,7 @@ const EmployeeForm = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="biValidUntil">BI Validity Date</Label>
                 <Popover>
@@ -245,7 +245,7 @@ const EmployeeForm = ({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="position">Position</Label>
                 <Input
@@ -277,7 +277,7 @@ const EmployeeForm = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="hireDate">Hire Date</Label>
                 <Popover>
@@ -317,7 +317,7 @@ const EmployeeForm = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -342,7 +342,7 @@ const EmployeeForm = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
               <div className="flex items-center gap-2">
                 <Switch
                   id="healthCardValid"
