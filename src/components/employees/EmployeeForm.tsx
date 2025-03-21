@@ -3,9 +3,13 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
+import { useToast } from "@/hooks/use-toast";
 import PersonalInfoFields from "./form/PersonalInfoFields";
 import EmploymentInfoFields from "./form/EmploymentInfoFields";
 import DocumentStatusFields from "./form/DocumentStatusFields";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Upload } from "lucide-react";
 
 interface EmployeeFormProps {
   open: boolean;
@@ -22,6 +26,7 @@ const EmployeeForm = ({
   initialData = {}, 
   isEditing = false 
 }: EmployeeFormProps) => {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     fullName: "",
     biNumber: "",
@@ -38,6 +43,7 @@ const EmployeeForm = ({
     phone: "",
     hireDate: "",
     picture: "",
+    inssNumber: "", // Added INSS Number field
   });
 
   useEffect(() => {
@@ -59,6 +65,7 @@ const EmployeeForm = ({
           phone: initialData.phone || "",
           hireDate: initialData.hireDate || "",
           picture: initialData.picture || "",
+          inssNumber: initialData.inssNumber || "", // Added INSS Number field
         });
       } else if (!isEditing) {
         // Reset form when adding new employee
@@ -78,6 +85,7 @@ const EmployeeForm = ({
           phone: "",
           hireDate: "",
           picture: "",
+          inssNumber: "", // Added INSS Number field
         });
       }
     }
@@ -85,7 +93,6 @@ const EmployeeForm = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
     setFormData(prev => ({
       ...prev,
       [name]: value,
@@ -115,6 +122,24 @@ const EmployeeForm = ({
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      // In a real app, you would upload this file to your server
+      // For now, we'll just create a URL for preview
+      const imageUrl = URL.createObjectURL(e.target.files[0]);
+      
+      setFormData(prev => ({
+        ...prev,
+        picture: imageUrl,
+      }));
+      
+      toast({
+        title: "Picture uploaded",
+        description: "Employee picture has been uploaded successfully.",
+      });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({ 
@@ -139,6 +164,34 @@ const EmployeeForm = ({
 
         <form onSubmit={handleSubmit} className="overflow-y-auto">
           <div className="grid gap-6 py-4">
+            <div className="grid gap-4">
+              <Label>Employee Picture</Label>
+              <div className="flex items-center gap-4">
+                {formData.picture && (
+                  <div className="h-20 w-20 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center">
+                    <img 
+                      src={formData.picture} 
+                      alt="Employee" 
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                )}
+                <label htmlFor="picture-upload" className="cursor-pointer">
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80">
+                    <Upload className="h-4 w-4" />
+                    <span>Upload Picture</span>
+                  </div>
+                  <input 
+                    id="picture-upload" 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={handleFileChange}
+                  />
+                </label>
+              </div>
+            </div>
+            
             <PersonalInfoFields 
               formData={formData} 
               handleInputChange={handleInputChange} 

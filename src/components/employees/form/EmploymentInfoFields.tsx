@@ -15,6 +15,7 @@ interface EmploymentInfoFieldsProps {
     department: string;
     salary: string;
     hireDate: string;
+    inssNumber: string; // Added INSS Number field
   };
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleSelectChange: (name: string, value: string) => void;
@@ -100,6 +101,17 @@ const EmploymentInfoFields = ({
             required
           />
         </div>
+      </div>
+      
+      <div className="grid gap-2">
+        <Label htmlFor="inssNumber">INSS Number</Label>
+        <Input
+          id="inssNumber"
+          name="inssNumber"
+          value={formData.inssNumber}
+          onChange={handleInputChange}
+          required
+        />
       </div>
     </div>
   );

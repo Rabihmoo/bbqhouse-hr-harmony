@@ -25,6 +25,7 @@ export interface Employee {
   phone: string;
   remainingLeaves: number;
   picture?: string;
+  inssNumber?: string;
 }
 
 export interface LeaveRequest {
@@ -71,7 +72,8 @@ export const employees: Employee[] = [
     status: 'Active',
     email: 'joao.silva@bbqhouse.com',
     phone: '+244 923 456 789',
-    remainingLeaves: 23
+    remainingLeaves: 23,
+    inssNumber: 'INSS12345678'
   },
   {
     id: '2',
@@ -90,7 +92,8 @@ export const employees: Employee[] = [
     status: 'Active',
     email: 'maria.santos@bbqhouse.com',
     phone: '+244 923 123 456',
-    remainingLeaves: 25
+    remainingLeaves: 25,
+    inssNumber: 'INSS98765432'
   },
   {
     id: '3',
@@ -109,7 +112,8 @@ export const employees: Employee[] = [
     status: 'On Leave',
     email: 'carlos.mendes@bbqhouse.com',
     phone: '+244 923 789 456',
-    remainingLeaves: 15
+    remainingLeaves: 15,
+    inssNumber: 'INSS45678912'
   },
   {
     id: '4',
@@ -128,7 +132,8 @@ export const employees: Employee[] = [
     status: 'Active',
     email: 'ana.costa@bbqhouse.com',
     phone: '+244 923 456 123',
-    remainingLeaves: 18
+    remainingLeaves: 18,
+    inssNumber: 'INSS78912345'
   },
   {
     id: '5',
@@ -147,7 +152,8 @@ export const employees: Employee[] = [
     status: 'Active',
     email: 'pedro.neves@bbqhouse.com',
     phone: '+244 923 987 123',
-    remainingLeaves: 19
+    remainingLeaves: 19,
+    inssNumber: 'INSS32165498'
   }
 ];
 

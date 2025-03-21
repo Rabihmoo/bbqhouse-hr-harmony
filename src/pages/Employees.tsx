@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable } from "@/components/ui/data-table";
 import { 
@@ -19,6 +19,7 @@ const Employees = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddEmployee = (data: any) => {
     const newEmployee = {
@@ -51,6 +52,36 @@ const Employees = () => {
     setEditingEmployee(employee);
   };
 
+  const handleFileUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      // In a real app, this would process the CSV/Excel file
+      // For now, we'll just show a toast that it's being processed
+      toast({
+        title: "Attendance data received",
+        description: "Your file is being processed. You'll be notified when it's complete.",
+      });
+      
+      // Clear the input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      
+      // Simulate processing completion after 2 seconds
+      setTimeout(() => {
+        toast({
+          title: "Attendance data processed",
+          description: "Your attendance data has been successfully imported.",
+        });
+      }, 2000);
+    }
+  };
+
   // Function to safely format dates or show a placeholder
   const formatDate = (dateString: string | undefined) => {
     if (!dateString) return "Not set";
@@ -74,10 +105,14 @@ const Employees = () => {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" onClick={() => toast({
-            title: "Feature Coming Soon",
-            description: "Upload attendance data functionality is under development",
-          })}>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept=".csv,.xlsx,.xls"
+            className="hidden"
+          />
+          <Button variant="outline" onClick={handleFileUpload}>
             <Upload className="h-4 w-4 mr-2" />
             Upload Attendance Data
           </Button>
@@ -108,6 +143,13 @@ const Employees = () => {
                   <span className={cn("w-2 h-2 rounded-full mr-2", departmentColors[row.department])}></span>
                   {row.department}
                 </div>
+              ),
+            },
+            {
+              key: "inssNumber",
+              header: "INSS Number",
+              render: (row) => (
+                <span>{row.inssNumber || "Not set"}</span>
               ),
             },
             {
