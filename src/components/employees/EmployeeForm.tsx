@@ -40,10 +40,11 @@ const EmployeeForm = ({
     picture: "",
   });
 
-  // Update form data only when opening the modal with new data
+  // Initialize form data based on initialData and isEditing
   useEffect(() => {
     if (open) {
       if (isEditing && initialData && Object.keys(initialData).length > 0) {
+        // Only set form data once when the dialog opens for editing
         setFormData({
           fullName: initialData.fullName || "",
           biNumber: initialData.biNumber || "",
@@ -82,14 +83,14 @@ const EmployeeForm = ({
         });
       }
     }
-  }, [initialData, open, isEditing]);
+  }, [open, isEditing, initialData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target as HTMLInputElement;
+    const { name, value } = e.target;
     
     setFormData(prev => ({
       ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+      [name]: value,
     }));
   };
 
@@ -139,7 +140,7 @@ const EmployeeForm = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-6 py-4">
             <PersonalInfoFields 
               formData={formData} 
               handleInputChange={handleInputChange} 
@@ -160,7 +161,7 @@ const EmployeeForm = ({
             />
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="pt-4">
             <Button variant="outline" type="button" onClick={onClose}>
               Cancel
             </Button>

@@ -13,6 +13,7 @@ interface DocumentStatusFieldsProps {
     healthCardValid: boolean;
     healthCardValidUntil: string;
     biValid: boolean;
+    biValidUntil: string;
   };
   handleSwitchChange: (name: string, checked: boolean) => void;
   handleDateChange: (name: string, date: Date | undefined) => void;
@@ -24,7 +25,7 @@ const DocumentStatusFields = ({
   handleDateChange 
 }: DocumentStatusFieldsProps) => {
   return (
-    <>
+    <div className="space-y-4">
       <div className="grid gap-2">
         <Label htmlFor="healthCardValidUntil">Health Card Validity Date</Label>
         <Popover>
@@ -46,13 +47,13 @@ const DocumentStatusFields = ({
               selected={formData.healthCardValidUntil ? new Date(formData.healthCardValidUntil) : undefined}
               onSelect={(date) => handleDateChange('healthCardValidUntil', date)}
               initialFocus
-              className={cn("p-3 pointer-events-auto")}
+              className="p-3 pointer-events-auto"
             />
           </PopoverContent>
         </Popover>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex items-center gap-2">
           <Switch
             id="healthCardValid"
@@ -75,7 +76,7 @@ const DocumentStatusFields = ({
           <Label htmlFor="biValid">BI Valid</Label>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
