@@ -1,7 +1,7 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { employees as employeesData } from "@/lib/data";
+import { employees as initialEmployeesData } from "@/lib/data";
 import { useToast } from "@/components/ui/use-toast";
 import EmployeeForm from "@/components/employees/EmployeeForm";
 import EmployeesList from "@/components/employees/EmployeesList";
@@ -9,12 +9,24 @@ import PageHeader from "@/components/employees/PageHeader";
 import AttendanceUploader from "@/components/employees/AttendanceUploader";
 import { format, addYears, differenceInYears, parseISO } from "date-fns";
 
+const LOCAL_STORAGE_KEY = 'restaurant-employees-data';
+
 const Employees = () => {
-  const [employees, setEmployees] = useState(employeesData);
+  // Load initial data from localStorage if available, otherwise use the default data
+  const [employees, setEmployees] = useState(() => {
+    const savedEmployees = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return savedEmployees ? JSON.parse(savedEmployees) : initialEmployeesData;
+  });
+  
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const { toast } = useToast();
   const attendanceUploaderRef = useRef<HTMLDivElement>(null);
+
+  // Save to localStorage whenever employees data changes
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employees));
+  }, [employees]);
 
   // We'll handle anniversaries in a simplified way for now
   const checkEmployeeAnniversaries = () => {
@@ -54,7 +66,7 @@ const Employees = () => {
     
     toast({
       title: "Employee added",
-      description: `${data.fullName} has been successfully added.`,
+      description: `${data.fullName} has been successfully added and saved.`,
     });
     
     // Check anniversaries after adding
@@ -71,7 +83,7 @@ const Employees = () => {
     
     toast({
       title: "Employee updated",
-      description: `${data.fullName}'s information has been updated.`,
+      description: `${data.fullName}'s information has been updated and saved.`,
     });
   };
 
