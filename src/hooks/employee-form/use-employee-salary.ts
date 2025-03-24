@@ -105,13 +105,13 @@ export const useEmployeeSalary = (
 
   const processSalaryData = () => {
     return {
-      salary: Number(salaryInfo.salaryStructure.totalSalary),
+      salary: Number(salaryInfo.salaryStructure.totalSalary || 0),
       salaryStructure: {
-        basicSalary: Number(salaryInfo.salaryStructure.basicSalary),
-        transportAllowance: Number(salaryInfo.salaryStructure.transportAllowance),
-        accommodationAllowance: Number(salaryInfo.salaryStructure.accommodationAllowance),
-        bonus: Number(salaryInfo.salaryStructure.bonus),
-        totalSalary: Number(salaryInfo.salaryStructure.totalSalary)
+        basicSalary: Number(salaryInfo.salaryStructure.basicSalary || 0),
+        transportAllowance: Number(salaryInfo.salaryStructure.transportAllowance || 0),
+        accommodationAllowance: Number(salaryInfo.salaryStructure.accommodationAllowance || 0),
+        bonus: Number(salaryInfo.salaryStructure.bonus || 0),
+        totalSalary: Number(salaryInfo.salaryStructure.totalSalary || 0)
       }
     };
   };
@@ -119,6 +119,7 @@ export const useEmployeeSalary = (
   return {
     salaryInfo,
     handleSalaryChange,
+    calculateTotalSalary,
     processSalaryData,
     setSalaryInfo
   };

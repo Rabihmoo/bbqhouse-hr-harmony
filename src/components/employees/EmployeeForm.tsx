@@ -42,15 +42,16 @@ const EmployeeForm = ({
     handleImageChange,
     handleSelectChange,
     handleDateChange,
-    processFormData
-  } = useEmployeeFormState({ open, initialData, isEditing });
+    processFormData,
+    handleSubmit
+  } = useEmployeeFormState(open, isEditing, initialData, onSubmit);
   
   usePreventNavigation({
     enabled: open && isDirty,
     message: "You have unsaved changes. Are you sure you want to leave?"
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
@@ -96,7 +97,7 @@ const EmployeeForm = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleFormSubmit} className="space-y-6">
           <div className="mb-6">
             <ImageUploadField 
               picture={formData.picture} 

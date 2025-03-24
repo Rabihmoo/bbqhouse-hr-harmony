@@ -11,25 +11,29 @@ export const useEmployeeFormState = (
   initialData: any | null,
   onSubmit: (data: any) => void
 ) => {
+  const [isDirty, setIsDirty] = useState(false);
+
   // Use the individual hooks
   const {
     basicInfo,
     handleBasicInfoChange,
-    handleBasicInfoDateChange,
+    handleSelectChange,
+    handleImageChange,
     setBasicInfo,
   } = useEmployeeBasicInfo(open, isEditing, initialData);
 
   const {
     biDetails,
-    handleBIDetailsChange,
-    handleBIDetailsDateChange,
+    handleBIInputChange: handleBIDetailsChange,
+    handleBICheckboxChange,
+    handleBIDateChange: handleBIDetailsDateChange,
     setBIDetails,
   } = useEmployeeBIDetails(open, isEditing, initialData);
 
   const {
     salaryInfo,
     handleSalaryChange,
-    calculateTotalSalary,
+    processSalaryData,
     setSalaryInfo,
   } = useEmployeeSalary(open, isEditing, initialData);
 
@@ -80,6 +84,28 @@ export const useEmployeeFormState = (
       ...prevState,
       [name]: value,
     }));
+    setIsDirty(true);
+  };
+
+  const handleCheckboxChange = (name: string, checked: boolean) => {
+    handleBICheckboxChange(name, checked);
+    handleDocumentSwitchChange(name, checked);
+    setIsDirty(true);
+  };
+
+  const handleDateChange = (field: string, date: Date | undefined) => {
+    if (field.startsWith('biDetails.')) {
+      handleBIDetailsDateChange(field, date);
+    } else {
+      handleDocumentDateChange(field, date);
+    }
+    setIsDirty(true);
+  };
+
+  // Calculate total salary for the form
+  const calculateTotalSalary = (changedField: string, newValue: string) => {
+    processSalaryData();
+    setIsDirty(true);
   };
 
   // Combined data from all hooks
@@ -91,31 +117,49 @@ export const useEmployeeFormState = (
     ...otherFormData,
   };
 
+  // Process form data for submission
+  const processFormData = () => {
+    // Convert string salary values to numbers
+    const processedSalaryData = processSalaryData();
+    
+    return {
+      ...formData,
+      ...processedSalaryData
+    };
+  };
+
   // Handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    const processed = processFormData();
+    onSubmit(processed);
+    setIsDirty(false);
   };
 
   // Reset all form data
   const resetForm = () => {
     setBasicInfo({
       fullName: "",
+      address: "",
+      secondAddress: "",
+      email: "",
+      phone: "",
       position: "",
-      department: "Kitchen",
+      department: "",
       hireDate: "",
-      status: "Active",
       inssNumber: "",
+      company: "BBQHouse LDA",
+      picture: "",
     });
     
     setBIDetails({
       biNumber: "",
-      biValid: true,
+      biValid: false,
       biValidUntil: "",
       biDetails: {
         issueDate: "",
-        expiryDate: "",
-      },
+        expiryDate: ""
+      }
     });
     
     setDocumentStatus({
@@ -124,14 +168,14 @@ export const useEmployeeFormState = (
     });
     
     setSalaryInfo({
-      salary: 0,
+      salary: "",
       salaryStructure: {
-        basicSalary: 0,
-        transportAllowance: 0,
-        accommodationAllowance: 0,
-        bonus: 0,
-        totalSalary: 0,
-      },
+        basicSalary: "",
+        transportAllowance: "",
+        accommodationAllowance: "",
+        bonus: "",
+        totalSalary: ""
+      }
     });
     
     setOtherFormData({
@@ -144,19 +188,27 @@ export const useEmployeeFormState = (
       leaveAllowances: [],
       leaveRecords: [],
     });
+    
+    setIsDirty(false);
   };
 
   return {
     formData,
+    isDirty,
+    setIsDirty,
     handleInputChange,
     handleBasicInfoChange,
-    handleBasicInfoDateChange,
+    handleSelectChange,
+    handleImageChange,
     handleBIDetailsChange,
     handleBIDetailsDateChange,
     handleSalaryChange,
+    handleCheckboxChange,
     handleDocumentSwitchChange,
     handleDocumentDateChange,
+    handleDateChange,
     calculateTotalSalary,
+    processFormData,
     handleSubmit,
     resetForm,
   };
