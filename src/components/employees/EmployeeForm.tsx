@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -39,7 +38,6 @@ const EmployeeForm = ({
     setIsDirty,
     handleInputChange,
     handleBasicInfoChange,
-    handleBIInputChange,
     handleSalaryChange,
     handleCheckboxChange,
     handleImageChange,
@@ -127,7 +125,7 @@ const EmployeeForm = ({
                 
                 <BIDetailsFields 
                   formData={formData}
-                  handleInputChange={handleBIInputChange}
+                  handleInputChange={handleInputChange}
                   handleCheckboxChange={handleCheckboxChange}
                 />
               </div>

@@ -1,5 +1,5 @@
 
-import { useState, useEffect, ChangeEvent } from "react";
+import { ChangeEvent } from "react";
 import { useEmployeeBasicInfo } from "./use-employee-basic-info";
 import { useEmployeeDocuments } from "./use-employee-documents";
 import { useEmployeeBIDetails } from "./use-employee-bi-details";
@@ -7,6 +7,7 @@ import { useEmployeeSalary } from "./use-employee-salary";
 import { useAdditionalFormData } from "./use-additional-form-data";
 import { useFormStateHandlers } from "./use-form-state-handlers";
 import { useFormSubmission } from "./use-form-submission";
+import { useFormReset } from "./use-form-reset";
 
 // This is the main hook that combines all the other hooks
 export const useEmployeeFormState = (
@@ -53,6 +54,17 @@ export const useEmployeeFormState = (
     setOtherFormData,
   } = useAdditionalFormData(open, isEditing, initialData);
 
+  // Process form data for submission
+  const processFormData = () => {
+    // Convert string salary values to numbers
+    const processedSalaryData = processSalaryData();
+    
+    return {
+      ...formData,
+      ...processedSalaryData
+    };
+  };
+
   // Form submission and dirty state handling
   const {
     isDirty,
@@ -85,72 +97,15 @@ export const useEmployeeFormState = (
     processSalaryData
   );
 
-  // Process form data for submission
-  const processFormData = () => {
-    // Convert string salary values to numbers
-    const processedSalaryData = processSalaryData();
-    
-    return {
-      ...formData,
-      ...processedSalaryData
-    };
-  };
-
-  // Reset all form data
-  const resetForm = () => {
-    setBasicInfo({
-      fullName: "",
-      address: "",
-      secondAddress: "",
-      email: "",
-      phone: "",
-      position: "",
-      department: "",
-      hireDate: "",
-      inssNumber: "",
-      company: "BBQHouse LDA",
-      picture: "",
-    });
-    
-    setBIDetails({
-      biNumber: "",
-      biValid: false,
-      biValidUntil: "",
-      biDetails: {
-        issueDate: "",
-        expiryDate: ""
-      }
-    });
-    
-    setDocumentStatus({
-      healthCardValid: false,
-      healthCardValidUntil: "",
-    });
-    
-    setSalaryInfo({
-      salary: "",
-      salaryStructure: {
-        basicSalary: "",
-        transportAllowance: "",
-        accommodationAllowance: "",
-        bonus: "",
-        totalSalary: ""
-      }
-    });
-    
-    setOtherFormData({
-      email: "",
-      phone: "",
-      address: "",
-      secondAddress: "",
-      picture: "",
-      company: "BBQHouse LDA",
-      leaveAllowances: [],
-      leaveRecords: [],
-    });
-    
-    setIsDirty(false);
-  };
+  // Form reset functionality
+  const { resetForm } = useFormReset({
+    setBasicInfo,
+    setBIDetails,
+    setDocumentStatus,
+    setSalaryInfo,
+    setOtherFormData,
+    setIsDirty
+  });
 
   return {
     formData,
