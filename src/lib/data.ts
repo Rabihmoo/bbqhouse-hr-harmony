@@ -213,7 +213,8 @@ export const employees: Employee[] = [
     email: 'carlos.mendes@bbqhouse.com',
     phone: '+244 923 789 456',
     remainingLeaves: 15,
-    inssNumber: 'INSS45678912'
+    inssNumber: 'INSS45678912',
+    company: 'BBQHouse LDA'
   },
   {
     id: '4',
@@ -233,7 +234,8 @@ export const employees: Employee[] = [
     email: 'ana.costa@bbqhouse.com',
     phone: '+244 923 456 123',
     remainingLeaves: 18,
-    inssNumber: 'INSS78912345'
+    inssNumber: 'INSS78912345',
+    company: 'Executive Cleaning LDA'
   },
   {
     id: '5',
@@ -253,7 +255,8 @@ export const employees: Employee[] = [
     email: 'pedro.neves@bbqhouse.com',
     phone: '+244 923 987 123',
     remainingLeaves: 19,
-    inssNumber: 'INSS32165498'
+    inssNumber: 'INSS32165498',
+    company: 'BBQHouse LDA'
   }
 ];
 

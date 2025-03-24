@@ -145,27 +145,27 @@ const EmployeeForm = ({
     // Handle nested salary structure
     if (name.startsWith('salaryStructure.')) {
       const salaryField = name.split('.')[1];
-      setFormData(prev => ({
-        ...prev,
+      setFormData(prevState => ({
+        ...prevState,
         salaryStructure: {
-          ...prev.salaryStructure,
+          ...prevState.salaryStructure,
           [salaryField]: value
         }
       }));
 
       // Calculate total salary if any of the salary components changes
       if (['basicSalary', 'transportAllowance', 'accommodationAllowance', 'bonus'].includes(salaryField)) {
-        const basicSalary = Number(salaryField === 'basicSalary' ? value : prev.salaryStructure.basicSalary) || 0;
-        const transportAllowance = Number(salaryField === 'transportAllowance' ? value : prev.salaryStructure.transportAllowance) || 0;
-        const accommodationAllowance = Number(salaryField === 'accommodationAllowance' ? value : prev.salaryStructure.accommodationAllowance) || 0;
-        const bonus = Number(salaryField === 'bonus' ? value : prev.salaryStructure.bonus) || 0;
+        const basicSalary = Number(salaryField === 'basicSalary' ? value : prevState.salaryStructure.basicSalary) || 0;
+        const transportAllowance = Number(salaryField === 'transportAllowance' ? value : prevState.salaryStructure.transportAllowance) || 0;
+        const accommodationAllowance = Number(salaryField === 'accommodationAllowance' ? value : prevState.salaryStructure.accommodationAllowance) || 0;
+        const bonus = Number(salaryField === 'bonus' ? value : prevState.salaryStructure.bonus) || 0;
 
         const totalSalary = basicSalary + transportAllowance + accommodationAllowance + bonus;
 
-        setFormData(prev => ({
-          ...prev,
+        setFormData(prevState => ({
+          ...prevState,
           salaryStructure: {
-            ...prev.salaryStructure,
+            ...prevState.salaryStructure,
             totalSalary: String(totalSalary)
           },
           salary: String(totalSalary) // Update the legacy salary field too
@@ -175,10 +175,10 @@ const EmployeeForm = ({
     // Handle nested BI details
     else if (name.startsWith('biDetails.')) {
       const biField = name.split('.')[1];
-      setFormData(prev => ({
-        ...prev,
+      setFormData(prevState => ({
+        ...prevState,
         biDetails: {
-          ...prev.biDetails,
+          ...prevState.biDetails,
           [biField]: value
         },
         // Update biValidUntil for backward compatibility
