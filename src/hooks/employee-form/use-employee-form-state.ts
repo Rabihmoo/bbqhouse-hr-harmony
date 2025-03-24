@@ -24,9 +24,9 @@ export const useEmployeeFormState = (
 
   const {
     biDetails,
-    handleBIInputChange: handleBIDetailsChange,
+    handleBIInputChange,
     handleBICheckboxChange,
-    handleBIDateChange: handleBIDetailsDateChange,
+    handleBIDateChange,
     setBIDetails,
   } = useEmployeeBIDetails(open, isEditing, initialData);
 
@@ -95,7 +95,7 @@ export const useEmployeeFormState = (
 
   const handleDateChange = (field: string, date: Date | undefined) => {
     if (field.startsWith('biDetails.')) {
-      handleBIDetailsDateChange(field, date);
+      handleBIDateChange(field, date);
     } else {
       handleDocumentDateChange(field, date);
     }
@@ -103,7 +103,7 @@ export const useEmployeeFormState = (
   };
 
   // Calculate total salary for the form
-  const calculateTotalSalary = (changedField: string, newValue: string) => {
+  const calculateTotalSalary = () => {
     processSalaryData();
     setIsDirty(true);
   };
@@ -200,8 +200,8 @@ export const useEmployeeFormState = (
     handleBasicInfoChange,
     handleSelectChange,
     handleImageChange,
-    handleBIDetailsChange,
-    handleBIDetailsDateChange,
+    handleBIInputChange,
+    handleBIDateChange,
     handleSalaryChange,
     handleCheckboxChange,
     handleDocumentSwitchChange,

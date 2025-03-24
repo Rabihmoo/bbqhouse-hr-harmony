@@ -38,6 +38,9 @@ const EmployeeForm = ({
     isDirty, 
     setIsDirty,
     handleInputChange,
+    handleBasicInfoChange,
+    handleBIInputChange,
+    handleSalaryChange,
     handleCheckboxChange,
     handleImageChange,
     handleSelectChange,
@@ -116,7 +119,7 @@ const EmployeeForm = ({
                     id="fullName"
                     name="fullName"
                     value={formData.fullName}
-                    onChange={handleInputChange}
+                    onChange={handleBasicInfoChange}
                     required
                     placeholder="Enter full name"
                   />
@@ -124,19 +127,19 @@ const EmployeeForm = ({
                 
                 <BIDetailsFields 
                   formData={formData}
-                  handleInputChange={handleInputChange}
+                  handleInputChange={handleBIInputChange}
                   handleCheckboxChange={handleCheckboxChange}
                 />
               </div>
               
               <AddressFields 
                 formData={formData}
-                handleInputChange={handleInputChange}
+                handleInputChange={handleBasicInfoChange}
               />
               
               <ContactFields 
                 formData={formData}
-                handleInputChange={handleInputChange}
+                handleInputChange={handleBasicInfoChange}
               />
             </FormSection>
 
@@ -144,7 +147,7 @@ const EmployeeForm = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <EmploymentInfoFields
                   formData={formData}
-                  handleInputChange={handleInputChange}
+                  handleInputChange={handleBasicInfoChange}
                   handleSelectChange={handleSelectChange}
                   handleDateChange={handleDateChange}
                 />
@@ -157,7 +160,7 @@ const EmployeeForm = ({
               
               <SalaryStructureFields
                 formData={formData}
-                handleInputChange={handleInputChange}
+                handleInputChange={handleSalaryChange}
               />
             </FormSection>
 
