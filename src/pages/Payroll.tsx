@@ -3,29 +3,69 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable } from "@/components/ui/data-table";
 import { employees, departmentColors } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 
 const Payroll = () => {
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  
+  // Filter employees by company if selected
+  const filteredEmployees = selectedCompany 
+    ? employees.filter(emp => emp.company === selectedCompany)
+    : employees;
+
   // Create payroll data based on employees
-  const payrollData = employees.map(employee => ({
+  const payrollData = filteredEmployees.map(employee => ({
     id: employee.id,
     employeeId: employee.id,
     employeeName: employee.fullName,
     department: employee.department,
     position: employee.position,
-    baseSalary: employee.salary,
-    deductions: 0,
-    bonus: 0,
-    netSalary: employee.salary,
+    company: employee.company,
+    basicSalary: employee.salaryStructure?.basicSalary || 0,
+    transportAllowance: employee.salaryStructure?.transportAllowance || 0,
+    accommodationAllowance: employee.salaryStructure?.accommodationAllowance || 0,
+    bonus: employee.salaryStructure?.bonus || 0,
+    netSalary: employee.salaryStructure?.totalSalary || employee.salary || 0,
     paymentStatus: "Pending"
   }));
 
+  // Get unique companies
+  const companies = [...new Set(employees.map(emp => emp.company))];
+
   return (
     <DashboardLayout title="Payroll" subtitle="Manage employee salaries and payments">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold">Payroll Management</h2>
-        <p className="text-muted-foreground">
-          {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })} Payroll
-        </p>
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold">Payroll Management</h2>
+          <p className="text-muted-foreground">
+            {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })} Payroll
+          </p>
+        </div>
+        
+        <div className="flex gap-2 items-center">
+          <div className="w-72">
+            <Select
+              value={selectedCompany || ""}
+              onValueChange={(value) => setSelectedCompany(value || null)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Filter by company" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Companies</SelectItem>
+                {companies.map((company) => (
+                  <SelectItem key={company} value={company}>
+                    {company}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <Button variant="outline">Export</Button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-black/40 glass rounded-xl shadow-sm overflow-hidden">
@@ -35,6 +75,13 @@ const Payroll = () => {
             {
               key: "employeeName",
               header: "Employee",
+            },
+            {
+              key: "company",
+              header: "Company",
+              render: (row) => (
+                <span className="font-medium">{row.company}</span>
+              ),
             },
             {
               key: "department",
@@ -47,26 +94,36 @@ const Payroll = () => {
               ),
             },
             {
-              key: "position",
-              header: "Position",
-            },
-            {
-              key: "baseSalary",
-              header: "Base Salary",
+              key: "basicSalary",
+              header: "Basic",
               render: (row) => (
-                <span>{row.baseSalary.toLocaleString()} KZ</span>
+                <span>{row.basicSalary.toLocaleString()} KZ</span>
               ),
             },
             {
-              key: "deductions",
-              header: "Deductions",
+              key: "transportAllowance",
+              header: "Transport",
               render: (row) => (
-                <span>{row.deductions.toLocaleString()} KZ</span>
+                <span>{row.transportAllowance.toLocaleString()} KZ</span>
+              ),
+            },
+            {
+              key: "accommodationAllowance",
+              header: "Accom.",
+              render: (row) => (
+                <span>{row.accommodationAllowance.toLocaleString()} KZ</span>
+              ),
+            },
+            {
+              key: "bonus",
+              header: "Bonus",
+              render: (row) => (
+                <span>{row.bonus.toLocaleString()} KZ</span>
               ),
             },
             {
               key: "netSalary",
-              header: "Net Salary",
+              header: "Total",
               render: (row) => (
                 <span className="font-medium">{row.netSalary.toLocaleString()} KZ</span>
               ),

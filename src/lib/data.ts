@@ -6,6 +6,8 @@ export type LeaveType = 'Annual' | 'Sick' | 'Unpaid' | 'Other';
 
 export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected' | 'Completed';
 
+export type CompanyName = 'BBQHouse LDA' | 'SALT LDA' | 'Executive Cleaning LDA';
+
 export interface LeaveAllowance {
   year: number;
   daysEntitled: number;
@@ -25,19 +27,34 @@ export interface LeaveRecord {
   notes?: string;
 }
 
+export interface SalaryStructure {
+  basicSalary: number;
+  transportAllowance: number;
+  accommodationAllowance: number;
+  bonus: number;
+  totalSalary: number;
+}
+
+export interface BIDetails {
+  issueDate: string;
+  expiryDate: string;
+}
+
 export interface Employee {
   id: string;
   fullName: string;
   biNumber: string;
   biValidUntil?: string;
   biValid: boolean;
+  biDetails?: BIDetails;
   hireDate: string;
   address: string;
   secondAddress?: string;
   healthCardValidUntil?: string;
   position: string;
   department: Department;
-  salary: number;
+  salary?: number; // Keeping for backward compatibility
+  salaryStructure?: SalaryStructure;
   healthCardValid: boolean;
   status: EmployeeStatus;
   email: string;
@@ -47,6 +64,7 @@ export interface Employee {
   inssNumber?: string;
   leaveAllowances?: LeaveAllowance[];
   leaveRecords?: LeaveRecord[];
+  company: CompanyName;
 }
 
 export interface LeaveRequest {
@@ -74,18 +92,47 @@ export interface Attendance {
   reason?: string;
 }
 
+export const companies = [
+  {
+    id: '1',
+    name: 'BBQHouse LDA',
+    contractTemplate: 'BBQHOUSE CONTRACT.docx'
+  },
+  {
+    id: '2',
+    name: 'SALT LDA',
+    contractTemplate: 'SALT CONTRACT.docx'
+  },
+  {
+    id: '3',
+    name: 'Executive Cleaning LDA',
+    contractTemplate: 'CLEANING CONTRACT.docx'
+  }
+];
+
 export const employees: Employee[] = [
   {
     id: '1',
     fullName: 'João Silva',
     biNumber: 'BI123456789',
     biValidUntil: '2026-01-15',
+    biDetails: {
+      issueDate: '2021-01-15',
+      expiryDate: '2026-01-15'
+    },
     hireDate: '2022-01-15',
     address: 'Rua Principal 123, Luanda',
     secondAddress: '',
     position: 'Head Chef',
     department: 'Kitchen',
-    salary: 220000,
+    salaryStructure: {
+      basicSalary: 180000,
+      transportAllowance: 20000,
+      accommodationAllowance: 15000,
+      bonus: 5000,
+      totalSalary: 220000
+    },
+    salary: 220000, // For backward compatibility
     healthCardValid: true,
     healthCardValidUntil: '2025-01-15',
     biValid: true,
@@ -113,19 +160,31 @@ export const employees: Employee[] = [
         type: 'annual',
         status: 'completed'
       }
-    ]
+    ],
+    company: 'BBQHouse LDA'
   },
   {
     id: '2',
     fullName: 'Maria Santos',
     biNumber: 'BI987654321',
     biValidUntil: '2025-03-10',
+    biDetails: {
+      issueDate: '2020-03-10',
+      expiryDate: '2025-03-10'
+    },
     hireDate: '2022-03-10',
     address: 'Avenida Central 45, Luanda',
     secondAddress: '',
     position: 'Restaurant Manager',
     department: 'Sala',
-    salary: 250000,
+    salaryStructure: {
+      basicSalary: 200000,
+      transportAllowance: 25000,
+      accommodationAllowance: 20000,
+      bonus: 5000,
+      totalSalary: 250000
+    },
+    salary: 250000, // For backward compatibility
     healthCardValid: true,
     healthCardValidUntil: '2024-06-15',
     biValid: true,
@@ -133,7 +192,8 @@ export const employees: Employee[] = [
     email: 'maria.santos@bbqhouse.com',
     phone: '+244 923 123 456',
     remainingLeaves: 25,
-    inssNumber: 'INSS98765432'
+    inssNumber: 'INSS98765432',
+    company: 'SALT LDA'
   },
   {
     id: '3',

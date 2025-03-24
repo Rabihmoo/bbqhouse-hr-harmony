@@ -32,3 +32,21 @@ export interface LeaveRecord {
   employeeName?: string;
 }
 
+export interface SalaryStructure {
+  basicSalary: number;
+  transportAllowance: number;
+  accommodationAllowance: number;
+  bonus: number;
+  totalSalary: number;
+}
+
+export interface Company {
+  id: string;
+  name: 'BBQHouse LDA' | 'SALT LDA' | 'Executive Cleaning LDA';
+  contractTemplate: string;
+}
+
+export interface BIDetails {
+  issueDate: string;
+  expiryDate: string;
+}

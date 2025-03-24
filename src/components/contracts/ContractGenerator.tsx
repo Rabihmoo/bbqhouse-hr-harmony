@@ -1,12 +1,16 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileText, Download, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { employees } from "@/lib/data";
+import { employees, companies } from "@/lib/data";
+import { format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ContractGeneratorProps {
   onGenerate: (data: any) => void;
@@ -18,20 +22,44 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
   const [duration, setDuration] = useState("6");
   const [startDate, setStartDate] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [contractDate, setContractDate] = useState<Date | undefined>(new Date());
 
   const currentDate = new Date().toISOString().split("T")[0];
   
   const employee = employees.find(emp => emp.id === selectedEmployee);
+  const employeeCompany = employee?.company || "BBQHouse LDA";
+  const companyTemplate = companies.find(c => c.name === employeeCompany)?.contractTemplate || "";
 
-  const handleGenerate = () => {
+  const handleGenerateContract = () => {
     const contractData = {
       employeeId: selectedEmployee,
+      employeeName: employee?.fullName,
       contractType,
       duration: Number(duration),
       startDate: startDate || currentDate,
+      company: employeeCompany,
+      companyTemplate,
+      contractDate: contractDate || new Date(),
+      salaryStructure: employee?.salaryStructure
     };
     
     onGenerate(contractData);
+  };
+
+  // When the employee changes, check their company
+  useEffect(() => {
+    if (selectedEmployee) {
+      const emp = employees.find(e => e.id === selectedEmployee);
+      if (emp && emp.company) {
+        // Contract is now based on the employee's company
+      }
+    }
+  }, [selectedEmployee]);
+
+  const formatMoneyInWords = (amount: number) => {
+    // This is a placeholder - in production you would use a proper library 
+    // or a more comprehensive function to convert numbers to Portuguese words
+    return `${amount} KZ (valor por extenso)`;
   };
 
   return (
@@ -53,12 +81,19 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
             <SelectContent>
               {employees.map((employee) => (
                 <SelectItem key={employee.id} value={employee.id}>
-                  {employee.fullName} - {employee.department}
+                  {employee.fullName} - {employee.department} - {employee.company}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
+
+        {selectedEmployee && (
+          <div className="bg-muted/30 p-3 rounded-md">
+            <p className="text-sm font-medium">Using contract template for: <span className="text-primary">{employeeCompany}</span></p>
+            <p className="text-xs text-muted-foreground mt-1">Template file: {companyTemplate}</p>
+          </div>
+        )}
 
         <div className="grid gap-2">
           <Label htmlFor="contractType">Contract Type</Label>
@@ -101,11 +136,40 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
           />
         </div>
 
+        <div className="grid gap-2">
+          <Label htmlFor="contractDate">Contract Date</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                id="contractDate"
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !contractDate && "text-muted-foreground"
+                )}
+                type="button"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {contractDate ? format(contractDate, 'PPP') : <span>Pick a date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <div className="p-2">
+                <Input
+                  type="date"
+                  value={contractDate ? format(contractDate, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => setContractDate(e.target.value ? new Date(e.target.value) : undefined)}
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+
         <div className="flex gap-3 mt-4">
           <Button 
             className="w-full" 
             disabled={!selectedEmployee} 
-            onClick={handleGenerate}
+            onClick={handleGenerateContract}
           >
             <Download className="h-4 w-4 mr-2" />
             Generate Contract
@@ -127,74 +191,96 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
           <DialogContent className="max-w-2xl glass">
             <DialogHeader>
-              <DialogTitle>Contract Preview</DialogTitle>
+              <DialogTitle>{employeeCompany} Contract Preview</DialogTitle>
             </DialogHeader>
             <div className="mt-2 p-6 border rounded-lg bg-card text-card-foreground">
               <div className="flex justify-center mb-8">
                 <img 
                   src="/lovable-uploads/3b0f2146-354a-4718-b5d4-d20dc1907ba1.png" 
-                  alt="BBQ House Logo" 
+                  alt={`${employeeCompany} Logo`} 
                   className="w-40 h-40 object-contain" 
                 />
               </div>
               
               <h2 className="text-center text-2xl font-bold mb-8 uppercase">
-                Employment Contract
+                CONTRATO DE TRABALHO POR TEMPO INDETERMINADO
               </h2>
               
               <div className="space-y-6 text-base">
                 <p>
-                  <strong>This Employment Contract</strong> is entered into on {startDate || currentDate} between:
+                  <strong>Entre:</strong>
                 </p>
                 
                 <p>
-                  <strong>BBQHOUSE</strong>, hereinafter referred to as "the Employer"
+                  Entre {employeeCompany}, firma em nome colectivo, com sede na Cidade de Maputo cujo objecto principal consiste em restauração, representada no acto pelo sócio Sr. Youssef Chamas, de nacionalidade Libanesa com poderes para tal, doravante designado de EMPREGADOR.
                 </p>
-                
-                <p>and</p>
                 
                 <p>
-                  <strong>{employee.fullName}</strong>, BI Number: {employee.biNumber}, hereinafter referred to as "the Employee"
+                  <strong>e</strong>
+                </p>
+                
+                <p>
+                  {employee.fullName}, portador de documento de identificação nº{employee.biNumber}, emitido aos {employee.biDetails?.issueDate || "N/A"}, natural de {"Maputo"}, residente no bairro {employee.address}, doravante designado de COLABORADOR.
                 </p>
                 
                 <div>
-                  <h3 className="font-bold text-lg mb-2">1. Position and Duties</h3>
                   <p>
-                    The Employee is hired for the position of {employee.position} in the {employee.department} department.
+                    É celebrado o presente contrato individual de trabalho sem termo, que se rege pelas disposições legais aplicáveis, pelo regulamento de trabalho interno na empresa e ainda pelo disposto nas cláusulas seguintes:
                   </p>
                 </div>
                 
                 <div>
-                  <h3 className="font-bold text-lg mb-2">2. Compensation</h3>
+                  <h3 className="font-bold text-lg mb-2">CLÁUSULA PRIMEIRA</h3>
+                  <h4 className="font-medium mb-2">(Funções)</h4>
                   <p>
-                    The Employee shall receive a monthly salary of {employee.salary.toLocaleString()} KZ.
+                    1 - O colaborador é admitido ao serviço da Empregador para desempenhar as funções inerentes à categoria profissional de {employee.department} e as funções afins ou funcionalmente ligadas a essa actividade sem prejuízo do eventual cumprimento de outras funções que lhe sejam cometidas por se revelarem determinantes para o funcionamento das actividades da empregador e couberem no âmbito razoável das funções genericamente atribuídas ao colaborador.
                   </p>
                 </div>
                 
                 <div>
-                  <h3 className="font-bold text-lg mb-2">3. Term</h3>
+                  <h3 className="font-bold text-lg mb-2">CLÁUSULA SEGUNDA</h3>
+                  <h4 className="font-medium mb-2">(Remuneração)</h4>
                   <p>
-                    This contract shall be valid for a period of {duration} months, commencing on {startDate || currentDate}.
+                    1 - O empregador compromete-se a pagar ao colaborador salário mensal ilíquido de {employee.salaryStructure?.basicSalary || 0} ({formatMoneyInWords(employee.salaryStructure?.basicSalary || 0)}) sujeita aos impostos e demais descontos legais.
+                  </p>
+                  <p>
+                    2 - O empregador compromete-se também a reconhecer os esforços do trabalhador não só através de salários, mas também através da atribuição de subsídios de produtividade e desempenho, se o negocio assim o permitir, que serão subdivididos em:
+                  </p>
+                  <p className="pl-4">
+                    a) Transporte – {employee.salaryStructure?.transportAllowance || 0}
+                  </p>
+                  <p className="pl-4">
+                    b) Bónus de eficiência e produtividade no trabalho – {employee.salaryStructure?.bonus || 0}
+                  </p>
+                  <p className="pl-4">
+                    c) Alojamento – {employee.salaryStructure?.accommodationAllowance || 0}
                   </p>
                 </div>
                 
                 <div>
-                  <h3 className="font-bold text-lg mb-2">4. Additional Terms</h3>
+                  <h3 className="font-bold text-lg mb-2">CLÁUSULA TERCEIRA</h3>
+                  <h4 className="font-medium mb-2">(Vigência)</h4>
                   <p>
-                    Full terms and conditions are detailed in the complete contract document.
+                    O empregador contrata o colaborador, por tempo indeterminado e tem o seu início desde {employee.hireDate}.
                   </p>
                 </div>
                 
                 <div className="pt-8">
-                  <div className="grid grid-cols-2 gap-8">
+                  <p className="mb-4">
+                    Maputo, aos {contractDate ? format(contractDate, 'dd')} dias do mês de {contractDate ? format(contractDate, 'MMMM')} do ano {contractDate ? format(contractDate, 'yyyy')}.
+                  </p>
+                  <p className="mb-4">
+                    Em dois exemplares de igual conteúdo e valor, ficando um exemplar na posse de cada um dos Contraentes.
+                  </p>
+                  
+                  <div className="grid grid-cols-2 gap-8 mt-8">
                     <div>
-                      <p className="mb-10">Employer Signature:</p>
+                      <p className="mb-10">PELO EMPREGADOR:</p>
                       <div className="border-t border-black w-full"></div>
-                      <p className="mt-2">BBQHOUSE Representative</p>
                     </div>
                     
                     <div>
-                      <p className="mb-10">Employee Signature:</p>
+                      <p className="mb-10">O COLABORADOR:</p>
                       <div className="border-t border-black w-full"></div>
                       <p className="mt-2">{employee.fullName}</p>
                     </div>
