@@ -223,7 +223,9 @@ export const useEmployeeFormState = ({ open, initialData, isEditing }: UseEmploy
     setIsDirty(true);
   };
 
-  const handleDateChange = (field: string, date: Date) => {
+  const handleDateChange = (field: string, date: Date | undefined) => {
+    if (!date) return;
+    
     const dateStr = format(date, 'yyyy-MM-dd');
 
     // Handle BI dates
