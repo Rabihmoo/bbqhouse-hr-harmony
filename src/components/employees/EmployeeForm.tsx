@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { usePreventNavigation } from "@/hooks/use-prevent-navigation";
-import { useEmployeeFormState } from "@/hooks/use-employee-form-state";
+import { useEmployeeFormState } from "@/hooks/employee-form";
 import FormSection from "./form/FormSection";
 import BIDetailsFields from "./form/BIDetailsFields";
 import SalaryStructureFields from "./form/SalaryStructureFields";
