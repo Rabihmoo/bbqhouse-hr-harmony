@@ -1,19 +1,43 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable } from "@/components/ui/data-table";
-import { leaveRequests as leaveRequestsData, departmentColors, statusColors } from "@/lib/data";
+import { leaveRequests as leaveRequestsData, departmentColors, statusColors, employees as initialEmployeesData, getEmployeeYearsOfService } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveRequest, LeaveStatus } from "@/lib/data";
+import MissingLeavesList from "@/components/leaves/MissingLeavesList";
+import LeaveRecordsList from "@/components/leaves/LeaveRecordsList";
+import LeaveRequestForm from "@/components/leaves/LeaveRequestForm";
+
+const LOCAL_STORAGE_KEY = 'restaurant-employees-data';
 
 const Leaves = () => {
   const [leaveRequests, setLeaveRequests] = useState(leaveRequestsData);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingLeaveRequest, setEditingLeaveRequest] = useState<LeaveRequest | null>(null);
   const { toast } = useToast();
+  
+  // Load employees data from localStorage
+  const [employees, setEmployees] = useState(() => {
+    const savedEmployees = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return savedEmployees ? JSON.parse(savedEmployees) : initialEmployeesData;
+  });
+  
+  // Gather all leave records from all employees
+  const allLeaveRecords = employees.reduce((records: any[], employee: any) => {
+    if (employee.leaveRecords && employee.leaveRecords.length > 0) {
+      const employeeRecords = employee.leaveRecords.map((record: any) => ({
+        ...record,
+        employeeName: employee.fullName,
+        employeeId: employee.id
+      }));
+      return [...records, ...employeeRecords];
+    }
+    return records;
+  }, []);
 
   const handleAddLeaveRequest = (data: Omit<LeaveRequest, 'id' | 'createdAt' | 'status'>) => {
     const newLeaveRequest: LeaveRequest = {
@@ -41,6 +65,33 @@ const Leaves = () => {
       description: `Leave request status has been updated to ${newStatus}.`,
     });
   };
+  
+  // Handle adding a new leave record for an employee
+  const handleAddLeaveRecord = (employeeId: string, leaveData: any) => {
+    const updatedEmployees = employees.map((emp: any) => {
+      if (emp.id === employeeId) {
+        const leaveRecords = emp.leaveRecords || [];
+        const newRecord = {
+          ...leaveData,
+          id: `leave-${Date.now()}`
+        };
+        
+        return {
+          ...emp,
+          leaveRecords: [...leaveRecords, newRecord]
+        };
+      }
+      return emp;
+    });
+    
+    setEmployees(updatedEmployees);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedEmployees));
+    
+    toast({
+      title: "Leave record added",
+      description: `Leave record has been added successfully.`,
+    });
+  };
 
   return (
     <DashboardLayout title="Leave Management" subtitle="Manage employee leave requests">
@@ -57,7 +108,7 @@ const Leaves = () => {
         </Button>
       </div>
 
-      <div className="bg-white dark:bg-black/40 glass rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-black/40 glass rounded-xl shadow-sm overflow-hidden mb-8">
         <DataTable
           data={leaveRequests}
           columns={[
@@ -103,6 +154,28 @@ const Leaves = () => {
           ]}
         />
       </div>
+      
+      {/* Employees with missing leaves section */}
+      <div className="mb-8">
+        <MissingLeavesList 
+          employees={employees} 
+          onAddLeave={handleAddLeaveRecord} 
+        />
+      </div>
+      
+      {/* All leave records section */}
+      <div>
+        <LeaveRecordsList records={allLeaveRecords} />
+      </div>
+      
+      {/* Leave request form */}
+      {showAddForm && (
+        <LeaveRequestForm
+          open={showAddForm}
+          onClose={() => setShowAddForm(false)}
+          onSubmit={handleAddLeaveRequest}
+        />
+      )}
     </DashboardLayout>
   );
 };

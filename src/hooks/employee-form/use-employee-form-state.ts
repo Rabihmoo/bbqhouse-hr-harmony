@@ -1,115 +1,163 @@
+import { useState, useEffect, ChangeEvent } from "react";
+import { useEmployeeBasicInfo } from "./use-employee-basic-info";
+import { useEmployeeDocuments } from "./use-employee-documents";
+import { useEmployeeBIDetails } from "./use-employee-bi-details";
+import { useEmployeeSalary } from "./use-employee-salary";
 
-import { useState } from "react";
-import { useEmployeeBasicInfo, EmployeeBasicInfo } from "./use-employee-basic-info";
-import { useEmployeeBIDetails, BIDetails } from "./use-employee-bi-details";
-import { useEmployeeSalary, SalaryStructure } from "./use-employee-salary";
-import { useEmployeeDocuments, DocumentStatus } from "./use-employee-documents";
-
-export interface EmployeeFormData extends EmployeeBasicInfo, BIDetails, SalaryStructure, DocumentStatus {}
-
-interface UseEmployeeFormStateProps {
-  open: boolean;
-  initialData: any | null;
-  isEditing: boolean;
-}
-
-export const useEmployeeFormState = ({ open, initialData, isEditing }: UseEmployeeFormStateProps) => {
-  const [isDirty, setIsDirty] = useState(false);
-
+// This is the main hook that combines all the other hooks
+export const useEmployeeFormState = (
+  open: boolean,
+  isEditing: boolean,
+  initialData: any | null,
+  onSubmit: (data: any) => void
+) => {
+  // Use the individual hooks
   const {
     basicInfo,
     handleBasicInfoChange,
-    handleSelectChange,
-    handleImageChange,
+    handleBasicInfoDateChange,
+    setBasicInfo,
   } = useEmployeeBasicInfo(open, isEditing, initialData);
 
   const {
     biDetails,
-    handleBIInputChange,
-    handleBICheckboxChange,
-    handleBIDateChange,
+    handleBIDetailsChange,
+    handleBIDetailsDateChange,
+    setBIDetails,
   } = useEmployeeBIDetails(open, isEditing, initialData);
 
   const {
     salaryInfo,
     handleSalaryChange,
-    processSalaryData,
+    calculateTotalSalary,
+    setSalaryInfo,
   } = useEmployeeSalary(open, isEditing, initialData);
 
   const {
     documentStatus,
     handleDocumentSwitchChange,
     handleDocumentDateChange,
+    setDocumentStatus,
   } = useEmployeeDocuments(open, isEditing, initialData);
 
-  // Combined form data for easy access
-  const formData: EmployeeFormData = {
+  // This is for any other form fields that aren't handled by the specific hooks
+  const [otherFormData, setOtherFormData] = useState<any>({});
+
+  useEffect(() => {
+    if (open) {
+      if (isEditing && initialData) {
+        // Other fields not covered by the specific hooks
+        setOtherFormData({
+          id: initialData.id,
+          email: initialData.email || "",
+          phone: initialData.phone || "",
+          address: initialData.address || "",
+          secondAddress: initialData.secondAddress || "",
+          picture: initialData.picture || "",
+          company: initialData.company || "BBQHouse LDA",
+          leaveAllowances: initialData.leaveAllowances || [],
+          leaveRecords: initialData.leaveRecords || [],
+        });
+      } else {
+        setOtherFormData({
+          email: "",
+          phone: "",
+          address: "",
+          secondAddress: "",
+          picture: "",
+          company: "BBQHouse LDA",
+          leaveAllowances: [],
+          leaveRecords: [],
+        });
+      }
+    }
+  }, [open, isEditing, initialData]);
+
+  // Generic handler for other form fields
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setOtherFormData((prevState: any) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  // Combined data from all hooks
+  const formData = {
     ...basicInfo,
     ...biDetails,
+    ...documentStatus,
     ...salaryInfo,
-    ...documentStatus
+    ...otherFormData,
   };
 
-  // Mark form as dirty when any change happens
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name } = e.target;
-    
-    if (name.startsWith('biDetails.')) {
-      handleBIInputChange(e);
-    } else if (name.startsWith('salaryStructure.')) {
-      handleSalaryChange(e);
-    } else {
-      handleBasicInfoChange(e);
-    }
-    
-    setIsDirty(true);
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
   };
 
-  const handleCheckboxChange = (name: string, checked: boolean) => {
-    if (name === 'biValid') {
-      handleBICheckboxChange(name, checked);
-    } else if (name === 'healthCardValid') {
-      handleDocumentSwitchChange(name, checked);
-    }
+  // Reset all form data
+  const resetForm = () => {
+    setBasicInfo({
+      fullName: "",
+      position: "",
+      department: "Kitchen",
+      hireDate: "",
+      status: "Active",
+      inssNumber: "",
+    });
     
-    setIsDirty(true);
-  };
-
-  const handleDateChange = (field: string, date: Date | undefined) => {
-    if (!date) return;
+    setBIDetails({
+      biNumber: "",
+      biValid: true,
+      biValidUntil: "",
+      biDetails: {
+        issueDate: "",
+        expiryDate: "",
+      },
+    });
     
-    if (field.startsWith('biDetails.')) {
-      handleBIDateChange(field, date);
-    } else if (field === 'healthCardValidUntil') {
-      handleDocumentDateChange(field, date);
-    } else if (field === 'hireDate') {
-      handleSelectChange(field, date.toISOString().split('T')[0]);
-    }
+    setDocumentStatus({
+      healthCardValid: false,
+      healthCardValidUntil: "",
+    });
     
-    setIsDirty(true);
-  };
-
-  const processFormData = () => {
-    const salaryData = processSalaryData();
+    setSalaryInfo({
+      salary: 0,
+      salaryStructure: {
+        basicSalary: 0,
+        transportAllowance: 0,
+        accommodationAllowance: 0,
+        bonus: 0,
+        totalSalary: 0,
+      },
+    });
     
-    return {
-      ...basicInfo,
-      ...biDetails,
-      ...salaryData,
-      ...documentStatus,
-      id: initialData?.id || undefined,
-    };
+    setOtherFormData({
+      email: "",
+      phone: "",
+      address: "",
+      secondAddress: "",
+      picture: "",
+      company: "BBQHouse LDA",
+      leaveAllowances: [],
+      leaveRecords: [],
+    });
   };
 
   return {
     formData,
-    isDirty,
-    setIsDirty,
     handleInputChange,
-    handleCheckboxChange,
-    handleImageChange,
-    handleSelectChange,
-    handleDateChange,
-    processFormData
+    handleBasicInfoChange,
+    handleBasicInfoDateChange,
+    handleBIDetailsChange,
+    handleBIDetailsDateChange,
+    handleSalaryChange,
+    handleDocumentSwitchChange,
+    handleDocumentDateChange,
+    calculateTotalSalary,
+    handleSubmit,
+    resetForm,
   };
 };
