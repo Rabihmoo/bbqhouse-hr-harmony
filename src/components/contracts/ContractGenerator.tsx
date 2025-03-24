@@ -267,7 +267,7 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
                 
                 <div className="pt-8">
                   <p className="mb-4">
-                    Maputo, aos {contractDate ? format(contractDate, 'dd')} dias do mês de {contractDate ? format(contractDate, 'MMMM')} do ano {contractDate ? format(contractDate, 'yyyy')}.
+                    Maputo, aos {contractDate ? format(contractDate, 'dd') : ""} dias do mês de {contractDate ? format(contractDate, 'MMMM') : ""} do ano {contractDate ? format(contractDate, 'yyyy') : ""}.
                   </p>
                   <p className="mb-4">
                     Em dois exemplares de igual conteúdo e valor, ficando um exemplar na posse de cada um dos Contraentes.
