@@ -66,10 +66,41 @@ export const useFormUtilities = () => {
     };
   };
 
+  // New function for select changes
+  const createHandleSelectChange = (
+    setter: (updater: (prev: any) => any) => void,
+    callback?: () => void
+  ) => {
+    return (name: string, value: string) => {
+      setter((prevState: any) => ({
+        ...prevState,
+        [name]: value,
+      }));
+      if (callback) callback();
+    };
+  };
+
+  // New function for image changes
+  const createHandleImageChange = (
+    setter: (updater: (prev: any) => any) => void,
+    imageField: string,
+    callback?: () => void
+  ) => {
+    return (imageUrl: string) => {
+      setter((prevState: any) => ({
+        ...prevState,
+        [imageField]: imageUrl,
+      }));
+      if (callback) callback();
+    };
+  };
+
   return {
     createHandleInputChange,
     createHandleCheckboxChange,
     createHandleDateChange,
-    createHandleNestedFieldChange
+    createHandleNestedFieldChange,
+    createHandleSelectChange,
+    createHandleImageChange
   };
 };

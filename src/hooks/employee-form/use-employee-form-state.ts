@@ -5,6 +5,8 @@ import { useEmployeeDocuments } from "./use-employee-documents";
 import { useEmployeeBIDetails } from "./use-employee-bi-details";
 import { useEmployeeSalary } from "./use-employee-salary";
 import { useAdditionalFormData } from "./use-additional-form-data";
+import { useFormStateHandlers } from "./use-form-state-handlers";
+import { useFormSubmission } from "./use-form-submission";
 
 // This is the main hook that combines all the other hooks
 export const useEmployeeFormState = (
@@ -13,8 +15,6 @@ export const useEmployeeFormState = (
   initialData: any | null,
   onSubmit: (data: any) => void
 ) => {
-  const [isDirty, setIsDirty] = useState(false);
-
   // Use the individual hooks
   const {
     basicInfo,
@@ -53,55 +53,12 @@ export const useEmployeeFormState = (
     setOtherFormData,
   } = useAdditionalFormData(open, isEditing, initialData);
 
-  // Wrapper methods to ensure all changes mark the form as dirty
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    handleOtherInputChange(e);
-    setIsDirty(true);
-  };
-
-  const handleBasicInfoInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    handleBasicInfoChange(e);
-    setIsDirty(true);
-  };
-
-  const handleSelectInputChange = (name: string, value: string) => {
-    handleSelectChange(name, value);
-    setIsDirty(true);
-  };
-
-  const handleCheckboxChange = (name: string, checked: boolean) => {
-    if (name.startsWith('bi')) {
-      handleBICheckboxChange(name, checked);
-    } else {
-      handleDocumentSwitchChange(name, checked);
-    }
-    setIsDirty(true);
-  };
-
-  const handleDateChange = (field: string, date: Date | undefined) => {
-    if (field.startsWith('biDetails.')) {
-      handleBIDateChange(field, date);
-    } else {
-      handleDocumentDateChange(field, date);
-    }
-    setIsDirty(true);
-  };
-
-  const handleSalaryInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    handleSalaryChange(e);
-    setIsDirty(true);
-  };
-
-  const handleImageUploadChange = (imageUrl: string) => {
-    handleImageChange(imageUrl);
-    setIsDirty(true);
-  };
-
-  // Calculate total salary for the form
-  const calculateTotalSalary = () => {
-    processSalaryData();
-    setIsDirty(true);
-  };
+  // Form submission and dirty state handling
+  const {
+    isDirty,
+    setIsDirty,
+    handleSubmit
+  } = useFormSubmission(onSubmit, processFormData);
 
   // Combined data from all hooks
   const formData = {
@@ -112,6 +69,22 @@ export const useEmployeeFormState = (
     ...otherFormData,
   };
 
+  // Event handlers with dirty state tracking
+  const stateHandlers = useFormStateHandlers(
+    setIsDirty,
+    handleBasicInfoChange,
+    handleBIInputChange,
+    handleBICheckboxChange,
+    handleBIDateChange,
+    handleSalaryChange,
+    handleSelectChange,
+    handleImageChange,
+    handleDocumentSwitchChange,
+    handleDocumentDateChange,
+    handleOtherInputChange,
+    processSalaryData
+  );
+
   // Process form data for submission
   const processFormData = () => {
     // Convert string salary values to numbers
@@ -121,14 +94,6 @@ export const useEmployeeFormState = (
       ...formData,
       ...processedSalaryData
     };
-  };
-
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const processed = processFormData();
-    onSubmit(processed);
-    setIsDirty(false);
   };
 
   // Reset all form data
@@ -191,17 +156,7 @@ export const useEmployeeFormState = (
     formData,
     isDirty,
     setIsDirty,
-    handleInputChange,
-    handleBasicInfoChange: handleBasicInfoInputChange,
-    handleSelectChange: handleSelectInputChange,
-    handleImageChange: handleImageUploadChange,
-    handleBIInputChange,
-    handleSalaryChange: handleSalaryInputChange,
-    handleCheckboxChange,
-    handleDocumentSwitchChange,
-    handleDocumentDateChange,
-    handleDateChange,
-    calculateTotalSalary,
+    ...stateHandlers,
     processFormData,
     handleSubmit,
     resetForm,
