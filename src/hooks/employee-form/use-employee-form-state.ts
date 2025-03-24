@@ -1,8 +1,10 @@
+
 import { useState, useEffect, ChangeEvent } from "react";
 import { useEmployeeBasicInfo } from "./use-employee-basic-info";
 import { useEmployeeDocuments } from "./use-employee-documents";
 import { useEmployeeBIDetails } from "./use-employee-bi-details";
 import { useEmployeeSalary } from "./use-employee-salary";
+import { useAdditionalFormData } from "./use-additional-form-data";
 
 // This is the main hook that combines all the other hooks
 export const useEmployeeFormState = (
@@ -45,51 +47,34 @@ export const useEmployeeFormState = (
   } = useEmployeeDocuments(open, isEditing, initialData);
 
   // This is for any other form fields that aren't handled by the specific hooks
-  const [otherFormData, setOtherFormData] = useState<any>({});
+  const {
+    otherFormData,
+    handleInputChange: handleOtherInputChange,
+    setOtherFormData,
+  } = useAdditionalFormData(open, isEditing, initialData);
 
-  useEffect(() => {
-    if (open) {
-      if (isEditing && initialData) {
-        // Other fields not covered by the specific hooks
-        setOtherFormData({
-          id: initialData.id,
-          email: initialData.email || "",
-          phone: initialData.phone || "",
-          address: initialData.address || "",
-          secondAddress: initialData.secondAddress || "",
-          picture: initialData.picture || "",
-          company: initialData.company || "BBQHouse LDA",
-          leaveAllowances: initialData.leaveAllowances || [],
-          leaveRecords: initialData.leaveRecords || [],
-        });
-      } else {
-        setOtherFormData({
-          email: "",
-          phone: "",
-          address: "",
-          secondAddress: "",
-          picture: "",
-          company: "BBQHouse LDA",
-          leaveAllowances: [],
-          leaveRecords: [],
-        });
-      }
-    }
-  }, [open, isEditing, initialData]);
-
-  // Generic handler for other form fields
+  // Wrapper methods to ensure all changes mark the form as dirty
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setOtherFormData((prevState: any) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    handleOtherInputChange(e);
+    setIsDirty(true);
+  };
+
+  const handleBasicInfoInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    handleBasicInfoChange(e);
+    setIsDirty(true);
+  };
+
+  const handleSelectInputChange = (name: string, value: string) => {
+    handleSelectChange(name, value);
     setIsDirty(true);
   };
 
   const handleCheckboxChange = (name: string, checked: boolean) => {
-    handleBICheckboxChange(name, checked);
-    handleDocumentSwitchChange(name, checked);
+    if (name.startsWith('bi')) {
+      handleBICheckboxChange(name, checked);
+    } else {
+      handleDocumentSwitchChange(name, checked);
+    }
     setIsDirty(true);
   };
 
@@ -99,6 +84,16 @@ export const useEmployeeFormState = (
     } else {
       handleDocumentDateChange(field, date);
     }
+    setIsDirty(true);
+  };
+
+  const handleSalaryInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    handleSalaryChange(e);
+    setIsDirty(true);
+  };
+
+  const handleImageUploadChange = (imageUrl: string) => {
+    handleImageChange(imageUrl);
     setIsDirty(true);
   };
 
@@ -197,12 +192,11 @@ export const useEmployeeFormState = (
     isDirty,
     setIsDirty,
     handleInputChange,
-    handleBasicInfoChange,
-    handleSelectChange,
-    handleImageChange,
+    handleBasicInfoChange: handleBasicInfoInputChange,
+    handleSelectChange: handleSelectInputChange,
+    handleImageChange: handleImageUploadChange,
     handleBIInputChange,
-    handleBIDateChange,
-    handleSalaryChange,
+    handleSalaryChange: handleSalaryInputChange,
     handleCheckboxChange,
     handleDocumentSwitchChange,
     handleDocumentDateChange,
