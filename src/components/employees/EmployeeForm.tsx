@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -43,6 +44,7 @@ const EmployeeForm = ({
     handleImageChange,
     handleSelectChange,
     handleDateChange,
+    handleBIInputChange, // Now properly accessing this
     processFormData,
     handleSubmit
   } = useEmployeeFormState(open, isEditing, initialData, onSubmit);
@@ -125,7 +127,7 @@ const EmployeeForm = ({
                 
                 <BIDetailsFields 
                   formData={formData}
-                  handleInputChange={handleInputChange}
+                  handleInputChange={handleBIInputChange}
                   handleCheckboxChange={handleCheckboxChange}
                 />
               </div>

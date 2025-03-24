@@ -54,7 +54,16 @@ export const useEmployeeFormState = (
     setOtherFormData,
   } = useAdditionalFormData(open, isEditing, initialData);
 
-  // Process form data for submission
+  // Combined data from all hooks
+  const formData = {
+    ...basicInfo,
+    ...biDetails,
+    ...documentStatus,
+    ...salaryInfo,
+    ...otherFormData,
+  };
+  
+  // Define processFormData here before it's used
   const processFormData = () => {
     // Convert string salary values to numbers
     const processedSalaryData = processSalaryData();
@@ -71,15 +80,6 @@ export const useEmployeeFormState = (
     setIsDirty,
     handleSubmit
   } = useFormSubmission(onSubmit, processFormData);
-
-  // Combined data from all hooks
-  const formData = {
-    ...basicInfo,
-    ...biDetails,
-    ...documentStatus,
-    ...salaryInfo,
-    ...otherFormData,
-  };
 
   // Event handlers with dirty state tracking
   const stateHandlers = useFormStateHandlers(
@@ -112,6 +112,7 @@ export const useEmployeeFormState = (
     isDirty,
     setIsDirty,
     ...stateHandlers,
+    handleBIInputChange, // Add this explicitly
     processFormData,
     handleSubmit,
     resetForm,
