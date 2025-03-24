@@ -48,9 +48,28 @@ export const useFormUtilities = () => {
     };
   };
 
+  // Handle nested field changes (like objects within form state)
+  const createHandleNestedFieldChange = (
+    setter: (updater: (prev: any) => any) => void,
+    parentFieldName: string,
+    callback?: () => void
+  ) => {
+    return (fieldName: string, value: any) => {
+      setter((prevState: any) => ({
+        ...prevState,
+        [parentFieldName]: {
+          ...prevState[parentFieldName],
+          [fieldName]: value
+        }
+      }));
+      if (callback) callback();
+    };
+  };
+
   return {
     createHandleInputChange,
     createHandleCheckboxChange,
     createHandleDateChange,
+    createHandleNestedFieldChange
   };
 };
