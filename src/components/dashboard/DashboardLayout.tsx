@@ -23,7 +23,7 @@ const DashboardLayout = ({
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900 antialiased">
       <Sidebar />
       
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden md:ml-64">
         <DashboardHeader 
           title={title} 
           subtitle={subtitle} 

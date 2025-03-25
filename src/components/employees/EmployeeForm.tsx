@@ -197,7 +197,7 @@ const EmployeeForm = ({
                 />
                 
                 <CompanySelector
-                  value={formData.company}
+                  value={formData.company || ""}
                   onValueChange={(value) => {
                     console.log("Company changed to:", value);
                     handleSelectChange("company", value);

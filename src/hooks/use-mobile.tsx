@@ -1,51 +1,32 @@
 
-import * as React from "react"
-
-const MOBILE_BREAKPOINT = 768
+import { useState, useEffect } from "react";
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  const [isMobile, setIsMobile] = useState(false);
 
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
 
-  return !!isMobile
+    // Check initially
+    checkMobile();
+
+    // Add event listener
+    window.addEventListener("resize", checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  return isMobile;
 }
 
-// Add the useMobileMenu hook
-type MobileMenuState = {
-  isOpen: boolean;
-  toggle: () => void;
-  open: () => void;
-  close: () => void;
-}
-
-export function useMobileMenu(): MobileMenuState {
-  const [isOpen, setIsOpen] = React.useState(false)
-
-  const toggle = React.useCallback(() => {
-    setIsOpen(prev => !prev)
-  }, [])
-
-  const open = React.useCallback(() => {
-    setIsOpen(true)
-  }, [])
-
-  const close = React.useCallback(() => {
-    setIsOpen(false)
-  }, [])
-
-  return {
-    isOpen,
-    toggle,
-    open,
-    close
-  }
+// Added useMobileMenu hook to fix the error
+export function useMobileMenu() {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const toggle = () => setIsOpen(!isOpen);
+  
+  return { isOpen, toggle };
 }

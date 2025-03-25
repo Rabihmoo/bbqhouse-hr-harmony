@@ -24,7 +24,6 @@ const CompanySelector = ({ value, onValueChange }: CompanySelectorProps) => {
           console.log("Company selected:", newValue);
           onValueChange(newValue);
         }}
-        disabled={false} // Ensure it's never disabled
       >
         <SelectTrigger id="company" className="w-full">
           <SelectValue placeholder="Select company" />

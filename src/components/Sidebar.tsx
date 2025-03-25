@@ -14,11 +14,14 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMobileMenu } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Sidebar = () => {
   const location = useLocation();
-  const { isOpen, toggle } = useMobileMenu();
+  const isMobile = useIsMobile();
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  const toggle = () => setIsOpen(!isOpen);
 
   const isCurrentPage = (path: string) => {
     return location.pathname === path;
