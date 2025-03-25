@@ -36,14 +36,14 @@ const PageHeader = ({
             <div className="w-full sm:w-64">
               <Label htmlFor="company-filter" className="mb-1">Filter by Company</Label>
               <Select
-                value={selectedCompany || ""}
-                onValueChange={(value) => onCompanyChange(value === "" ? null : value)}
+                value={selectedCompany || "all"}
+                onValueChange={(value) => onCompanyChange(value === "all" ? null : value)}
               >
                 <SelectTrigger id="company-filter">
                   <SelectValue placeholder="All companies" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All companies</SelectItem>
+                  <SelectItem value="all">All companies</SelectItem>
                   {companies.map(company => (
                     <SelectItem key={company.id} value={company.name}>
                       {company.name}

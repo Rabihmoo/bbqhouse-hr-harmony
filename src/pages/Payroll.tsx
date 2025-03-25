@@ -47,14 +47,14 @@ const Payroll = () => {
         <div className="flex gap-2 items-center">
           <div className="w-72">
             <Select
-              value={selectedCompany || ""}
-              onValueChange={(value) => setSelectedCompany(value || null)}
+              value={selectedCompany || "all"}
+              onValueChange={(value) => setSelectedCompany(value === "all" ? null : value)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Filter by company" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Companies</SelectItem>
+                <SelectItem value="all">All Companies</SelectItem>
                 {companies.map((company) => (
                   <SelectItem key={company} value={company}>
                     {company}
