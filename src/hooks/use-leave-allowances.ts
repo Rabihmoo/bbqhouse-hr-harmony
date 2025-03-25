@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { parseISO } from "date-fns";
+import { parseISO, differenceInYears } from "date-fns";
 import { LeaveAllowance } from "@/types/notification";
 import { calculateLeaveAllowance, getEmployeeYearsOfService } from "@/lib/data";
 
@@ -79,5 +79,5 @@ export const useLeaveAllowances = (employees: any[], setEmployees: React.Dispatc
     });
     
     setEmployees(updatedEmployees);
-  }, []);
+  }, [employees]); // Added employees as dependency to ensure this updates when employee data changes
 };

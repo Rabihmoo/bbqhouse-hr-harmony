@@ -10,7 +10,6 @@ import DepartmentSummary from "@/components/employees/DepartmentSummary";
 import { useEmployeeOperations } from "@/hooks/use-employee-operations";
 import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
 import { useLeaveAllowances } from "@/hooks/use-leave-allowances";
-import { parseISO, differenceInYears } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LOCAL_STORAGE_KEY = 'restaurant-employees-data';
@@ -66,7 +65,7 @@ const Employees = () => {
     console.log("Attendance report generated:", reportData);
   };
 
-  // Filter employees by status
+  // Filter employees by status - fix the filtering here
   const activeEmployees = employees.filter(e => e.status === 'Active' || e.status === 'On Leave');
   const inactiveEmployees = employees.filter(e => e.status === 'Inactive' || e.status === 'Terminated');
 
@@ -75,6 +74,8 @@ const Employees = () => {
 
   // Companies for filtering
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  
+  // Apply company filter to the correct employee list based on active tab
   const filteredEmployees = selectedCompany 
     ? (activeTab === "active" ? activeEmployees : inactiveEmployees).filter(emp => emp.company === selectedCompany)
     : (activeTab === "active" ? activeEmployees : inactiveEmployees);

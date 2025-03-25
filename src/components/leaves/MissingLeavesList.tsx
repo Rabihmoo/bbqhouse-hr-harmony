@@ -92,6 +92,7 @@ const MissingLeavesList = ({ employees, onAddLeave }: MissingLeavesListProps) =>
                   <div className="space-y-1">
                     {row.leaveAllowances
                       ?.filter((a: LeaveAllowance) => a.status !== 'fully-used')
+                      .sort((a: LeaveAllowance, b: LeaveAllowance) => a.year - b.year) // Sort by year ascending
                       .map((allowance: LeaveAllowance) => (
                         <div key={allowance.year} className="flex items-center gap-2">
                           <span className={cn(

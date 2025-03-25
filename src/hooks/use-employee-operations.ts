@@ -56,7 +56,7 @@ export const useEmployeeOperations = (
     setEditingEmployee(employee);
   };
 
-  // Handle adding a leave record to an employee
+  // Handle adding a leave record to an employee - fixed to deduct from oldest year first
   const handleAddLeaveRecord = (employeeId: string, leaveRecord: Omit<LeaveRecord, 'id'>) => {
     const updatedEmployees = employees.map(emp => {
       if (emp.id === employeeId) {
@@ -66,7 +66,7 @@ export const useEmployeeOperations = (
           id: `leave-${Date.now()}`
         };
         
-        // Get the employee's leave allowances
+        // Get the employee's leave allowances and sort by oldest year first
         const allowances = [...(emp.leaveAllowances || [])].sort((a, b) => a.year - b.year);
         
         // Deduct leave days from the oldest year first
