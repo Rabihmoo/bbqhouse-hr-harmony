@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { companies } from "@/lib/data";
@@ -9,6 +10,8 @@ interface CompanySelectorProps {
 }
 
 const CompanySelector = ({ value, onValueChange }: CompanySelectorProps) => {
+  console.log("CompanySelector rendering with value:", value);
+  
   return (
     <div>
       <Label htmlFor="company" className="mb-1">
@@ -16,12 +19,15 @@ const CompanySelector = ({ value, onValueChange }: CompanySelectorProps) => {
       </Label>
       <Select
         value={value || ""}
-        onValueChange={onValueChange}
+        onValueChange={(newValue) => {
+          console.log("Company selected:", newValue);
+          onValueChange(newValue);
+        }}
       >
-        <SelectTrigger id="company">
+        <SelectTrigger id="company" className="w-full">
           <SelectValue placeholder="Select company" />
         </SelectTrigger>
-        <SelectContent position="popper" className="z-[9999] bg-background">
+        <SelectContent position="popper" className="z-[9999] bg-background" style={{ backgroundColor: "white", zIndex: 9999 }}>
           {companies.map(company => (
             <SelectItem key={company.id} value={company.name}>
               {company.name}

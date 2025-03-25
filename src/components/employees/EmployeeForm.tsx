@@ -1,4 +1,4 @@
-
+import React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -62,7 +62,6 @@ const EmployeeForm = ({
     
     try {
       const processedData = processFormData();
-      // Log the data we're about to submit to help with debugging
       console.log("Submitting form data:", processedData);
       onSubmit(processedData);
       
@@ -83,7 +82,6 @@ const EmployeeForm = ({
     }
   };
 
-  // Log the initial data to help with debugging
   React.useEffect(() => {
     if (open && isEditing && initialData) {
       console.log("Initial form data:", initialData);
