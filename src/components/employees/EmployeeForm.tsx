@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,8 @@ const EmployeeForm = ({
     try {
       const processedData = processFormData();
       console.log("Submitting form data:", processedData);
+      console.log("Form status value:", formData.status);
+      console.log("Form company value:", formData.company);
       onSubmit(processedData);
       
       toast({
@@ -154,13 +157,14 @@ const EmployeeForm = ({
                     </SelectTrigger>
                     <SelectContent
                       position="popper" 
-                      className="z-[9999] bg-background"
-                      style={{ backgroundColor: "white", zIndex: 9999 }}
+                      className="max-h-[var(--radix-select-content-available-height)] bg-white dark:bg-gray-800"
+                      style={{ zIndex: 9999 }}
                     >
                       <SelectItem value="Active">Active</SelectItem>
                       <SelectItem value="On Leave">On Leave</SelectItem>
                       <SelectItem value="Inactive">Inactive</SelectItem>
                       <SelectItem value="Terminated">Terminated</SelectItem>
+                      <SelectItem value="Sick">Sick</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

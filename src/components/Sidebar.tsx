@@ -1,139 +1,101 @@
 
-import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
-import { 
-  BarChart, 
-  Users, 
-  Calendar, 
-  FileText, 
-  Clock, 
-  Menu, 
-  X, 
-  LogOut,
-  DollarSign
-} from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useLocation, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import {
+  Home,
+  Users,
+  Clipboard,
+  Clock,
+  CreditCard,
+  Calendar,
+  Settings,
+  Menu,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useMobileMenu } from "@/hooks/use-mobile";
 
 const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
-  const isMobile = useIsMobile();
-  const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const { isOpen, toggle } = useMobileMenu();
 
-  const toggleSidebar = () => {
-    setCollapsed(!collapsed);
-  };
-
-  const toggleMobileSidebar = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const sidebarWidth = collapsed ? "w-20" : "w-64";
-  const logoSize = collapsed ? "w-12 h-12" : "w-24 h-24";
-  const textVisibility = collapsed ? "opacity-0" : "opacity-100";
-
-  const menu = [
-    { name: "Dashboard", path: "/", icon: <BarChart size={24} /> },
-    { name: "Employees", path: "/employees", icon: <Users size={24} /> },
-    { name: "Leave Management", path: "/leaves", icon: <Calendar size={24} /> },
-    { name: "Attendance", path: "/attendance", icon: <Clock size={24} /> },
-    { name: "Contracts", path: "/contracts", icon: <FileText size={24} /> },
-    { name: "Payroll", path: "/payroll", icon: <DollarSign size={24} /> },
-  ];
-
-  const isActive = (path: string) => {
+  const isCurrentPage = (path: string) => {
     return location.pathname === path;
   };
 
-  const sidebarContent = (
-    <>
-      <div className="flex items-center justify-between p-5">
-        <div className="flex items-center gap-3">
-          <img 
-            src="/lovable-uploads/3b0f2146-354a-4718-b5d4-d20dc1907ba1.png" 
-            alt="BBQ House Logo" 
-            className={cn("transition-all duration-300", logoSize)} 
-          />
-          <div className={cn("flex flex-col transition-all duration-300", textVisibility, collapsed ? "invisible w-0" : "visible")}>
-            <h2 className="text-xl font-bold text-white">BBQ HOUSE</h2>
-            <p className="text-xs text-white/70">HR Management</p>
-          </div>
-        </div>
-        {!isMobile && (
-          <button 
-            onClick={toggleSidebar} 
-            className="text-white p-2 rounded-full hover:bg-white/10 transition"
-          >
-            {collapsed ? <Menu size={20} /> : <X size={20} />}
-          </button>
-        )}
-      </div>
+  const MenuItem = ({ path, name, icon }: { path: string; name: string; icon: React.ReactNode }) => {
+    const isActive = isCurrentPage(path);
 
-      <div className="mt-2 px-3">
-        <div className="space-y-1">
-          {menu.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
-                isActive(item.path)
-                  ? "bg-bbqred text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
-              )}
-            >
-              <span className="text-current">{item.icon}</span>
-              <span className={cn("transition-all duration-300", textVisibility, collapsed ? "invisible w-0" : "visible")}>
-                {item.name}
-              </span>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-auto mb-5 px-4">
-        <div className={cn("border-t border-white/10 pt-4 mt-4", textVisibility, collapsed ? "invisible" : "visible")}>
-          <div className="flex items-center gap-3 px-4 py-3 text-white/70 hover:bg-white/10 hover:text-white rounded-lg transition-all duration-200 cursor-pointer">
-            <LogOut size={24} />
-            <span className={cn("transition-all duration-300", textVisibility, collapsed ? "invisible w-0" : "visible")}>
-              Log Out
-            </span>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+    return (
+      <li>
+        <Link
+          to={path}
+          className={cn(
+            "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+            isActive
+              ? "bg-accent text-accent-foreground"
+              : "hover:bg-muted text-muted-foreground hover:text-foreground"
+          )}
+        >
+          {icon}
+          <span>{name}</span>
+        </Link>
+      </li>
+    );
+  };
 
   return (
     <>
-      {isMobile && (
-        <button
-          onClick={toggleMobileSidebar}
-          className="fixed top-4 left-4 p-2 z-50 bg-bbqblack text-white rounded-lg"
-        >
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
-      )}
+      {/* Mobile Menu Button */}
+      <Button
+        variant="outline"
+        size="icon"
+        className="fixed left-4 top-4 z-50 md:hidden"
+        onClick={toggle}
+        aria-label="Toggle menu"
+      >
+        {isOpen ? <X size={20} /> : <Menu size={20} />}
+      </Button>
 
+      {/* Sidebar */}
       <div
         className={cn(
-          "h-screen bg-bbqblack text-white flex flex-col transition-all duration-300 z-40",
-          isMobile
-            ? mobileOpen
-              ? "fixed inset-y-0 left-0 w-64"
-              : "fixed inset-y-0 -left-64"
-            : sidebarWidth,
-          "flex-shrink-0"
+          "fixed inset-y-0 left-0 z-40 w-64 bg-background border-r transition-transform duration-300 ease-in-out md:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        {sidebarContent}
+        <div className="flex flex-col h-full">
+          <div className="border-b py-6 px-4 mb-4">
+            <h2 className="text-xl font-bold">Restaurant HRM</h2>
+          </div>
+
+          <nav className="flex-1 px-2">
+            <ul className="space-y-1">
+              <MenuItem path="/" name="Dashboard" icon={<Home size={18} />} />
+              <MenuItem path="/employees" name="Employees" icon={<Users size={18} />} />
+              <MenuItem path="/contracts" name="Contracts" icon={<Clipboard size={18} />} />
+              <MenuItem path="/attendance" name="Attendance" icon={<Clock size={18} />} />
+              <MenuItem path="/payroll" name="Payroll" icon={<CreditCard size={18} />} />
+              <MenuItem path="/leaves" name="Leaves" icon={<Calendar size={18} />} />
+              <MenuItem path="/administration" name="Administration" icon={<Settings size={18} />} />
+            </ul>
+          </nav>
+
+          <div className="mt-auto border-t p-4">
+            <div className="text-sm text-muted-foreground">
+              <p>Restaurant Management</p>
+              <p>Version 1.0.0</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {isMobile && mobileOpen && (
+      {/* Overlay to close mobile menu when clicking outside */}
+      {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30"
-          onClick={toggleMobileSidebar}
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={toggle}
+          aria-hidden="true"
         />
       )}
     </>

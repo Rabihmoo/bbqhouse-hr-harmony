@@ -69,6 +69,7 @@ const DocumentUploadFields = ({ documents, onDocumentUpload }: DocumentUploadFie
                   variant="outline" 
                   className={`w-full justify-start gap-2 ${uploading[doc.id] ? 'opacity-70' : ''}`}
                   disabled={uploading[doc.id]}
+                  onClick={() => document.getElementById(`document-${doc.id}`)?.click()}
                 >
                   <Upload className="h-4 w-4" />
                   {documents[doc.id]?.uploaded 

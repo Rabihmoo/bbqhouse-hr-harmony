@@ -27,7 +27,7 @@ const CompanySelector = ({ value, onValueChange }: CompanySelectorProps) => {
         <SelectTrigger id="company" className="w-full">
           <SelectValue placeholder="Select company" />
         </SelectTrigger>
-        <SelectContent position="popper" className="z-[9999] bg-background" style={{ backgroundColor: "white", zIndex: 9999 }}>
+        <SelectContent position="popper" className="max-h-[var(--radix-select-content-available-height)] bg-white dark:bg-gray-800" style={{ zIndex: 9999 }}>
           {companies.map(company => (
             <SelectItem key={company.id} value={company.name}>
               {company.name}

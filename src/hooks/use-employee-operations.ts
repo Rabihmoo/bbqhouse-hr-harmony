@@ -42,6 +42,8 @@ export const useEmployeeOperations = (
   const handleEditEmployee = (data: any) => {
     // Log complete received data
     console.log("Editing employee with data:", data);
+    console.log("Status value in edit:", data.status);
+    console.log("Company value in edit:", data.company);
     
     // Find the existing employee to preserve any fields not in the form
     const existingEmployee = employees.find(emp => emp.id === data.id) || {};
@@ -51,8 +53,8 @@ export const useEmployeeOperations = (
     const updatedEmployee = { 
       ...existingEmployee, 
       ...data,
-      status: data.status,
-      company: data.company
+      status: data.status || existingEmployee.status || "Active",
+      company: data.company || existingEmployee.company || ""
     };
     
     console.log("Updated employee data:", updatedEmployee);
