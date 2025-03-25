@@ -8,6 +8,7 @@ import { useAdditionalFormData } from "./use-additional-form-data";
 import { useFormStateHandlers } from "./use-form-state-handlers";
 import { useFormSubmission } from "./use-form-submission";
 import { useFormReset } from "./use-form-reset";
+import { useEmployeeDocumentsUpload } from "./use-employee-documents-upload";
 
 // This is the main hook that combines all the other hooks
 export const useEmployeeFormState = (
@@ -47,6 +48,12 @@ export const useEmployeeFormState = (
     setDocumentStatus,
   } = useEmployeeDocuments(open, isEditing, initialData);
 
+  const {
+    documents,
+    handleDocumentUpload,
+    setDocuments
+  } = useEmployeeDocumentsUpload(open, isEditing, initialData);
+
   // This is for any other form fields that aren't handled by the specific hooks
   const {
     otherFormData,
@@ -61,6 +68,8 @@ export const useEmployeeFormState = (
     ...documentStatus,
     ...salaryInfo,
     ...otherFormData,
+    documents,
+    status: otherFormData.status || "Active" // Default to Active
   };
   
   // Define processFormData here before it's used
@@ -104,7 +113,8 @@ export const useEmployeeFormState = (
     setDocumentStatus,
     setSalaryInfo,
     setOtherFormData,
-    setIsDirty
+    setIsDirty,
+    setDocuments
   });
 
   return {
@@ -112,7 +122,8 @@ export const useEmployeeFormState = (
     isDirty,
     setIsDirty,
     ...stateHandlers,
-    handleBIInputChange, // Add this explicitly
+    handleBIInputChange,
+    handleDocumentUpload,
     processFormData,
     handleSubmit,
     resetForm,

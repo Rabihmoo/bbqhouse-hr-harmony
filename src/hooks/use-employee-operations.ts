@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveRecord } from "@/types/notification";
@@ -21,7 +22,7 @@ export const useEmployeeOperations = (
     const newEmployee = {
       ...data,
       id: String(employees.length + 1),
-      status: 'Active',
+      status: data.status || 'Active',
       remainingLeaves: 0, // Start with 0 leave days for new employees
     };
     
@@ -65,9 +66,32 @@ export const useEmployeeOperations = (
           id: `leave-${Date.now()}`
         };
         
+        // Get the employee's leave allowances
+        const allowances = [...(emp.leaveAllowances || [])].sort((a, b) => a.year - b.year);
+        
+        // Deduct leave days from the oldest year first
+        let remainingDaysToDeduct = newRecord.days;
+        
+        const updatedAllowances = allowances.map(allowance => {
+          if (remainingDaysToDeduct <= 0 || allowance.remaining <= 0) {
+            return allowance;
+          }
+          
+          const daysToDeduct = Math.min(allowance.remaining, remainingDaysToDeduct);
+          remainingDaysToDeduct -= daysToDeduct;
+          
+          return {
+            ...allowance,
+            daysTaken: allowance.daysTaken + daysToDeduct,
+            remaining: allowance.remaining - daysToDeduct,
+            status: allowance.remaining - daysToDeduct === 0 ? 'fully-used' : 'partially-used'
+          };
+        });
+        
         return {
           ...emp,
-          leaveRecords: [...leaveRecords, newRecord]
+          leaveRecords: [...leaveRecords, newRecord],
+          leaveAllowances: updatedAllowances
         };
       }
       return emp;
@@ -117,6 +141,12 @@ export const useEmployeeOperations = (
     return result;
   };
 
+  // Filter employees by company
+  const filterEmployeesByCompany = (company: string | null) => {
+    if (!company) return employees;
+    return employees.filter(emp => emp.company === company);
+  };
+
   return {
     showAddForm,
     setShowAddForm,
@@ -128,5 +158,6 @@ export const useEmployeeOperations = (
     handleAddLeaveRecord,
     checkEmployeeAnniversaries,
     getEmployeesByDepartment,
+    filterEmployeesByCompany,
   };
 };

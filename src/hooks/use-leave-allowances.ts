@@ -68,9 +68,12 @@ export const useLeaveAllowances = (employees: any[], setEmployees: React.Dispatc
         }
       }
       
+      // Sort allowances by year to ensure we use oldest leave first
+      const sortedAllowances = [...updatedAllowances].sort((a, b) => a.year - b.year);
+      
       return {
         ...employee,
-        leaveAllowances: updatedAllowances,
+        leaveAllowances: sortedAllowances,
         leaveRecords: leaveRecords
       };
     });

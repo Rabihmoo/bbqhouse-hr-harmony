@@ -16,6 +16,8 @@ import EmploymentInfoFields from "./form/EmploymentInfoFields";
 import DocumentStatusFields from "./form/DocumentStatusFields";
 import ImageUploadField from "./form/ImageUploadField";
 import FormActions from "./form/FormActions";
+import DocumentUploadFields from "./form/DocumentUploadFields";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EmployeeFormProps {
   open: boolean;
@@ -44,7 +46,8 @@ const EmployeeForm = ({
     handleImageChange,
     handleSelectChange,
     handleDateChange,
-    handleBIInputChange, // Now properly accessing this
+    handleBIInputChange,
+    handleDocumentUpload,
     processFormData,
     handleSubmit
   } = useEmployeeFormState(open, isEditing, initialData, onSubmit);
@@ -90,7 +93,7 @@ const EmployeeForm = ({
         onClose();
       }
     }}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             {isEditing ? "Edit Employee" : "Add New Employee"}
@@ -123,6 +126,26 @@ const EmployeeForm = ({
                     required
                     placeholder="Enter full name"
                   />
+                </div>
+                
+                <div>
+                  <Label htmlFor="status" className="mb-1">
+                    Status
+                  </Label>
+                  <Select
+                    value={formData.status}
+                    onValueChange={(value) => handleSelectChange("status", value)}
+                  >
+                    <SelectTrigger id="status">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">Active</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
+                      <SelectItem value="On Leave">On Leave</SelectItem>
+                      <SelectItem value="Terminated">Terminated</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <BIDetailsFields 
@@ -169,6 +192,13 @@ const EmployeeForm = ({
                 formData={formData}
                 handleSwitchChange={handleCheckboxChange}
                 handleDateChange={handleDateChange}
+              />
+            </FormSection>
+
+            <FormSection title="Required Documents">
+              <DocumentUploadFields
+                documents={formData.documents || {}}
+                onDocumentUpload={handleDocumentUpload}
               />
             </FormSection>
           </div>

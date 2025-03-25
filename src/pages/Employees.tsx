@@ -11,6 +11,7 @@ import { useEmployeeOperations } from "@/hooks/use-employee-operations";
 import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
 import { useLeaveAllowances } from "@/hooks/use-leave-allowances";
 import { parseISO, differenceInYears } from "date-fns";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LOCAL_STORAGE_KEY = 'restaurant-employees-data';
 
@@ -21,6 +22,7 @@ const Employees = () => {
     return savedEmployees ? JSON.parse(savedEmployees) : initialEmployeesData;
   });
   
+  const [activeTab, setActiveTab] = useState("active");
   const attendanceUploaderRef = useRef<HTMLDivElement>(null);
 
   // Save to localStorage whenever employees data changes
@@ -40,6 +42,7 @@ const Employees = () => {
     handleAddLeaveRecord,
     checkEmployeeAnniversaries,
     getEmployeesByDepartment,
+    filterEmployeesByCompany,
   } = useEmployeeOperations(employees, setEmployees, LOCAL_STORAGE_KEY);
 
   // Use the notifications hook
@@ -63,8 +66,18 @@ const Employees = () => {
     console.log("Attendance report generated:", reportData);
   };
 
+  // Filter employees by status
+  const activeEmployees = employees.filter(e => e.status === 'Active' || e.status === 'On Leave');
+  const inactiveEmployees = employees.filter(e => e.status === 'Inactive' || e.status === 'Terminated');
+
   // Get the department counts for the summary component
   const departmentCounts = getEmployeesByDepartment();
+
+  // Companies for filtering
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const filteredEmployees = selectedCompany 
+    ? (activeTab === "active" ? activeEmployees : inactiveEmployees).filter(emp => emp.company === selectedCompany)
+    : (activeTab === "active" ? activeEmployees : inactiveEmployees);
 
   return (
     <DashboardLayout 
@@ -77,14 +90,41 @@ const Employees = () => {
         employeeCount={employees.length} 
         onAddEmployee={() => setShowAddForm(true)}
         onUploadData={() => attendanceUploaderRef.current?.click()}
+        selectedCompany={selectedCompany}
+        onCompanyChange={setSelectedCompany}
       />
 
       <DepartmentSummary departmentCounts={departmentCounts} />
 
-      <EmployeesList 
-        employees={employees} 
-        onRowClick={handleRowClick} 
-      />
+      <div className="bg-white dark:bg-black/40 glass rounded-xl shadow-sm overflow-hidden mb-6">
+        <Tabs 
+          defaultValue="active" 
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <div className="px-4 pt-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="active">Active Employees ({activeEmployees.length})</TabsTrigger>
+              <TabsTrigger value="inactive">Inactive Employees ({inactiveEmployees.length})</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="active" className="mt-0">
+            <EmployeesList 
+              employees={filteredEmployees} 
+              onRowClick={handleRowClick} 
+            />
+          </TabsContent>
+          
+          <TabsContent value="inactive" className="mt-0">
+            <EmployeesList 
+              employees={filteredEmployees} 
+              onRowClick={handleRowClick} 
+            />
+          </TabsContent>
+        </Tabs>
+      </div>
 
       <div ref={attendanceUploaderRef} className="hidden">
         <AttendanceUploader onFileUploaded={handleAttendanceReport} />

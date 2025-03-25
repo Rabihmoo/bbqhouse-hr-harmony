@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { departmentColors, statusColors, getEmployeeYearsOfService } from "@/lib/data";
 import { format, isValid, parseISO } from "date-fns";
 import { LeaveAllowance } from "@/types/notification";
+import { FileCheck, FileX } from "lucide-react";
 
 interface EmployeesListProps {
   employees: any[];
@@ -59,6 +60,16 @@ const EmployeesList = ({ employees, onRowClick }: EmployeesListProps) => {
     
     return (
       <div className="flex flex-col gap-1">
+        {previousYearAllowance && (
+          <div className="flex items-center gap-1">
+            <span className={cn(
+              "w-2 h-2 rounded-full",
+              previousYearAllowance.status === 'unused' ? "bg-red-500" : 
+              previousYearAllowance.status === 'partially-used' ? "bg-amber-500" : "bg-green-500"
+            )}></span>
+            <span className="text-xs">{previousYear}: {previousYearAllowance.remaining}/{previousYearAllowance.daysEntitled}</span>
+          </div>
+        )}
         {currentYearAllowance && (
           <div className="flex items-center gap-1">
             <span className={cn(
@@ -69,15 +80,33 @@ const EmployeesList = ({ employees, onRowClick }: EmployeesListProps) => {
             <span className="text-xs">{currentYear}: {currentYearAllowance.remaining}/{currentYearAllowance.daysEntitled}</span>
           </div>
         )}
-        {previousYearAllowance && (
-          <div className="flex items-center gap-1">
-            <span className={cn(
-              "w-2 h-2 rounded-full",
-              previousYearAllowance.status === 'unused' ? "bg-red-500" : 
-              previousYearAllowance.status === 'partially-used' ? "bg-amber-500" : "bg-green-500"
-            )}></span>
-            <span className="text-xs">{previousYear}: {previousYearAllowance.remaining}/{previousYearAllowance.daysEntitled}</span>
-          </div>
+      </div>
+    );
+  };
+
+  // Function to display document status
+  const formatDocumentStatus = (employee: any) => {
+    if (!employee.documents) return null;
+
+    const requiredDocs = ['bi', 'healthCard', 'tax', 'nuit', 'declaration', 'cv'];
+    const uploadedDocs = requiredDocs.filter(doc => 
+      employee.documents[doc] && employee.documents[doc].uploaded
+    );
+    
+    const allUploaded = uploadedDocs.length === requiredDocs.length;
+    
+    return (
+      <div className="flex items-center gap-2">
+        {allUploaded ? (
+          <>
+            <FileCheck className="text-green-500 h-4 w-4" />
+            <span className="text-green-600 text-xs">Complete</span>
+          </>
+        ) : (
+          <>
+            <FileX className="text-amber-500 h-4 w-4" />
+            <span className="text-amber-600 text-xs">{uploadedDocs.length}/{requiredDocs.length}</span>
+          </>
         )}
       </div>
     );
@@ -107,36 +136,17 @@ const EmployeesList = ({ employees, onRowClick }: EmployeesListProps) => {
             ),
           },
           {
+            key: "company",
+            header: "Company",
+            render: (row) => (
+              <span>{row.company || "Not assigned"}</span>
+            ),
+          },
+          {
             key: "inssNumber",
             header: "INSS Number",
             render: (row) => (
               <span>{row.inssNumber || "Not set"}</span>
-            ),
-          },
-          {
-            key: "biNumber",
-            header: "BI Number",
-          },
-          {
-            key: "biValidUntil",
-            header: "BI Validity",
-            render: (row) => (
-              <span className={cn(
-                row.biValid ? "text-green-600" : "text-red-600"
-              )}>
-                {formatDate(row.biValidUntil)}
-              </span>
-            ),
-          },
-          {
-            key: "healthCardValidUntil",
-            header: "Health Card",
-            render: (row) => (
-              <span className={cn(
-                row.healthCardValid ? "text-green-600" : "text-red-600"
-              )}>
-                {formatDate(row.healthCardValidUntil)}
-              </span>
             ),
           },
           {
@@ -145,6 +155,11 @@ const EmployeesList = ({ employees, onRowClick }: EmployeesListProps) => {
             render: (row) => (
               <span>{formatDate(row.hireDate)}</span>
             ),
+          },
+          {
+            key: "documents",
+            header: "Documents",
+            render: (row) => formatDocumentStatus(row),
           },
           {
             key: "salary",
