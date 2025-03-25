@@ -13,6 +13,7 @@ export interface EmployeeBasicInfo {
   inssNumber: string;
   company: string;
   picture: string;
+  status?: string; // Adding status here to ensure it's included in the state
 }
 
 export const useEmployeeBasicInfo = (
@@ -32,11 +33,13 @@ export const useEmployeeBasicInfo = (
     inssNumber: "",
     company: "BBQHouse LDA",
     picture: "",
+    status: "Active", // Default status
   });
 
   useEffect(() => {
     if (open) {
       if (isEditing && initialData) {
+        console.log("Setting initial data in basicInfo:", initialData);
         setBasicInfo({
           fullName: initialData.fullName || "",
           address: initialData.address || "",
@@ -49,6 +52,7 @@ export const useEmployeeBasicInfo = (
           inssNumber: initialData.inssNumber || "",
           company: initialData.company || "BBQHouse LDA",
           picture: initialData.picture || "",
+          status: initialData.status || "Active", // Make sure status is included
         });
       } else {
         setBasicInfo({
@@ -63,6 +67,7 @@ export const useEmployeeBasicInfo = (
           inssNumber: "",
           company: "BBQHouse LDA",
           picture: "",
+          status: "Active",
         });
       }
     }
@@ -79,6 +84,7 @@ export const useEmployeeBasicInfo = (
   };
 
   const handleSelectChange = (field: string, value: string) => {
+    console.log(`Setting ${field} to:`, value);
     setBasicInfo((prevState) => ({
       ...prevState,
       [field]: value,

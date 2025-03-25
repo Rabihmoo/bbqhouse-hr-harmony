@@ -83,6 +83,14 @@ const EmployeeForm = ({
     }
   };
 
+  // Log the initial data to help with debugging
+  React.useEffect(() => {
+    if (open && isEditing && initialData) {
+      console.log("Initial form data:", initialData);
+      console.log("Current form data:", formData);
+    }
+  }, [open, initialData, isEditing, formData]);
+
   if (!open) return null;
 
   return (
@@ -143,10 +151,14 @@ const EmployeeForm = ({
                       setIsDirty(true);
                     }}
                   >
-                    <SelectTrigger id="status">
+                    <SelectTrigger id="status" className="w-full">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
-                    <SelectContent position="popper" className="z-[9999] bg-background">
+                    <SelectContent
+                      position="popper" 
+                      className="z-[9999] bg-background"
+                      style={{ backgroundColor: "white", zIndex: 9999 }}
+                    >
                       <SelectItem value="Active">Active</SelectItem>
                       <SelectItem value="On Leave">On Leave</SelectItem>
                       <SelectItem value="Inactive">Inactive</SelectItem>
