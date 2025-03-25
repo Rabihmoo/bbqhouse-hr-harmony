@@ -215,7 +215,12 @@ const Leaves = () => {
         <LeaveRequestForm
           open={showAddForm}
           onClose={() => setShowAddForm(false)}
-          onSubmit={handleAddLeaveRecord}
+          onSubmit={(data) => {
+            // Adapt the single parameter to our two-parameter function
+            // Extract employeeId from data and pass the rest as leaveData
+            const { employeeId, ...leaveData } = data;
+            handleAddLeaveRecord(employeeId, leaveData);
+          }}
         />
       )}
     </DashboardLayout>
