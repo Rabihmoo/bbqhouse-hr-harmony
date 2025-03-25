@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import NotificationCenter from "@/components/notifications/NotificationCenter";
 import { Notification } from "@/types/notification";
+import UserProfileMenu from "../users/UserProfileMenu";
 
 interface DashboardHeaderProps {
   title: string;
@@ -36,11 +37,7 @@ const DashboardHeader = ({
           onClick={onNotificationClick}
         />
         
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-bbqblack flex items-center justify-center text-white font-medium">
-            RM
-          </div>
-        </div>
+        <UserProfileMenu />
       </div>
     </div>
   );

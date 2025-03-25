@@ -63,28 +63,26 @@ const DocumentUploadFields = ({ documents, onDocumentUpload }: DocumentUploadFie
               )}
             </Label>
             <div className="flex items-center gap-2">
-              <label htmlFor={`document-${doc.id}`} className="cursor-pointer flex-grow">
-                <Button
-                  type="button"
-                  variant="outline" 
-                  className={`w-full justify-start gap-2 ${uploading[doc.id] ? 'opacity-70' : ''}`}
-                  disabled={uploading[doc.id]}
-                  onClick={() => document.getElementById(`document-${doc.id}`)?.click()}
-                >
-                  <Upload className="h-4 w-4" />
-                  {documents[doc.id]?.uploaded 
-                    ? "Replace document" 
-                    : uploading[doc.id] 
-                      ? "Uploading..." 
-                      : "Upload document"}
-                </Button>
-                <input 
-                  id={`document-${doc.id}`} 
-                  type="file" 
-                  className="hidden" 
-                  onChange={(e) => handleFileChange(e, doc.id)}
-                />
-              </label>
+              <input 
+                id={`document-${doc.id}`} 
+                type="file" 
+                className="hidden" 
+                onChange={(e) => handleFileChange(e, doc.id)}
+              />
+              <Button
+                type="button"
+                variant="outline" 
+                className={`w-full justify-start gap-2 ${uploading[doc.id] ? 'opacity-70' : ''}`}
+                disabled={uploading[doc.id]}
+                onClick={() => document.getElementById(`document-${doc.id}`)?.click()}
+              >
+                <Upload className="h-4 w-4" />
+                {documents[doc.id]?.uploaded 
+                  ? "Replace document" 
+                  : uploading[doc.id] 
+                    ? "Uploading..." 
+                    : "Upload document"}
+              </Button>
               {documents[doc.id]?.file && (
                 <a 
                   href={documents[doc.id].file!} 

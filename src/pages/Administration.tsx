@@ -31,6 +31,8 @@ interface User {
   role: UserRole;
   isActive: boolean;
   permissions: Record<string, boolean>;
+  company?: string; // Add company field
+  department?: string; // Add department field
   lastLogin?: string;
 }
 
@@ -73,6 +75,8 @@ const Administration = () => {
     password: "",
     role: "staff",
     isActive: true,
+    company: "BBQHouse LDA", // Default company
+    department: "",
     permissions: {
       "manage_users": false,
       "manage_employees": false,
@@ -89,6 +93,25 @@ const Administration = () => {
     { id: "manage_payroll", name: "Manage Payroll", description: "Process and manage payroll" },
     { id: "view_reports", name: "View Reports", description: "Access and download reports" },
     { id: "manage_leaves", name: "Manage Leaves", description: "Approve and manage employee leaves" }
+  ];
+
+  // Companies for filtering
+  const companies = [
+    { id: "1", name: "BBQHouse LDA" },
+    { id: "2", name: "SALT" },
+    { id: "3", name: "CLEANING" }
+  ];
+
+  // Departments
+  const departments = [
+    "Management",
+    "HR",
+    "Finance",
+    "Kitchen",
+    "Sala",
+    "Bar",
+    "Cleaning",
+    "Takeaway"
   ];
 
   // Save users to localStorage
@@ -134,6 +157,21 @@ const Administration = () => {
     }));
   };
 
+  // Handle select change for company and department
+  const handleSelectChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Filter users by company
+  const [selectedCompanyFilter, setSelectedCompanyFilter] = useState<string | null>(null);
+  
+  const filteredUsers = selectedCompanyFilter 
+    ? users.filter(user => user.company === selectedCompanyFilter)
+    : users;
+
   // Add or update user
   const handleSaveUser = () => {
     if (!formData.username || !formData.fullName || !formData.email) {
@@ -156,6 +194,8 @@ const Administration = () => {
               email: formData.email,
               role: formData.role,
               isActive: formData.isActive,
+              company: formData.company,
+              department: formData.department,
               permissions: formData.permissions
             } 
           : user
@@ -184,6 +224,8 @@ const Administration = () => {
         email: formData.email,
         role: formData.role,
         isActive: formData.isActive,
+        company: formData.company,
+        department: formData.department,
         permissions: formData.permissions
       };
       
@@ -209,6 +251,8 @@ const Administration = () => {
       password: "",
       role: "staff",
       isActive: true,
+      company: "BBQHouse LDA",
+      department: "",
       permissions: {
         "manage_users": false,
         "manage_employees": false,
@@ -230,6 +274,8 @@ const Administration = () => {
       password: "", // Password is not updated unless explicitly reset
       role: user.role,
       isActive: user.isActive,
+      company: user.company || "BBQHouse LDA",
+      department: user.department || "",
       permissions: { ...user.permissions }
     });
     setShowAddUserDialog(true);
@@ -295,6 +341,24 @@ const Administration = () => {
         </Button>
       </div>
 
+      <div className="mb-6 flex items-center gap-4">
+        <Label htmlFor="companyFilter" className="whitespace-nowrap">Filter by company:</Label>
+        <Select
+          value={selectedCompanyFilter || ""}
+          onValueChange={(value) => setSelectedCompanyFilter(value || null)}
+        >
+          <SelectTrigger id="companyFilter" className="w-[200px]">
+            <SelectValue placeholder="All companies" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">All companies</SelectItem>
+            {companies.map(company => (
+              <SelectItem key={company.id} value={company.name}>{company.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Users</CardTitle>
@@ -308,17 +372,19 @@ const Administration = () => {
                 <TableHead>Username</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Company</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map(user => (
+              {filteredUsers.map(user => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.fullName}</TableCell>
                   <TableCell>{user.username}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell className="capitalize">{user.role}</TableCell>
+                  <TableCell>{user.company || "All Companies"}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs ${
                       user.isActive 
@@ -459,6 +525,45 @@ const Administration = () => {
                   <SelectItem value="admin">Administrator</SelectItem>
                   <SelectItem value="manager">Manager</SelectItem>
                   <SelectItem value="staff">Staff</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="company" className="text-right">
+                Company
+              </Label>
+              <Select
+                value={formData.company || "BBQHouse LDA"}
+                onValueChange={(value) => handleSelectChange("company", value)}
+              >
+                <SelectTrigger id="company" className="col-span-3">
+                  <SelectValue placeholder="Select company" />
+                </SelectTrigger>
+                <SelectContent>
+                  {companies.map(company => (
+                    <SelectItem key={company.id} value={company.name}>{company.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="department" className="text-right">
+                Department
+              </Label>
+              <Select
+                value={formData.department || ""}
+                onValueChange={(value) => handleSelectChange("department", value)}
+              >
+                <SelectTrigger id="department" className="col-span-3">
+                  <SelectValue placeholder="Select department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Departments</SelectItem>
+                  {departments.map(dept => (
+                    <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

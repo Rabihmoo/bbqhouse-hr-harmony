@@ -1,4 +1,5 @@
 
+import React from "react";
 import { useLocation, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
@@ -65,8 +66,9 @@ const Sidebar = () => {
         )}
       >
         <div className="flex flex-col h-full">
-          <div className="border-b py-6 px-4 mb-4">
-            <h2 className="text-xl font-bold">Restaurant HRM</h2>
+          <div className="border-b py-6 px-4 mb-4 flex items-center space-x-2">
+            <img src="/logo.png" alt="Company Logo" className="h-8 w-auto" />
+            <h2 className="text-xl font-bold">BBQHouse HRM</h2>
           </div>
 
           <nav className="flex-1 px-2">
@@ -83,7 +85,7 @@ const Sidebar = () => {
 
           <div className="mt-auto border-t p-4">
             <div className="text-sm text-muted-foreground">
-              <p>Restaurant Management</p>
+              <p>BBQHouse Management</p>
               <p>Version 1.0.0</p>
             </div>
           </div>

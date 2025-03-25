@@ -18,11 +18,13 @@ const CompanySelector = ({ value, onValueChange }: CompanySelectorProps) => {
         Company*
       </Label>
       <Select
+        name="company"
         value={value || ""}
         onValueChange={(newValue) => {
           console.log("Company selected:", newValue);
           onValueChange(newValue);
         }}
+        disabled={false} // Ensure it's never disabled
       >
         <SelectTrigger id="company" className="w-full">
           <SelectValue placeholder="Select company" />
