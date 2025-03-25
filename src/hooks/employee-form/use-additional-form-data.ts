@@ -9,7 +9,7 @@ export interface OtherFormData {
   secondAddress: string;
   picture: string;
   company: string;
-  status?: string;
+  status: string;
   leaveAllowances: any[];
   leaveRecords: any[];
 }

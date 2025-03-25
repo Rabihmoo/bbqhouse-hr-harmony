@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveRecord } from "@/types/notification";
@@ -129,7 +128,6 @@ export const useEmployeeOperations = (
     });
   };
 
-  // Get employees grouped by department
   const getEmployeesByDepartment = () => {
     const departments = ["Kitchen", "Sala", "Bar", "Cleaning", "Takeaway"];
     const result: { [key: string]: number } = {};
@@ -141,7 +139,6 @@ export const useEmployeeOperations = (
     return result;
   };
 
-  // Filter employees by company
   const filterEmployeesByCompany = (company: string | null) => {
     if (!company) return employees;
     return employees.filter(emp => emp.company === company);

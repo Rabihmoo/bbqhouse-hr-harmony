@@ -78,6 +78,9 @@ export const useLeaveAllowances = (employees: any[], setEmployees: React.Dispatc
       };
     });
     
-    setEmployees(updatedEmployees);
-  }, [employees]); // Added employees as dependency to ensure this updates when employee data changes
+    // Only update if there's a real change to prevent infinite loops
+    if (JSON.stringify(updatedEmployees) !== JSON.stringify(employees)) {
+      setEmployees(updatedEmployees);
+    }
+  }, [employees, setEmployees]); 
 };

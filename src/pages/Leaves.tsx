@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable } from "@/components/ui/data-table";
-import { leaveRequests as leaveRequestsData, departmentColors, statusColors, employees as initialEmployeesData, getEmployeeYearsOfService } from "@/lib/data";
+import { leaveRequests as leaveRequestsData, departmentColors, statusColors, employees as initialEmployeesData, getEmployeeYearsOfService, calculateLeaveAllowance } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
@@ -26,6 +26,19 @@ const Leaves = () => {
     return savedEmployees ? JSON.parse(savedEmployees) : initialEmployeesData;
   });
   
+  // Refresh employee data when localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedEmployees = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedEmployees) {
+        setEmployees(JSON.parse(savedEmployees));
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Gather all leave records from all employees
   const allLeaveRecords = employees.reduce((records: any[], employee: any) => {
     if (employee.leaveRecords && employee.leaveRecords.length > 0) {
@@ -66,7 +79,7 @@ const Leaves = () => {
     });
   };
   
-  // Handle adding a new leave record for an employee
+  // Handle adding a new leave record for an employee with proper deduction
   const handleAddLeaveRecord = (employeeId: string, leaveData: any) => {
     const updatedEmployees = employees.map((emp: any) => {
       if (emp.id === employeeId) {
@@ -76,9 +89,35 @@ const Leaves = () => {
           id: `leave-${Date.now()}`
         };
         
+        // Get the employee's leave allowances and sort by oldest year first
+        const allowances = [...(emp.leaveAllowances || [])].sort((a, b) => a.year - b.year);
+        
+        let remainingDaysToDeduct = newRecord.days;
+        
+        // Only modify allowances if this is annual leave
+        let updatedAllowances = allowances;
+        if (newRecord.type === 'annual') {
+          updatedAllowances = allowances.map(allowance => {
+            if (remainingDaysToDeduct <= 0 || allowance.remaining <= 0) {
+              return allowance;
+            }
+            
+            const daysToDeduct = Math.min(allowance.remaining, remainingDaysToDeduct);
+            remainingDaysToDeduct -= daysToDeduct;
+            
+            return {
+              ...allowance,
+              daysTaken: allowance.daysTaken + daysToDeduct,
+              remaining: allowance.remaining - daysToDeduct,
+              status: allowance.remaining - daysToDeduct === 0 ? 'fully-used' : 'partially-used'
+            };
+          });
+        }
+        
         return {
           ...emp,
-          leaveRecords: [...leaveRecords, newRecord]
+          leaveRecords: [...leaveRecords, newRecord],
+          leaveAllowances: updatedAllowances
         };
       }
       return emp;
@@ -86,6 +125,9 @@ const Leaves = () => {
     
     setEmployees(updatedEmployees);
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedEmployees));
+    
+    // Trigger a storage event for real-time updates across tabs
+    window.dispatchEvent(new Event('storage'));
     
     toast({
       title: "Leave record added",
@@ -173,7 +215,7 @@ const Leaves = () => {
         <LeaveRequestForm
           open={showAddForm}
           onClose={() => setShowAddForm(false)}
-          onSubmit={handleAddLeaveRequest}
+          onSubmit={handleAddLeaveRecord}
         />
       )}
     </DashboardLayout>
