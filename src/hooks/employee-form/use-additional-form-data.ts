@@ -9,6 +9,7 @@ export interface OtherFormData {
   secondAddress: string;
   picture: string;
   company: string;
+  status?: string;
   leaveAllowances: any[];
   leaveRecords: any[];
 }
@@ -25,6 +26,7 @@ export const useAdditionalFormData = (
     secondAddress: "",
     picture: "",
     company: "BBQHouse LDA",
+    status: "Active",
     leaveAllowances: [],
     leaveRecords: [],
   });
@@ -40,6 +42,7 @@ export const useAdditionalFormData = (
           secondAddress: initialData.secondAddress || "",
           picture: initialData.picture || "",
           company: initialData.company || "BBQHouse LDA",
+          status: initialData.status || "Active",
           leaveAllowances: initialData.leaveAllowances || [],
           leaveRecords: initialData.leaveRecords || [],
         });
@@ -51,6 +54,7 @@ export const useAdditionalFormData = (
           secondAddress: "",
           picture: "",
           company: "BBQHouse LDA",
+          status: "Active",
           leaveAllowances: [],
           leaveRecords: [],
         });

@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
-import { FileUpload, CheckCircle, AlertCircle } from "lucide-react";
+import { Upload, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
@@ -70,7 +70,7 @@ const DocumentUploadFields = ({ documents, onDocumentUpload }: DocumentUploadFie
                   className={`w-full justify-start gap-2 ${uploading[doc.id] ? 'opacity-70' : ''}`}
                   disabled={uploading[doc.id]}
                 >
-                  <FileUpload className="h-4 w-4" />
+                  <Upload className="h-4 w-4" />
                   {documents[doc.id]?.uploaded 
                     ? "Replace document" 
                     : uploading[doc.id] 
