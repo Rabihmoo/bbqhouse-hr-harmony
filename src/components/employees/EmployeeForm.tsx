@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -61,6 +62,8 @@ const EmployeeForm = ({
     
     try {
       const processedData = processFormData();
+      // Log the data we're about to submit to help with debugging
+      console.log("Submitting form data:", processedData);
       onSubmit(processedData);
       
       toast({
@@ -135,6 +138,7 @@ const EmployeeForm = ({
                     name="status"
                     value={formData.status || "Active"}
                     onValueChange={(value) => {
+                      console.log("Status changed to:", value);
                       handleSelectChange("status", value);
                       setIsDirty(true);
                     }}
@@ -142,7 +146,7 @@ const EmployeeForm = ({
                     <SelectTrigger id="status">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper" className="z-[9999] bg-background">
                       <SelectItem value="Active">Active</SelectItem>
                       <SelectItem value="On Leave">On Leave</SelectItem>
                       <SelectItem value="Inactive">Inactive</SelectItem>
@@ -180,7 +184,11 @@ const EmployeeForm = ({
                 
                 <CompanySelector
                   value={formData.company}
-                  onValueChange={(value) => handleSelectChange("company", value)}
+                  onValueChange={(value) => {
+                    console.log("Company changed to:", value);
+                    handleSelectChange("company", value);
+                    setIsDirty(true);
+                  }}
                 />
               </div>
               

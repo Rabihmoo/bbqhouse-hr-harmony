@@ -15,7 +15,7 @@ const CompanySelector = ({ value, onValueChange }: CompanySelectorProps) => {
         Company*
       </Label>
       <Select
-        value={value}
+        value={value || ""}
         onValueChange={onValueChange}
       >
         <SelectTrigger id="company">

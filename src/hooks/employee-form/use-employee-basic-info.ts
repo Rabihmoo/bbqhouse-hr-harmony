@@ -11,7 +11,7 @@ export interface EmployeeBasicInfo {
   department: string;
   hireDate: string;
   inssNumber: string;
-  company: "BBQHouse LDA" | "SALT LDA" | "Executive Cleaning LDA";
+  company: string;
   picture: string;
 }
 

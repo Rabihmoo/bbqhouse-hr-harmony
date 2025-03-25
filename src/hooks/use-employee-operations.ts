@@ -40,11 +40,25 @@ export const useEmployeeOperations = (
   };
 
   const handleEditEmployee = (data: any) => {
-    // Ensure we're getting and preserving all employee data including status
+    // Ensure we're getting and preserving all employee data including status and company
     console.log("Editing employee with data:", data);
     
+    // Find the existing employee to preserve any fields not in the form
+    const existingEmployee = employees.find(emp => emp.id === data.id) || {};
+    
+    // Create updated employee with preserved fields and new data
+    const updatedEmployee = { 
+      ...existingEmployee, 
+      ...data,
+      // Explicitly ensure status and company are updated
+      status: data.status,
+      company: data.company
+    };
+    
+    console.log("Updated employee data:", updatedEmployee);
+    
     const updatedEmployees = employees.map(emp => 
-      emp.id === data.id ? { ...emp, ...data } : emp
+      emp.id === data.id ? updatedEmployee : emp
     );
     
     setEmployees(updatedEmployees);
