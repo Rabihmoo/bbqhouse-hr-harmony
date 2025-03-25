@@ -24,6 +24,19 @@ const Employees = () => {
   const [activeTab, setActiveTab] = useState("active");
   const attendanceUploaderRef = useRef<HTMLDivElement>(null);
 
+  // Refresh data when local storage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedEmployees = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (savedEmployees) {
+        setEmployees(JSON.parse(savedEmployees));
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Save to localStorage whenever employees data changes
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employees));
@@ -65,7 +78,7 @@ const Employees = () => {
     console.log("Attendance report generated:", reportData);
   };
 
-  // Filter employees by status - fix the filtering here
+  // Filter employees by status - corrected filtering
   const activeEmployees = employees.filter(e => e.status === 'Active' || e.status === 'On Leave');
   const inactiveEmployees = employees.filter(e => e.status === 'Inactive' || e.status === 'Terminated');
 

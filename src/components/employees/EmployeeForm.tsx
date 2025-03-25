@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -133,16 +132,20 @@ const EmployeeForm = ({
                     Status
                   </Label>
                   <Select
-                    value={formData.status}
-                    onValueChange={(value) => handleSelectChange("status", value)}
+                    name="status"
+                    value={formData.status || "Active"}
+                    onValueChange={(value) => {
+                      handleSelectChange("status", value);
+                      setIsDirty(true);
+                    }}
                   >
                     <SelectTrigger id="status">
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Active">Active</SelectItem>
-                      <SelectItem value="Inactive">Inactive</SelectItem>
                       <SelectItem value="On Leave">On Leave</SelectItem>
+                      <SelectItem value="Inactive">Inactive</SelectItem>
                       <SelectItem value="Terminated">Terminated</SelectItem>
                     </SelectContent>
                   </Select>

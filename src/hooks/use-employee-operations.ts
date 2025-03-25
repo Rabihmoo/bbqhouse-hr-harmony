@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveRecord } from "@/types/notification";
@@ -15,6 +16,8 @@ export const useEmployeeOperations = (
   // Save to localStorage whenever employees data changes
   const saveEmployeesToLocalStorage = (updatedEmployees: any[]) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedEmployees));
+    // Trigger storage event for real-time updates across tabs
+    window.dispatchEvent(new Event('storage'));
   };
 
   const handleAddEmployee = (data: any) => {
@@ -37,6 +40,9 @@ export const useEmployeeOperations = (
   };
 
   const handleEditEmployee = (data: any) => {
+    // Ensure we're getting and preserving all employee data including status
+    console.log("Editing employee with data:", data);
+    
     const updatedEmployees = employees.map(emp => 
       emp.id === data.id ? { ...emp, ...data } : emp
     );
