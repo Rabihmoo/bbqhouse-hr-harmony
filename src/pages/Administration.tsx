@@ -344,14 +344,14 @@ const Administration = () => {
       <div className="mb-6 flex items-center gap-4">
         <Label htmlFor="companyFilter" className="whitespace-nowrap">Filter by company:</Label>
         <Select
-          value={selectedCompanyFilter || ""}
-          onValueChange={(value) => setSelectedCompanyFilter(value || null)}
+          value={selectedCompanyFilter || "all"}
+          onValueChange={(value) => setSelectedCompanyFilter(value === "all" ? null : value)}
         >
           <SelectTrigger id="companyFilter" className="w-[200px]">
             <SelectValue placeholder="All companies" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All companies</SelectItem>
+            <SelectItem value="all">All companies</SelectItem>
             {companies.map(company => (
               <SelectItem key={company.id} value={company.name}>{company.name}</SelectItem>
             ))}
@@ -553,14 +553,14 @@ const Administration = () => {
                 Department
               </Label>
               <Select
-                value={formData.department || ""}
-                onValueChange={(value) => handleSelectChange("department", value)}
+                value={formData.department || "none"}
+                onValueChange={(value) => handleSelectChange("department", value === "none" ? "" : value)}
               >
                 <SelectTrigger id="department" className="col-span-3">
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Departments</SelectItem>
+                  <SelectItem value="none">All Departments</SelectItem>
                   {departments.map(dept => (
                     <SelectItem key={dept} value={dept}>{dept}</SelectItem>
                   ))}
