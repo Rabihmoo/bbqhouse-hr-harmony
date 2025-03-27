@@ -2,7 +2,6 @@
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import NotificationCenter from "@/components/notifications/NotificationCenter";
 import { Notification } from "@/types/notification";
 import UserProfileMenu from "../users/UserProfileMenu";
 
@@ -15,9 +14,7 @@ interface DashboardHeaderProps {
 
 const DashboardHeader = ({ 
   title, 
-  subtitle, 
-  notifications = [],
-  onNotificationClick
+  subtitle,
 }: DashboardHeaderProps) => {
   return (
     <div className="flex flex-col md:flex-row justify-between items-start md:items-center py-4 px-6 border-b animate-fadeIn">
@@ -31,13 +28,6 @@ const DashboardHeader = ({
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input placeholder="Search..." className="pl-10 w-full" />
         </div>
-        
-        <NotificationCenter 
-          notifications={notifications} 
-          onClick={onNotificationClick}
-        />
-        
-        <UserProfileMenu />
       </div>
     </div>
   );

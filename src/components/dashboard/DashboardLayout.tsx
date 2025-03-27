@@ -29,7 +29,6 @@ const DashboardLayout = ({
   onLogout
 }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
   const isMobile = useMobileCheck();
 
@@ -40,6 +39,12 @@ const DashboardLayout = ({
       localStorage.removeItem("hr-auth");
       navigate("/");
       window.location.reload();
+    }
+  };
+
+  const handleNotificationClick = (notification: any) => {
+    if (onNotificationClick) {
+      onNotificationClick(notification);
     }
   };
 
@@ -85,34 +90,10 @@ const DashboardLayout = ({
             </div>
             
             <div className="flex items-center gap-2">
-              <div className="relative">
-                <Button 
-                  size="icon" 
-                  variant="ghost" 
-                  className="relative"
-                  onClick={() => setShowNotifications(!showNotifications)}
-                >
-                  <Bell className="h-5 w-5" />
-                  {notifications.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {notifications.length}
-                    </span>
-                  )}
-                </Button>
-                
-                {showNotifications && (
-                  <NotificationCenter 
-                    notifications={notifications}
-                    onClose={() => setShowNotifications(false)} 
-                    onSelect={(notification) => {
-                      if (onNotificationClick) {
-                        onNotificationClick(notification);
-                      }
-                      setShowNotifications(false);
-                    }}
-                  />
-                )}
-              </div>
+              <NotificationCenter 
+                notifications={notifications} 
+                onSelect={handleNotificationClick}
+              />
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
