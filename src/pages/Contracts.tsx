@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ContractGenerator from "@/components/contracts/ContractGenerator";
@@ -6,13 +5,25 @@ import { toast } from "sonner";
 import { FileText, FileCheck, Folder } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { companies } from "@/lib/data";
+import { Button } from "@/components/ui/button";
 
 const Contracts = () => {
   const [activeTab, setActiveTab] = useState("generate");
+  const [generatedContracts, setGeneratedContracts] = useState<any[]>([]);
 
   const handleGenerateContract = (contractData: any) => {
     // In a real implementation, this would generate a contract document
     // and potentially save it to a database or file storage
+    
+    // Add the contract to the history
+    setGeneratedContracts(prev => [
+      {
+        id: Date.now().toString(),
+        ...contractData,
+        generatedAt: new Date().toISOString(),
+      },
+      ...prev
+    ]);
     
     toast("Contract generated successfully", {
       description: `The contract for ${contractData.employeeName} has been generated using ${contractData.companyTemplate} template.`,
@@ -56,7 +67,7 @@ const Contracts = () => {
               <div className="prose dark:prose-invert max-w-none">
                 <p>
                   The contract generator creates employment contracts based on the employee's company affiliation.
-                  Each company uses a specific contract template:
+                  Each company uses a specific contract template with different formatting:
                 </p>
                 
                 <ul className="my-4">
@@ -68,15 +79,16 @@ const Contracts = () => {
                 </ul>
                 
                 <p>
-                  The generated contract will automatically insert employee details, salary information,
-                  and other relevant data from their profile.
+                  All contracts are fixed with a standard base salary of 8,900.00 MT (Oito mil e novecentos meticais),
+                  with allowances pulled from the employee's salary structure.
                 </p>
                 
                 <div className="bg-muted/30 p-4 rounded-md mt-4">
                   <h3 className="text-base font-medium mb-2">Important Notes:</h3>
                   <ul className="text-sm space-y-2">
-                    <li>Generated contracts are saved to the system for future reference.</li>
-                    <li>All salary components (basic, transport, accommodation, bonus) are included.</li>
+                    <li>Generated contracts automatically include company-specific information.</li>
+                    <li>Employee details (name, BI number, etc.) are pulled from their profile.</li>
+                    <li>Salary allowances (transport, bonus, punctuality) are included from the employee record.</li>
                     <li>Contract signature date is recorded for compliance purposes.</li>
                   </ul>
                 </div>
@@ -106,8 +118,16 @@ const Contracts = () => {
                       <span className="font-medium">Standard Employment Contract</span>
                     </div>
                     <div className="flex items-center justify-between p-2 border-b">
-                      <span>Last updated</span>
-                      <span className="font-medium">January 15, 2023</span>
+                      <span>Company Address</span>
+                      <span className="font-medium">
+                        {company.name === "SALT LDA" 
+                          ? "Avenida Marginal n.º1251, Maputo" 
+                          : "Cidade de Maputo"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-2 border-b">
+                      <span>Base Salary</span>
+                      <span className="font-medium">8,900.00 MT</span>
                     </div>
                     <div className="flex items-center justify-between p-2 border-b">
                       <span>Language</span>
@@ -133,10 +153,27 @@ const Contracts = () => {
               <h2 className="text-xl font-semibold">Contract History</h2>
             </div>
             
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No contract history available yet.</p>
-              <p className="text-sm mt-2">Generated contracts will appear here.</p>
-            </div>
+            {generatedContracts.length > 0 ? (
+              <div className="grid gap-4">
+                {generatedContracts.map(contract => (
+                  <div key={contract.id} className="border rounded-lg p-4 flex justify-between items-center">
+                    <div>
+                      <h3 className="font-medium">{contract.employeeName}</h3>
+                      <p className="text-sm text-muted-foreground">{contract.company} - Generated on {new Date(contract.generatedAt).toLocaleDateString()}</p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => window.open(`data:application/pdf;base64,JVBERi0...`, '_blank')}>
+                      <FileText className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">No contract history available yet.</p>
+                <p className="text-sm mt-2">Generated contracts will appear here.</p>
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { FileText, Download, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,6 +31,36 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
   const employee = employees.find(emp => emp.id === selectedEmployee);
   const employeeCompany = employee?.company || "BBQHouse LDA";
   const companyTemplate = companies.find(c => c.name === employeeCompany)?.contractTemplate || "";
+
+  // Get company address and representative based on company
+  const getCompanyDetails = (companyName: string) => {
+    switch(companyName) {
+      case "SALT LDA":
+        return {
+          displayName: "SALT RESTAURANT, LDA.",
+          address: "Cidade de Maputo, na Avenida Marginal n.º1251, Distrito Kampfumo",
+          representative: "Youssef Chamas"
+        };
+      case "BBQHouse LDA":
+        return {
+          displayName: "BBQ HOUSE",
+          address: "Cidade de Maputo",
+          representative: "Youssef Chamas"
+        };
+      case "Executive Cleaning LDA":
+        return {
+          displayName: "EXECUTIVE CLEANING",
+          address: "Cidade de Maputo",
+          representative: "Youssef Chamas"
+        };
+      default:
+        return {
+          displayName: "BBQ HOUSE",
+          address: "Cidade de Maputo",
+          representative: "Youssef Chamas"
+        };
+    }
+  };
 
   const handleGenerateContract = () => {
     const contractData = {
@@ -92,11 +121,13 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
     }
   }, [selectedEmployee]);
 
+  // Format money value to words (placeholder)
   const formatMoneyInWords = (amount: number) => {
-    // This is a placeholder - in production you would use a proper library 
-    // or a more comprehensive function to convert numbers to Portuguese words
-    return `${amount} KZ (valor por extenso)`;
+    return `${amount} MT (Oito mil e novecentos meticais)`;
   };
+
+  // Get company details based on employee's company
+  const companyDetails = getCompanyDetails(employeeCompany);
 
   return (
     <div className="bg-white dark:bg-black/40 rounded-xl shadow-sm overflow-hidden glass p-6">
@@ -227,7 +258,7 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
           <DialogContent className="max-w-4xl max-h-[90vh] glass">
             <DialogHeader>
-              <DialogTitle>{employeeCompany} Contract Preview</DialogTitle>
+              <DialogTitle>{companyDetails.displayName} Contract Preview</DialogTitle>
             </DialogHeader>
             <ScrollArea className="h-[calc(90vh-80px)] overflow-y-auto">
               <div className="p-6 border rounded-lg bg-card text-card-foreground">
@@ -249,7 +280,7 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
                   </p>
                   
                   <p>
-                    Entre {employeeCompany}, firma em nome colectivo, com sede na Cidade de Maputo cujo objecto principal consiste em restauração, representada no acto pelo sócio Sr. Youssef Chamas, de nacionalidade Libanesa com poderes para tal, doravante designado de EMPREGADOR.
+                    Entre {companyDetails.displayName}, com sede na {companyDetails.address}, representada pelo senhor {companyDetails.representative}, neste acto designado por EMPREGADOR.
                   </p>
                   
                   <p>
@@ -257,7 +288,7 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
                   </p>
                   
                   <p>
-                    {employee.fullName}, portador de documento de identificação nº{employee.biNumber}, emitido aos {employee.biDetails?.issueDate || "N/A"}, natural de {"Maputo"}, residente no bairro {employee.address}, doravante designado de COLABORADOR.
+                    {employee.fullName}, {employee.position}, portador de documento de identificação nº{employee.biNumber}, emitido aos {employee.biDetails?.issueDate || "N/A"}, natural de {"Maputo"}, residente no bairro {employee.address}, doravante designado de COLABORADOR.
                   </p>
                   
                   <div>
@@ -270,7 +301,16 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
                     <h3 className="font-bold text-lg mb-2">CLÁUSULA PRIMEIRA</h3>
                     <h4 className="font-medium mb-2">(Funções)</h4>
                     <p>
-                      1 - O colaborador é admitido ao serviço da Empregador para desempenhar as funções inerentes à categoria profissional de {employee.department} e as funções afins ou funcionalmente ligadas a essa actividade sem prejuízo do eventual cumprimento de outras funções que lhe sejam cometidas por se revelarem determinantes para o funcionamento das actividades da empregador e couberem no âmbito razoável das funções genericamente atribuídas ao colaborador.
+                      1 - O colaborador é admitido ao serviço da Empregador para desempenhar as funções inerentes à categoria profissional de {employee.position} e as funções afins ou funcionalmente ligadas a essa actividade sem prejuízo do eventual cumprimento de outras funções que lhe sejam cometidas por se revelarem determinantes para o funcionamento das actividades da empregador e couberem no âmbito razoável das funções genericamente atribuídas ao colaborador.
+                    </p>
+                    <p>
+                      2 - O empregador pode, quando o interesse da empresa o exija, encarregar temporariamente o colaborador para desempenhar funções não compreendidas na actividade contratada, desde que tal não implique diminuição da retribuição.
+                    </p>
+                    <p>
+                      3 - O colaborador obriga-se a cuidar dos materiais e equipamentos fornecidos pelo empregador, necessários à prestação dos serviços contratados, e a pedir com antecedência a substituição dos mesmos quando necessário.
+                    </p>
+                    <p>
+                      4 - No momento de término do presente contrato o colaborador compromete-se a devolver quaisquer bens móveis e imóveis pertencentes a empresa cedidos/entregues a si, a data de assinatura do presente instrumento, nas condições em que recebeu salvo a normal deterioração dos mesmos sob pena de lhe serem cobradas as devidas deteriorações irregulares.
                     </p>
                   </div>
                   
@@ -278,7 +318,7 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
                     <h3 className="font-bold text-lg mb-2">CLÁUSULA SEGUNDA</h3>
                     <h4 className="font-medium mb-2">(Remuneração)</h4>
                     <p>
-                      1 - O empregador compromete-se a pagar ao colaborador salário mensal ilíquido de {employee.salaryStructure?.basicSalary || 0} ({formatMoneyInWords(employee.salaryStructure?.basicSalary || 0)}) sujeita aos impostos e demais descontos legais.
+                      1 - O empregador compromete-se a pagar ao colaborador salário mensal ilíquida de 8.900,00Mt (Oito mil e novecentos meticais) sujeita aos impostos e demais descontos legais.
                     </p>
                     <p>
                       2 - O empregador compromete-se também a reconhecer os esforços do trabalhador não só através de salários, mas também através da atribuição de subsídios de produtividade e desempenho, se o negocio assim o permitir, que serão subdivididos em:
@@ -290,7 +330,13 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
                       b) Bónus de eficiência e produtividade no trabalho – {employee.salaryStructure?.bonus || 0}
                     </p>
                     <p className="pl-4">
-                      c) Alojamento – {employee.salaryStructure?.accommodationAllowance || 0}
+                      c) Pontualidade e assiduidade – {employee.salaryStructure?.accommodationAllowance || 0}
+                    </p>
+                    <p>
+                      3 – O direito de bónus será proporcional ao desempenho do trabalhador.
+                    </p>
+                    <p>
+                      4 - A remuneração mensal referida no número 1 deverá ser paga até ao quinto dia útil de cada mês seguinte a que e devida a remuneração, na sede ou no escritório do empregador, por cheque bancário ou transferência bancária à ordem ao colaborador.
                     </p>
                   </div>
                   
@@ -298,48 +344,63 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
                     <h3 className="font-bold text-lg mb-2">CLÁUSULA TERCEIRA</h3>
                     <h4 className="font-medium mb-2">(Vigência)</h4>
                     <p>
-                      O empregador contrata o colaborador, por tempo indeterminado e tem o seu início desde {employee.hireDate}.
+                      O empregador contrata o colaborador, por tempo indeterminado e tem o seu início desde {employee.hireDate || startDate || format(new Date(), 'yyyy-MM-dd')}.
                     </p>
                   </div>
                   
                   <div>
                     <h3 className="font-bold text-lg mb-2">CLÁUSULA QUARTA</h3>
-                    <h4 className="font-medium mb-2">(Local de Trabalho)</h4>
+                    <h4 className="font-medium mb-2">(Período probatório)</h4>
                     <p>
-                      O local de trabalho do colaborador será na sede da Empresa sita na Cidade de Maputo, sem prejuízo de eventuais deslocações temporárias que tenham de ser efectuadas, por necessidade do serviço.
+                      Considerando que o cargo desempenhado pelo colaborador é caracterizado por elevado grau de responsabilidade, o presente contrato fica sujeito a um período probatório de 180 (cento e oitenta) dias, período esse no decurso do qual, qualquer das partes poderá pôr livremente termo ao contrato, sem necessidade de aviso prévio nem de invocação de justa causa, não havendo lugar a qualquer indemnização nos termos da lei.
                     </p>
                   </div>
                   
                   <div>
                     <h3 className="font-bold text-lg mb-2">CLÁUSULA QUINTA</h3>
-                    <h4 className="font-medium mb-2">(Período de Funcionamento e Horário)</h4>
+                    <h4 className="font-medium mb-2">(Local de trabalho)</h4>
                     <p>
-                      1 – O período normal de trabalho é de 48 (quarenta e oito) horas semanais, distribuídas de Segunda-Feira a Sábado.
+                      1 - O colaborador desempenhará as suas funções em um dos estabelecimentos, do empregador, em funcionamento ou em actividade, à data da celebração do presente contrato de trabalho e na área geográfica que lhe for determinada.
                     </p>
                     <p>
-                      2 – O horário de trabalho poderá ser alterado pela empregadora sempre que razões ponderosas e atendíveis de funcionamento o exijam, dentro do legalmente permitido.
+                      2 - Durante a vigência do presente contrato de trabalho é definido como local de trabalho predominante o estabelecimento sito na área geográfica da província e cidade de Maputo no geral.
+                    </p>
+                    <p>
+                      3 - Para além do disposto nos números anteriores, o colaborador declara, desde já, que aceita ser transferido ou temporariamente deslocado para outro local de trabalho, sempre que tal se torne necessário ao exercício da actividade e o interesse da empresa o exija, sem custos adicionais a empresa desde que a dita mudança seja na região supra mencionada.
                     </p>
                   </div>
                   
                   <div>
                     <h3 className="font-bold text-lg mb-2">CLÁUSULA SEXTA</h3>
-                    <h4 className="font-medium mb-2">(Férias e Subsídio)</h4>
+                    <h4 className="font-medium mb-2">(Período normal de trabalho e horário de trabalho)</h4>
                     <p>
-                      1 – O trabalhador tem direito a gozar férias nos termos da lei.
+                      1 – O contrato terá um horário de trabalho normal, de acordo com a legislação vigente, podendo trabalhar fora das horas, em caso de necessidade, ou ainda em regime de turnos conforme o plano de actividades vigente na empresa do contratante.
                     </p>
                     <p>
-                      2 – O direito a férias adquire-se com a celebração do contrato de trabalho, vencendo-se no dia 1 de janeiro de cada ano civil.
+                      2 - O colaborador obriga-se à prestação efectiva de trabalho no horário devidamente estabelecido na empresa e autorizado por entidade competente.
                     </p>
                     <p>
-                      3 – O período de férias para o trabalhador que exerça funções por um período igual a um ano e não superior a dois anos, é de 12 dias úteis consecutivos e para o trabalhador que exerça funções por um período superior a dois anos, é de 30 dias consecutivos.
+                      3 - O empregador pode alterar unilateralmente os horários de trabalho ou estabelecer horários em regimes especiais de adaptabilidade, nos termos definidos na lei do trabalho.
+                    </p>
+                    <p>
+                      4 - O colaborador obriga-se, ainda, a cumprir as normas internas em vigor, na empresa, relativas ao registo do horário de trabalho e registo biométrico de assiduidade.
+                    </p>
+                    <p>
+                      5 - Esta posição poderá estar sujeita ao regime de isenção de horário de trabalho previsto na lei.
                     </p>
                   </div>
                   
                   <div>
                     <h3 className="font-bold text-lg mb-2">CLÁUSULA SÉTIMA</h3>
-                    <h4 className="font-medium mb-2">(Legislação Aplicável)</h4>
+                    <h4 className="font-medium mb-2">(Exclusividade, pacto de não concorrência e não solicitação)</h4>
                     <p>
-                      A legislação aplicável ao presente contrato de trabalho, nomeadamente em relação a férias, faltas, período experimental, cessação da relação laboral, regalias sociais e segurança social é a Lei do trabalho em vigor e demais legislação complementar.
+                      1 - O colaborador obriga-se a não exercer ou coordenar, total ou parcialmente, por si ou por interposta pessoa ou entidade, actividade comercial ou similar que seja concorrente à do empregador, pois face à especial função que exerce tal acarretaria elevados prejuízos para o mesmo.
+                    </p>
+                    <p>
+                      2 - Mais se obriga, compensado que será por formação e Know-How que lhe será ministrado ao longo do seu percurso profissional nesta empresa, a manter a obrigação descrita no número anterior até 2 anos após a cessação do vínculo laboral entre ambos.
+                    </p>
+                    <p>
+                      3 - Concorda o segundo outorgante em prestar os presentes serviços aqui descritos e afins em total regime de exclusividade para o primeiro contraente.
                     </p>
                   </div>
                   
@@ -353,7 +414,7 @@ const ContractGenerator = ({ onGenerate }: ContractGeneratorProps) => {
                     
                     <div className="grid grid-cols-2 gap-8 mt-8">
                       <div>
-                        <p className="mb-10">PELO EMPREGADOR:</p>
+                        <p className="mb-10">PELO EMPREGADOR</p>
                         <div className="border-t border-black w-full"></div>
                       </div>
                       
