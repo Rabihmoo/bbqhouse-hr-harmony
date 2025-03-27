@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Bell, X, Info, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { 
   Button,
@@ -14,13 +14,17 @@ import { format } from "date-fns";
 interface NotificationCenterProps {
   notifications: Notification[];
   onClick?: (notification: Notification) => void;
+  onClose?: () => void;
+  onSelect?: (notification: Notification) => void;
 }
 
 const NotificationCenter: React.FC<NotificationCenterProps> = ({
   notifications,
-  onClick
+  onClick,
+  onClose,
+  onSelect
 }) => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = React.useState(false);
   
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
@@ -53,74 +57,82 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
   };
   
   const handleNotificationClick = (notification: Notification) => {
-    if (onClick) {
+    if (onSelect) {
+      onSelect(notification);
+    } else if (onClick) {
       onClick(notification);
+    }
+    
+    if (onClose) {
+      onClose();
+    } else {
+      setOpen(false);
+    }
+  };
+  
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
       setOpen(false);
     }
   };
   
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          {notifications.length > 0 && (
-            <span className="absolute -top-1 -right-1 bg-bbqred text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
-              {notifications.length > 9 ? '9+' : notifications.length}
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 max-h-[70vh] overflow-y-auto p-0" align="end">
-        <div className="flex items-center justify-between p-4 border-b">
-          <h3 className="font-medium">Notifications</h3>
+    <div className="absolute top-full right-0 mt-2 w-80 max-h-[70vh] overflow-y-auto bg-white dark:bg-gray-800 rounded-md shadow-lg border z-50">
+      <div className="flex items-center justify-between p-4 border-b">
+        <h3 className="font-medium">Notifications</h3>
+        <div className="flex items-center gap-2">
           {notifications.length > 0 && (
             <span className="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
               {notifications.length}
             </span>
           )}
+          <Button variant="ghost" size="icon" onClick={handleClose} className="h-6 w-6">
+            <X className="h-4 w-4" />
+          </Button>
         </div>
-        
-        {notifications.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground">
-            No notifications
-          </div>
-        ) : (
-          <div className="divide-y">
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                onClick={() => handleNotificationClick(notification)}
-                className={cn(
-                  "p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors",
-                  notification.employeeId && "cursor-pointer"
-                )}
-              >
-                <div className="flex gap-3">
-                  <div className="flex-shrink-0 mt-0.5">
-                    {getNotificationIcon(notification.type)}
+      </div>
+      
+      {notifications.length === 0 ? (
+        <div className="p-4 text-center text-muted-foreground">
+          No notifications
+        </div>
+      ) : (
+        <div className="divide-y">
+          {notifications.map((notification) => (
+            <div
+              key={notification.id}
+              onClick={() => handleNotificationClick(notification)}
+              className={cn(
+                "p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors",
+                notification.employeeId && "cursor-pointer"
+              )}
+            >
+              <div className="flex gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  {getNotificationIcon(notification.type)}
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <h4 className="font-medium text-sm">{notification.title}</h4>
+                    <span className="text-xs text-muted-foreground">
+                      {format(new Date(notification.timestamp), 'HH:mm')}
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <h4 className="font-medium text-sm">{notification.title}</h4>
-                      <span className="text-xs text-muted-foreground">
-                        {format(new Date(notification.timestamp), 'HH:mm')}
-                      </span>
+                  <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
+                  {notification.employeeId && (
+                    <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                      Click to view employee
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">{notification.message}</p>
-                    {notification.employeeId && (
-                      <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
-                        Click to view employee
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </PopoverContent>
-    </Popover>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
