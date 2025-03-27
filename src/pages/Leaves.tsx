@@ -39,8 +39,11 @@ const Leaves = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Gather all leave records from all employees
-  const allLeaveRecords = employees.reduce((records: any[], employee: any) => {
+  // Filter only active employees
+  const activeEmployees = employees.filter(emp => emp.status === 'Active' || emp.status === 'On Leave');
+
+  // Gather all leave records from only active employees
+  const allLeaveRecords = activeEmployees.reduce((records: any[], employee: any) => {
     if (employee.leaveRecords && employee.leaveRecords.length > 0) {
       const employeeRecords = employee.leaveRecords.map((record: any) => ({
         ...record,
@@ -135,13 +138,19 @@ const Leaves = () => {
     });
   };
 
+  // Filter leaveRequests to only include active employees
+  const activeLeaveRequests = leaveRequests.filter(request => {
+    const employee = employees.find(emp => emp.id === request.employeeId);
+    return employee && (employee.status === 'Active' || employee.status === 'On Leave');
+  });
+
   return (
     <DashboardLayout title="Leave Management" subtitle="Manage employee leave requests">
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Leave Requests</h2>
           <p className="text-muted-foreground">
-            Total {leaveRequests.length} leave requests
+            Total {activeLeaveRequests.length} leave requests
           </p>
         </div>
         <Button onClick={() => setShowAddForm(true)}>
@@ -152,7 +161,7 @@ const Leaves = () => {
 
       <div className="bg-white dark:bg-black/40 glass rounded-xl shadow-sm overflow-hidden mb-8">
         <DataTable
-          data={leaveRequests}
+          data={activeLeaveRequests}
           columns={[
             {
               key: "employeeName",
@@ -200,7 +209,7 @@ const Leaves = () => {
       {/* Employees with missing leaves section */}
       <div className="mb-8">
         <MissingLeavesList 
-          employees={employees} 
+          employees={activeEmployees} 
           onAddLeave={handleAddLeaveRecord} 
         />
       </div>

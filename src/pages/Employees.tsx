@@ -12,9 +12,13 @@ import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
 import { useLeaveAllowances } from "@/hooks/use-leave-allowances";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+interface EmployeesProps {
+  onLogout?: () => void;
+}
+
 const LOCAL_STORAGE_KEY = 'restaurant-employees-data';
 
-const Employees = () => {
+const Employees = ({ onLogout }: EmployeesProps) => {
   // Load initial data from localStorage if available, otherwise use the default data
   const [employees, setEmployees] = useState(() => {
     const savedEmployees = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -108,6 +112,7 @@ const Employees = () => {
       subtitle="Manage employee records"
       notifications={notifications}
       onNotificationClick={handleNotificationClick}
+      onLogout={onLogout}
     >
       <PageHeader 
         employeeCount={employees.length} 

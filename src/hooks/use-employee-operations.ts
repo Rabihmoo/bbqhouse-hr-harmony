@@ -199,8 +199,11 @@ export const useEmployeeOperations = (
     const departments = ["Kitchen", "Sala", "Bar", "Cleaning", "Takeaway"];
     const result: { [key: string]: number } = {};
     
+    // Only include active employees in the department count
+    const activeEmployees = employees.filter(emp => emp.status === 'Active' || emp.status === 'On Leave');
+    
     departments.forEach(dept => {
-      result[dept] = employees.filter(emp => emp.department === dept).length;
+      result[dept] = activeEmployees.filter(emp => emp.department === dept).length;
     });
     
     return result;

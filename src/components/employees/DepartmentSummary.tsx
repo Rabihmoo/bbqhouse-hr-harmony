@@ -12,7 +12,7 @@ const DepartmentSummary: React.FC<DepartmentSummaryProps> = ({ departmentCounts 
         <div key={dept} className="bg-white dark:bg-black/40 rounded-lg p-4 shadow-sm">
           <h3 className="font-medium text-sm text-muted-foreground mb-1">Department</h3>
           <p className="text-lg font-bold">{dept}</p>
-          <p className="text-sm mt-1">{count} employees</p>
+          <p className="text-sm mt-1">{count} {count === 1 ? 'employee' : 'employees'}</p>
         </div>
       ))}
     </div>

@@ -14,7 +14,11 @@ import { Calendar, Plus, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
-const Index = () => {
+interface IndexProps {
+  onLogout?: () => void;
+}
+
+const Index = ({ onLogout }: IndexProps) => {
   const navigate = useNavigate();
   
   // Latest leave requests for dashboard
@@ -31,6 +35,7 @@ const Index = () => {
     <DashboardLayout 
       title="Dashboard" 
       subtitle="Welcome to BBQHOUSE HR Management"
+      onLogout={onLogout}
     >
       <div className="space-y-8">
         <StatsCards />
@@ -147,18 +152,20 @@ const Index = () => {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-6">
             {['Kitchen', 'Sala', 'Bar', 'Cleaning', 'Takeaway'].map((dept) => {
-              const deptEmployees = employees.filter(emp => emp.department === dept);
+              const activeEmpInDept = employees.filter(emp => 
+                emp.department === dept && (emp.status === 'Active' || emp.status === 'On Leave')
+              );
               return (
                 <div key={dept} className="bg-background/50 rounded-lg p-5 card-hover">
                   <div className="flex justify-between items-start mb-4">
                     <span className={cn("px-2 py-1 rounded-full text-xs text-white", departmentColors[dept])}>
                       {dept}
                     </span>
-                    <span className="text-2xl font-bold">{deptEmployees.length}</span>
+                    <span className="text-2xl font-bold">{activeEmpInDept.length}</span>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    <p>Active: {deptEmployees.filter(emp => emp.status === 'Active').length}</p>
-                    <p>On Leave: {deptEmployees.filter(emp => emp.status === 'On Leave').length}</p>
+                    <p>Active: {activeEmpInDept.filter(emp => emp.status === 'Active').length}</p>
+                    <p>On Leave: {activeEmpInDept.filter(emp => emp.status === 'On Leave').length}</p>
                   </div>
                 </div>
               );
