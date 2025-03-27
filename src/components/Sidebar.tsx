@@ -14,15 +14,17 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useMobileCheck } from "@/hooks/use-mobile";
 
-const Sidebar = () => {
+interface SidebarProps {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
   const location = useLocation();
-  const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = React.useState(false);
-
-  const toggle = () => setIsOpen(!isOpen);
-
+  const isMobile = useMobileCheck();
+  
   const isCurrentPage = (path: string) => {
     return location.pathname === path;
   };
@@ -55,22 +57,26 @@ const Sidebar = () => {
         variant="outline"
         size="icon"
         className="fixed left-4 top-4 z-50 md:hidden"
-        onClick={toggle}
+        onClick={() => setOpen(!open)}
         aria-label="Toggle menu"
       >
-        {isOpen ? <X size={20} /> : <Menu size={20} />}
+        {open ? <X size={20} /> : <Menu size={20} />}
       </Button>
 
       {/* Sidebar */}
       <div
         className={cn(
           "fixed inset-y-0 left-0 z-40 w-64 bg-background border-r transition-transform duration-300 ease-in-out md:translate-x-0",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          open ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex flex-col h-full">
           <div className="border-b py-6 px-4 mb-4 flex items-center space-x-2">
-            <img src="/logo.png" alt="Company Logo" className="h-8 w-auto" />
+            <img 
+              src="/lovable-uploads/3b0f2146-354a-4718-b5d4-d20dc1907ba1.png" 
+              alt="Company Logo" 
+              className="h-8 w-auto" 
+            />
             <h2 className="text-xl font-bold">BBQHouse HRM</h2>
           </div>
 
@@ -96,10 +102,10 @@ const Sidebar = () => {
       </div>
 
       {/* Overlay to close mobile menu when clicking outside */}
-      {isOpen && (
+      {open && (
         <div
           className="fixed inset-0 z-30 bg-black/50 md:hidden"
-          onClick={toggle}
+          onClick={() => setOpen(false)}
           aria-hidden="true"
         />
       )}

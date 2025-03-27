@@ -1,4 +1,3 @@
-
 import { ReactNode, useState } from "react";
 import { User, Bell } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -45,7 +44,6 @@ const DashboardLayout = ({
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Pass the correct props to Sidebar component */}
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
       <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80">
@@ -103,8 +101,9 @@ const DashboardLayout = ({
                 
                 {showNotifications && (
                   <NotificationCenter 
-                    notifications={notifications} 
-                    onNotificationClick={(notification) => {
+                    notifications={notifications}
+                    onClose={() => setShowNotifications(false)} 
+                    onSelect={(notification) => {
                       if (onNotificationClick) {
                         onNotificationClick(notification);
                       }
