@@ -13,7 +13,7 @@ export interface EmployeeBasicInfo {
   inssNumber: string;
   company: string;
   picture: string;
-  status?: string;
+  status: string;
 }
 
 export const useEmployeeBasicInfo = (
@@ -77,6 +77,7 @@ export const useEmployeeBasicInfo = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+    console.log(`Updating basic info field ${name} with value:`, value);
     setBasicInfo((prevState) => ({
       ...prevState,
       [name]: value,

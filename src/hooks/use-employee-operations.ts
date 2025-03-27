@@ -52,7 +52,13 @@ export const useEmployeeOperations = (
     // Create updated employee with preserved fields and new data
     const updatedEmployee = { 
       ...existingEmployee, 
-      ...data
+      ...data,
+      // Explicitly ensure these fields are updated from the form data
+      status: data.status,
+      company: data.company,
+      address: data.address,
+      secondAddress: data.secondAddress,
+      email: data.email
     };
     
     console.log("Updated employee data:", updatedEmployee);

@@ -31,6 +31,7 @@ export const useEmployeeSalary = (
   useEffect(() => {
     if (open) {
       if (isEditing && initialData) {
+        console.log("Setting initial salary data:", initialData.salaryStructure);
         setSalaryInfo({
           salary: initialData.salary ? String(initialData.salary) : "",
           salaryStructure: {
@@ -60,6 +61,7 @@ export const useEmployeeSalary = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    console.log(`Updating salary field ${name} with value:`, value);
 
     // Handle nested salary structure
     if (name.startsWith('salaryStructure.')) {
