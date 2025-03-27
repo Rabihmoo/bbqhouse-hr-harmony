@@ -25,6 +25,7 @@ export const useEmployeeOperations = (
       ...data,
       id: String(employees.length + 1),
       status: data.status || 'Active',
+      company: data.company || '',
       remainingLeaves: 0, // Start with 0 leave days for new employees
     };
     
@@ -49,12 +50,9 @@ export const useEmployeeOperations = (
     const existingEmployee = employees.find(emp => emp.id === data.id) || {};
     
     // Create updated employee with preserved fields and new data
-    // Explicitly ensure status and company are updated
     const updatedEmployee = { 
       ...existingEmployee, 
-      ...data,
-      status: data.status || existingEmployee.status || "Active",
-      company: data.company || existingEmployee.company || ""
+      ...data
     };
     
     console.log("Updated employee data:", updatedEmployee);
@@ -79,6 +77,7 @@ export const useEmployeeOperations = (
   };
 
   // Handle adding a leave record to an employee - fixed to deduct from oldest year first
+  // Update this to mark the year as "fully-used" when used
   const handleAddLeaveRecord = (employeeId: string, leaveRecord: Omit<LeaveRecord, 'id'>) => {
     const updatedEmployees = employees.map(emp => {
       if (emp.id === employeeId) {
@@ -102,11 +101,23 @@ export const useEmployeeOperations = (
           const daysToDeduct = Math.min(allowance.remaining, remainingDaysToDeduct);
           remainingDaysToDeduct -= daysToDeduct;
           
+          // Mark as fully-used if all days are used
+          const newRemaining = allowance.remaining - daysToDeduct;
+          const newStatus = newRemaining === 0 ? 'fully-used' : 'partially-used';
+          
+          // Create notification for fully used leave
+          if (newRemaining === 0) {
+            toast({
+              title: "Leave Fully Used",
+              description: `${emp.fullName}'s leave for ${allowance.year} has been fully used.`,
+            });
+          }
+          
           return {
             ...allowance,
             daysTaken: allowance.daysTaken + daysToDeduct,
-            remaining: allowance.remaining - daysToDeduct,
-            status: allowance.remaining - daysToDeduct === 0 ? 'fully-used' : 'partially-used'
+            remaining: newRemaining,
+            status: newStatus
           };
         });
         
@@ -151,6 +162,26 @@ export const useEmployeeOperations = (
     });
   };
 
+  // Check for missing documents and send notifications
+  const checkMissingDocuments = () => {
+    employees.forEach(employee => {
+      if (!employee.documents) return;
+      
+      const requiredDocs = ['bi', 'healthCard', 'tax', 'nuit', 'declaration', 'cv'];
+      const missingDocs = requiredDocs.filter(doc => 
+        !employee.documents[doc] || !employee.documents[doc].uploaded
+      );
+      
+      if (missingDocs.length > 0) {
+        toast({
+          title: "Missing Documents",
+          description: `${employee.fullName} is missing ${missingDocs.length} document(s): ${missingDocs.join(', ')}`,
+          variant: "destructive",
+        });
+      }
+    });
+  };
+
   const getEmployeesByDepartment = () => {
     const departments = ["Kitchen", "Sala", "Bar", "Cleaning", "Takeaway"];
     const result: { [key: string]: number } = {};
@@ -177,6 +208,7 @@ export const useEmployeeOperations = (
     handleRowClick,
     handleAddLeaveRecord,
     checkEmployeeAnniversaries,
+    checkMissingDocuments,
     getEmployeesByDepartment,
     filterEmployeesByCompany,
   };

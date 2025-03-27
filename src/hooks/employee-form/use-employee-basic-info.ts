@@ -13,7 +13,7 @@ export interface EmployeeBasicInfo {
   inssNumber: string;
   company: string;
   picture: string;
-  status?: string; // Adding status here to ensure it's included in the state
+  status?: string;
 }
 
 export const useEmployeeBasicInfo = (
@@ -33,7 +33,7 @@ export const useEmployeeBasicInfo = (
     inssNumber: "",
     company: "BBQHouse LDA",
     picture: "",
-    status: "Active", // Default status
+    status: "Active",
   });
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export const useEmployeeBasicInfo = (
           inssNumber: initialData.inssNumber || "",
           company: initialData.company || "BBQHouse LDA",
           picture: initialData.picture || "",
-          status: initialData.status || "Active", // Make sure status is included
+          status: initialData.status || "Active",
         });
       } else {
         setBasicInfo({

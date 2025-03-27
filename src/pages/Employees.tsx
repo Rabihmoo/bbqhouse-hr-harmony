@@ -53,6 +53,7 @@ const Employees = () => {
     handleRowClick,
     handleAddLeaveRecord,
     checkEmployeeAnniversaries,
+    checkMissingDocuments,
     getEmployeesByDepartment,
     filterEmployeesByCompany,
   } = useEmployeeOperations(employees, setEmployees, LOCAL_STORAGE_KEY);
@@ -62,6 +63,14 @@ const Employees = () => {
 
   // Use the leave allowances hook
   useLeaveAllowances(employees, setEmployees);
+
+  // Check for missing documents when the component mounts
+  useEffect(() => {
+    checkMissingDocuments();
+    // Run the check every 24 hours
+    const interval = setInterval(checkMissingDocuments, 24 * 60 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [employees]);
 
   // Handle notification click to open the employee edit form
   const handleNotificationClick = (notification: any) => {

@@ -61,7 +61,7 @@ export const useEmployeeFormState = (
     setOtherFormData,
   } = useAdditionalFormData(open, isEditing, initialData);
 
-  // Combined data from all hooks
+  // Combined data from all hooks - ensure we include status and company
   const formData = {
     ...basicInfo,
     ...biDetails,
@@ -69,7 +69,9 @@ export const useEmployeeFormState = (
     ...salaryInfo,
     ...otherFormData,
     documents,
-    status: otherFormData.status || "Active" // Default to Active
+    // Explicitly include these fields to ensure they're in the formData
+    status: otherFormData.status || basicInfo.status || "Active",
+    company: basicInfo.company || otherFormData.company || ""
   };
   
   // Define processFormData here before it's used
@@ -77,9 +79,12 @@ export const useEmployeeFormState = (
     // Convert string salary values to numbers
     const processedSalaryData = processSalaryData();
     
+    // Ensure status and company are included in the processed data
     return {
       ...formData,
-      ...processedSalaryData
+      ...processedSalaryData,
+      status: formData.status,
+      company: formData.company
     };
   };
 

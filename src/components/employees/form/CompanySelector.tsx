@@ -10,7 +10,8 @@ interface CompanySelectorProps {
 }
 
 const CompanySelector = ({ value, onValueChange }: CompanySelectorProps) => {
-  console.log("CompanySelector rendering with value:", value);
+  // Ensure the value is never undefined or null when passed to Select
+  const safeValue = value || "";
   
   return (
     <div>
@@ -19,7 +20,7 @@ const CompanySelector = ({ value, onValueChange }: CompanySelectorProps) => {
       </Label>
       <Select
         name="company"
-        value={value || ""}
+        value={safeValue}
         onValueChange={(newValue) => {
           console.log("Company selected:", newValue);
           onValueChange(newValue);
