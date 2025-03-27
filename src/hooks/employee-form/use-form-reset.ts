@@ -38,6 +38,7 @@ export const useFormReset = ({
       inssNumber: "",
       company: "BBQHouse LDA",
       picture: "",
+      status: "Active", // Added the missing status field
     });
 
     setBIDetails({
