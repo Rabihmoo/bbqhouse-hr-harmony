@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from "react";
 
-export function useIsMobile() {
+// Renamed from useIsMobile to useMobileCheck to match the import
+export function useMobileCheck() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -22,7 +23,6 @@ export function useIsMobile() {
   return isMobile;
 }
 
-// Added useMobileMenu hook to fix the error
 export function useMobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
   

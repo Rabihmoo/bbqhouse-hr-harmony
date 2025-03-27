@@ -104,11 +104,11 @@ function App() {
             <>
               <Route path="/" element={<Index onLogout={handleLogout} />} />
               <Route path="/employees" element={<Employees onLogout={handleLogout} />} />
-              <Route path="/leaves" element={<Leaves onLogout={handleLogout} />} />
-              <Route path="/attendance" element={<Attendance onLogout={handleLogout} />} />
-              <Route path="/payroll" element={<Payroll onLogout={handleLogout} />} />
-              <Route path="/contracts" element={<Contracts onLogout={handleLogout} />} />
-              <Route path="/administration" element={<Administration onLogout={handleLogout} />} />
+              <Route path="/leaves" element={<Leaves />} />
+              <Route path="/attendance" element={<Attendance />} />
+              <Route path="/payroll" element={<Payroll />} />
+              <Route path="/contracts" element={<Contracts />} />
+              <Route path="/administration" element={<Administration />} />
               <Route path="*" element={<NotFound />} />
             </>
           ) : (

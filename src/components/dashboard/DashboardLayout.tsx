@@ -45,7 +45,8 @@ const DashboardLayout = ({
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      {/* Pass the correct props to Sidebar component */}
+      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
       <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80">
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b shadow-sm">
@@ -103,7 +104,6 @@ const DashboardLayout = ({
                 {showNotifications && (
                   <NotificationCenter 
                     notifications={notifications} 
-                    onClose={() => setShowNotifications(false)}
                     onNotificationClick={(notification) => {
                       if (onNotificationClick) {
                         onNotificationClick(notification);
