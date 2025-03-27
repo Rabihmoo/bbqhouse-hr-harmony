@@ -70,8 +70,12 @@ export const useEmployeeFormState = (
     ...otherFormData,
     documents,
     // Explicitly include these fields to ensure they're in the formData
-    status: otherFormData.status || basicInfo.status || "Active",
-    company: basicInfo.company || otherFormData.company || ""
+    status: basicInfo.status || "Active",
+    company: basicInfo.company || "BBQHouse LDA",
+    address: basicInfo.address || "",
+    secondAddress: basicInfo.secondAddress || "",
+    email: basicInfo.email || "",
+    phone: basicInfo.phone || ""
   };
   
   // Define processFormData here before it's used
@@ -84,7 +88,11 @@ export const useEmployeeFormState = (
       ...formData,
       ...processedSalaryData,
       status: formData.status,
-      company: formData.company
+      company: formData.company,
+      address: formData.address,
+      secondAddress: formData.secondAddress,
+      email: formData.email,
+      phone: formData.phone
     };
   };
 

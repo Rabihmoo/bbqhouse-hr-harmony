@@ -66,6 +66,11 @@ const EmployeeForm = ({
       console.log("Submitting form data:", processedData);
       console.log("Form status value:", formData.status);
       console.log("Form company value:", formData.company);
+      console.log("Form address value:", formData.address);
+      console.log("Form email value:", formData.email);
+      console.log("Form phone value:", formData.phone);
+      console.log("Form salary value:", formData.salary);
+      
       onSubmit(processedData);
       
       toast({

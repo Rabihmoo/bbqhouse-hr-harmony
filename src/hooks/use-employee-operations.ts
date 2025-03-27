@@ -45,6 +45,10 @@ export const useEmployeeOperations = (
     console.log("Editing employee with data:", data);
     console.log("Status value in edit:", data.status);
     console.log("Company value in edit:", data.company);
+    console.log("Address value in edit:", data.address);
+    console.log("Email value in edit:", data.email);
+    console.log("Phone value in edit:", data.phone);
+    console.log("Salary value in edit:", data.salary);
     
     // Find the existing employee to preserve any fields not in the form
     const existingEmployee = employees.find(emp => emp.id === data.id) || {};
@@ -58,7 +62,10 @@ export const useEmployeeOperations = (
       company: data.company,
       address: data.address,
       secondAddress: data.secondAddress,
-      email: data.email
+      email: data.email,
+      phone: data.phone,
+      salary: data.salary,
+      salaryStructure: data.salaryStructure
     };
     
     console.log("Updated employee data:", updatedEmployee);
