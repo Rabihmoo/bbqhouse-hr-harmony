@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CalendarIcon, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -12,6 +11,7 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { employees, companies } from '@/lib/data';
+import { useEmployeeData } from "@/hooks/use-employee-data";
 
 interface ContractGeneratorProps {
   onGenerate: (contractData: any) => void;
@@ -23,10 +23,8 @@ const ContractGenerator: React.FC<ContractGeneratorProps> = ({ onGenerate }) => 
   const [signatureDate, setSignatureDate] = useState<Date | undefined>(new Date());
   const [notes, setNotes] = useState<string>('');
   
-  // Filter only active employees
-  const activeEmployees = employees.filter(emp => 
-    emp.status === 'Active' || emp.status === 'On Leave'
-  );
+  // Use our hook to get only active employees
+  const { employees: activeEmployees } = useEmployeeData(true);
 
   const handleGenerate = () => {
     if (!selectedEmployee) return;

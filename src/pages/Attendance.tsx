@@ -1,24 +1,32 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable } from "@/components/ui/data-table";
 import { attendanceRecords as attendanceData, statusColors } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import AttendanceUploader from "@/components/employees/AttendanceUploader";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useEmployeeData } from "@/hooks/use-employee-data";
 
 const Attendance = () => {
-  const [attendanceRecords, setAttendanceRecords] = useState(attendanceData);
-  const [showAttendanceUploader, setShowAttendanceUploader] = useState(false);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [reportData, setReportData] = useState<any>(null);
   
-  const handleUpload = () => {
-    setShowAttendanceUploader(true);
-  };
+  // Get only active employees
+  const { employees: activeEmployees } = useEmployeeData(true);
+  
+  // Filter attendance records to only include active employees
+  useEffect(() => {
+    const activeEmployeeIds = activeEmployees.map(emp => emp.id);
+    const activeAttendanceRecords = attendanceData.filter(record => 
+      activeEmployeeIds.includes(record.employeeId)
+    );
+    setAttendanceRecords(activeAttendanceRecords);
+  }, [activeEmployees]);
   
   const handleAttendanceReport = (data: any) => {
     setReportData(data);
     // In a production app, we would update attendance records with the processed data
-    // For now, we'll just show the dialog
+    // For now, we'll just store the data
   };
 
   return (

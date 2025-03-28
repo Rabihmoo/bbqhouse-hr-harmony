@@ -15,15 +15,13 @@ export const useEmployeeData = (activeOnly = true) => {
     const employeeData = storedEmployees ? JSON.parse(storedEmployees) : employees;
     const leavesData = storedLeaves ? JSON.parse(storedLeaves) : leaveRequests;
     
-    // Filter employees if activeOnly is true - strictly filter only Active status, not "On Leave"
+    // Filter employees to include only those with 'Active' status (not "On Leave")
     const filteredEmployees = activeOnly 
       ? employeeData.filter(emp => emp.status === 'Active')
       : employeeData;
       
     // Filter leaves to only include active employees if activeOnly is true
-    const relevantEmployeeIds = activeOnly 
-      ? employeeData.filter(emp => emp.status === 'Active').map(emp => emp.id)
-      : employeeData.map(emp => emp.id);
+    const relevantEmployeeIds = filteredEmployees.map(emp => emp.id);
       
     const filteredLeaves = leavesData.filter(leave => 
       relevantEmployeeIds.includes(leave.employeeId)

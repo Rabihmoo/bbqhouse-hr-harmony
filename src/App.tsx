@@ -31,6 +31,22 @@ function App() {
     } else {
       setShowLoginDialog(true);
     }
+
+    // Add event listener for authentication changes in other tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "hr-auth") {
+        if (e.newValue === "true") {
+          setIsAuthenticated(true);
+          setShowLoginDialog(false);
+        } else {
+          setIsAuthenticated(false);
+          setShowLoginDialog(true);
+        }
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleLogin = () => {

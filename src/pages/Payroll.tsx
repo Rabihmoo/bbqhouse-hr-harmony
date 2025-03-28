@@ -1,17 +1,18 @@
 
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable } from "@/components/ui/data-table";
-import { employees, departmentColors } from "@/lib/data";
+import { departmentColors } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
+import { useEmployeeData } from "@/hooks/use-employee-data";
 
 const Payroll = () => {
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   
-  // Filter only active employees
-  const activeEmployees = employees.filter(emp => emp.status === 'Active' || emp.status === 'On Leave');
+  // Get only active employees using the hook
+  const { employees: activeEmployees } = useEmployeeData(true);
   
   // Filter active employees by company if selected
   const filteredEmployees = selectedCompany 
