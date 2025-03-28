@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveRecord } from "@/types/notification";
 import { parseISO, differenceInYears } from "date-fns";
@@ -12,6 +12,38 @@ export const useEmployeeOperations = (
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const { toast } = useToast();
+
+  // Load data from localStorage when the component mounts
+  useEffect(() => {
+    const storedEmployees = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (storedEmployees) {
+      try {
+        const parsedEmployees = JSON.parse(storedEmployees);
+        setEmployees(parsedEmployees);
+      } catch (error) {
+        console.error("Error parsing stored employees:", error);
+      }
+    }
+  }, [LOCAL_STORAGE_KEY, setEmployees]);
+
+  // Listen for storage events to sync data across tabs
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === LOCAL_STORAGE_KEY && event.newValue) {
+        try {
+          const parsedEmployees = JSON.parse(event.newValue);
+          setEmployees(parsedEmployees);
+        } catch (error) {
+          console.error("Error parsing stored employees from storage event:", error);
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [LOCAL_STORAGE_KEY, setEmployees]);
 
   // Save to localStorage whenever employees data changes
   const saveEmployeesToLocalStorage = (updatedEmployees: any[]) => {

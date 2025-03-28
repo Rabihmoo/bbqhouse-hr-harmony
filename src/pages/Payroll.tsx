@@ -10,12 +10,15 @@ import { useState } from "react";
 const Payroll = () => {
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   
-  // Filter employees by company if selected
+  // Filter only active employees
+  const activeEmployees = employees.filter(emp => emp.status === 'Active' || emp.status === 'On Leave');
+  
+  // Filter active employees by company if selected
   const filteredEmployees = selectedCompany 
-    ? employees.filter(emp => emp.company === selectedCompany)
-    : employees;
+    ? activeEmployees.filter(emp => emp.company === selectedCompany)
+    : activeEmployees;
 
-  // Create payroll data based on employees
+  // Create payroll data based on filtered employees
   const payrollData = filteredEmployees.map(employee => ({
     id: employee.id,
     employeeId: employee.id,
@@ -31,8 +34,8 @@ const Payroll = () => {
     paymentStatus: "Pending"
   }));
 
-  // Get unique companies
-  const companies = [...new Set(employees.map(emp => emp.company))];
+  // Get unique companies from active employees
+  const companies = [...new Set(activeEmployees.map(emp => emp.company))];
 
   return (
     <DashboardLayout title="Payroll" subtitle="Manage employee salaries and payments">

@@ -21,14 +21,19 @@ interface IndexProps {
 const Index = ({ onLogout }: IndexProps) => {
   const navigate = useNavigate();
   
-  // Latest leave requests for dashboard
-  const latestLeaveRequests = leaveRequests
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5);
-  
-  // Filter active employees for dashboard
+  // Filter only active employees
   const activeEmployees = employees
     .filter(emp => emp.status === 'Active')
+    .slice(0, 5);
+  
+  // Latest leave requests for dashboard - filter for active employees only
+  const activeEmployeeIds = employees
+    .filter(emp => emp.status === 'Active' || emp.status === 'On Leave')
+    .map(emp => emp.id);
+    
+  const latestLeaveRequests = leaveRequests
+    .filter(req => activeEmployeeIds.includes(req.employeeId))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
   return (
@@ -144,7 +149,7 @@ const Index = ({ onLogout }: IndexProps) => {
           </div>
         </div>
         
-        {/* Department Summary */}
+        {/* Department Summary - Only count active employees */}
         <div className="bg-white dark:bg-black/40 glass rounded-xl shadow-sm overflow-hidden">
           <div className="p-6 border-b">
             <h2 className="text-xl font-semibold">Department Summary</h2>
