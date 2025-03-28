@@ -14,41 +14,56 @@ import { Calendar, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
-interface IndexProps {
-  onLogout?: () => void;
-}
-
-const Index = ({ onLogout }: IndexProps) => {
+const Index = () => {
   const navigate = useNavigate();
   const [activeEmployees, setActiveEmployees] = useState([]);
   const [latestLeaveRequests, setLatestLeaveRequests] = useState([]);
   
   // Load and filter data on component mount and whenever data changes
   useEffect(() => {
-    // Filter only active employees
-    const filteredActiveEmployees = employees
-      .filter(emp => emp.status === 'Active')
-      .slice(0, 5);
-    
-    // Latest leave requests for dashboard - filter for active employees only
-    const activeEmployeeIds = employees
-      .filter(emp => emp.status === 'Active' || emp.status === 'On Leave')
-      .map(emp => emp.id);
+    const loadData = () => {
+      // Get stored employee data
+      const storedEmployees = localStorage.getItem('bbq-employees') || localStorage.getItem('restaurant-employees-data');
+      const employeeData = storedEmployees ? JSON.parse(storedEmployees) : employees;
       
-    const filteredLeaveRequests = leaveRequests
-      .filter(req => activeEmployeeIds.includes(req.employeeId))
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, 5);
+      // Get stored leave data
+      const storedLeaves = localStorage.getItem('bbq-leaves');
+      const leavesData = storedLeaves ? JSON.parse(storedLeaves) : leaveRequests;
+      
+      // Filter only active employees (status === 'Active')
+      const filteredActiveEmployees = employeeData
+        .filter(emp => emp.status === 'Active')
+        .slice(0, 5);
+      
+      // Latest leave requests for dashboard - filter for active employees only
+      const activeEmployeeIds = employeeData
+        .filter(emp => emp.status === 'Active')
+        .map(emp => emp.id);
+        
+      const filteredLeaveRequests = leavesData
+        .filter(req => activeEmployeeIds.includes(req.employeeId))
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 5);
 
-    setActiveEmployees(filteredActiveEmployees);
-    setLatestLeaveRequests(filteredLeaveRequests);
+      setActiveEmployees(filteredActiveEmployees);
+      setLatestLeaveRequests(filteredLeaveRequests);
+    };
+    
+    loadData();
+    
+    // Listen for storage events to update data across tabs
+    const handleStorageChange = () => {
+      loadData();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   return (
     <DashboardLayout 
       title="Dashboard" 
       subtitle="Welcome to BBQHOUSE HR Management"
-      onLogout={onLogout}
     >
       <div className="space-y-8 w-full">
         <StatsCards />
@@ -166,7 +181,7 @@ const Index = ({ onLogout }: IndexProps) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-6">
             {['Kitchen', 'Sala', 'Bar', 'Cleaning', 'Takeaway'].map((dept) => {
               const activeEmpInDept = employees.filter(emp => 
-                emp.department === dept && (emp.status === 'Active' || emp.status === 'On Leave')
+                emp.department === dept && emp.status === 'Active'
               );
               return (
                 <div key={dept} className="bg-background/50 rounded-lg p-5 card-hover">
@@ -177,8 +192,8 @@ const Index = ({ onLogout }: IndexProps) => {
                     <span className="text-2xl font-bold">{activeEmpInDept.length}</span>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    <p>Active: {activeEmpInDept.filter(emp => emp.status === 'Active').length}</p>
-                    <p>On Leave: {activeEmpInDept.filter(emp => emp.status === 'On Leave').length}</p>
+                    <p>Active: {activeEmpInDept.length}</p>
+                    <p>On Leave: 0</p>
                   </div>
                 </div>
               );
