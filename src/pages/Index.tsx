@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import StatsCards from "@/components/dashboard/StatsCards";
 import { DataTable } from "@/components/ui/data-table";
@@ -10,7 +10,7 @@ import {
   leaveRequests, 
   statusColors 
 } from "@/lib/data";
-import { Calendar, Plus, Users } from "lucide-react";
+import { Calendar, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 
@@ -20,21 +20,29 @@ interface IndexProps {
 
 const Index = ({ onLogout }: IndexProps) => {
   const navigate = useNavigate();
+  const [activeEmployees, setActiveEmployees] = useState([]);
+  const [latestLeaveRequests, setLatestLeaveRequests] = useState([]);
   
-  // Filter only active employees
-  const activeEmployees = employees
-    .filter(emp => emp.status === 'Active')
-    .slice(0, 5);
-  
-  // Latest leave requests for dashboard - filter for active employees only
-  const activeEmployeeIds = employees
-    .filter(emp => emp.status === 'Active' || emp.status === 'On Leave')
-    .map(emp => emp.id);
+  // Load and filter data on component mount and whenever data changes
+  useEffect(() => {
+    // Filter only active employees
+    const filteredActiveEmployees = employees
+      .filter(emp => emp.status === 'Active')
+      .slice(0, 5);
     
-  const latestLeaveRequests = leaveRequests
-    .filter(req => activeEmployeeIds.includes(req.employeeId))
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 5);
+    // Latest leave requests for dashboard - filter for active employees only
+    const activeEmployeeIds = employees
+      .filter(emp => emp.status === 'Active' || emp.status === 'On Leave')
+      .map(emp => emp.id);
+      
+    const filteredLeaveRequests = leaveRequests
+      .filter(req => activeEmployeeIds.includes(req.employeeId))
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5);
+
+    setActiveEmployees(filteredActiveEmployees);
+    setLatestLeaveRequests(filteredLeaveRequests);
+  }, []);
 
   return (
     <DashboardLayout 
@@ -42,7 +50,7 @@ const Index = ({ onLogout }: IndexProps) => {
       subtitle="Welcome to BBQHOUSE HR Management"
       onLogout={onLogout}
     >
-      <div className="space-y-8">
+      <div className="space-y-8 w-full">
         <StatsCards />
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

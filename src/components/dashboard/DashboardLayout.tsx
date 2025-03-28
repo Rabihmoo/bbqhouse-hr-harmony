@@ -1,6 +1,6 @@
 
 import { ReactNode, useState } from "react";
-import { User, Bell } from "lucide-react";
+import { User } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -49,12 +49,12 @@ const DashboardLayout = ({
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden w-full">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
-      <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80">
-        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b shadow-sm">
-          <div className="container py-3 flex justify-between items-center">
+      <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80 w-full">
+        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b shadow-sm w-full">
+          <div className="container py-3 flex justify-between items-center w-full">
             <div className="flex items-center gap-3">
               <Button 
                 variant="ghost" 
@@ -124,7 +124,7 @@ const DashboardLayout = ({
             </div>
           </div>
           
-          <div className="container">
+          <div className="container w-full">
             <DashboardHeader title={title} subtitle={subtitle} />
             
             {!isMobile && (
@@ -159,12 +159,12 @@ const DashboardLayout = ({
           </div>
         </header>
         
-        <main className="flex-1 container py-6">
+        <main className="flex-1 container py-6 w-full">
           {children}
         </main>
       </div>
     </div>
   );
-};
+}
 
 export default DashboardLayout;
