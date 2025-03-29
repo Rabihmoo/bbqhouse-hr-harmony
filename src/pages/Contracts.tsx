@@ -16,12 +16,13 @@ const Contracts = ({ onLogout }: { onLogout?: () => void }) => {
     // In a real implementation, this would generate a contract document
     // and potentially save it to a database or file storage
     
-    // Add the contract to the history
+    // Add the contract to the history with a timestamp
     const newContract = {
       id: Date.now().toString(),
       ...contractData,
       generatedAt: new Date().toISOString(),
-      downloadUrl: `#contract-${Date.now()}` // In a real app, this would be an actual URL
+      downloadUrl: `#contract-${Date.now()}`, // In a real app, this would be an actual URL
+      format: 'docx' // Set the format to docx explicitly
     };
     
     setGeneratedContracts(prev => [newContract, ...prev]);
@@ -29,25 +30,45 @@ const Contracts = ({ onLogout }: { onLogout?: () => void }) => {
     // Automatically switch to history tab to show the generated contract
     setActiveTab("history");
     
-    toast("Contract generated successfully", {
-      description: `The contract for ${contractData.employeeName} has been generated using ${contractData.company} template.`,
+    toast.success("Contract generated successfully", {
+      description: `The contract for ${contractData.employeeName} has been generated as a Word document and is ready for download.`,
       duration: 5000,
     });
   };
 
   const handleDownloadContract = (contract: any) => {
-    // In a real implementation, this would download the actual file
-    // For now, we'll just show a toast message
+    // In a real implementation, this would download an actual Word document
+    // For now, we'll simulate a download with a .docx file
+    
     toast.success("Downloading contract", {
-      description: `Contract for ${contract.employeeName} is being downloaded.`
+      description: `Contract for ${contract.employeeName} is being downloaded as a Word document.`
     });
     
-    // Simulate a file download by creating a temporary link
+    // Create a Blob that would represent a Word document
+    // In a real implementation, this would be the actual docx content
+    const dummyContent = `
+      Contract for ${contract.employeeName}
+      Position: ${contract.position}
+      Company: ${contract.company}
+      Start Date: ${contract.startDate}
+      Signature Date: ${contract.signatureDate}
+      
+      Notes: ${contract.notes}
+    `;
+    
+    // Create a blob with Word document MIME type
+    const blob = new Blob([dummyContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    
+    // Create a link to download the blob
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = contract.downloadUrl;
-    link.setAttribute('download', `Contract_${contract.employeeName.replace(/ /g, '_')}.pdf`);
+    link.href = url;
+    link.setAttribute('download', `Contract_${contract.employeeName.replace(/ /g, '_')}.docx`);
     document.body.appendChild(link);
     link.click();
+    
+    // Cleanup
+    URL.revokeObjectURL(url);
     document.body.removeChild(link);
   };
 
@@ -88,7 +109,11 @@ const Contracts = ({ onLogout }: { onLogout?: () => void }) => {
               <div className="prose dark:prose-invert max-w-none">
                 <p>
                   The contract generator creates employment contracts based on the employee's company affiliation.
-                  Each company uses a specific contract template with different formatting:
+                  Each company uses a specific contract template with different formatting.
+                </p>
+                
+                <p className="font-medium text-bbqred mt-4">
+                  All contracts are generated as Microsoft Word (.docx) documents, ready for printing and signing.
                 </p>
                 
                 <ul className="my-4">
@@ -111,6 +136,7 @@ const Contracts = ({ onLogout }: { onLogout?: () => void }) => {
                     <li>Employee details (name, BI number, etc.) are pulled from their profile.</li>
                     <li>Salary allowances (transport, bonus, punctuality) are included from the employee record.</li>
                     <li>Contract signature date is recorded for compliance purposes.</li>
+                    <li className="text-bbqred font-medium">All contracts can be downloaded as Word (.docx) documents.</li>
                   </ul>
                 </div>
               </div>
@@ -131,7 +157,10 @@ const Contracts = ({ onLogout }: { onLogout?: () => void }) => {
               {companies.map(company => (
                 <div key={company.id} className="border rounded-lg p-4 bg-background/70">
                   <h3 className="font-medium text-lg mb-3">{company.name} Template</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Filename: {company.contractTemplate}</p>
+                  <div className="flex items-center mb-4">
+                    <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-1 rounded text-xs">Word Document (.docx)</span>
+                    <span className="text-sm text-muted-foreground ml-3">Filename: {company.contractTemplate}</span>
+                  </div>
                   
                   <div className="grid gap-2 text-sm">
                     <div className="flex items-center justify-between p-2 border-b">
@@ -177,14 +206,19 @@ const Contracts = ({ onLogout }: { onLogout?: () => void }) => {
             {generatedContracts.length > 0 ? (
               <div className="grid gap-4">
                 {generatedContracts.map(contract => (
-                  <div key={contract.id} className="border rounded-lg p-4 flex justify-between items-center">
+                  <div key={contract.id} className="border rounded-lg p-4 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
                     <div className="text-left">
                       <h3 className="font-medium">{contract.employeeName}</h3>
                       <p className="text-sm text-muted-foreground">{contract.company} - Generated on {new Date(contract.generatedAt).toLocaleDateString()}</p>
+                      <div className="flex items-center mt-1">
+                        <span className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-0.5 rounded-full text-xs">
+                          Word Document
+                        </span>
+                      </div>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => handleDownloadContract(contract)}>
                       <Download className="h-4 w-4 mr-2" />
-                      Download
+                      Download .docx
                     </Button>
                   </div>
                 ))}

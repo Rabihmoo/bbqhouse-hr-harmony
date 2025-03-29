@@ -1,3 +1,4 @@
+
 import { ReactNode, useState, useEffect } from "react";
 import { User } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +12,8 @@ import { useMobileCheck } from "@/hooks/use-mobile";
 import DashboardHeader from "./DashboardHeader";
 import { useNotifications } from "@/hooks/use-notifications";
 import { Notification as TypedNotification } from "@/hooks/use-notifications";
+import { useEmployeeData } from "@/hooks/use-employee-data";
+import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
 
 interface Notification extends TypedNotification {}
 
@@ -35,12 +38,38 @@ const DashboardLayout = ({
   const navigate = useNavigate();
   const isMobile = useMobileCheck();
   
+  // Get employees data to generate notifications
+  const { employees } = useEmployeeData();
+  // Get employee-based notifications
+  const { notifications: employeeNotifications } = useEmployeeNotifications(employees);
+  
   const { 
     notifications: internalNotifications, 
     markAsRead,
+    addNotification,
     unreadCount
   } = useNotifications();
 
+  // Combine notifications with employee notifications
+  useEffect(() => {
+    // Add employee notifications to the notification system
+    if (employeeNotifications && employeeNotifications.length > 0) {
+      employeeNotifications.forEach(notification => {
+        // Check if notification already exists to avoid duplicates
+        const exists = internalNotifications.some(n => n.id === notification.id);
+        if (!exists) {
+          addNotification({
+            title: notification.title,
+            message: notification.message,
+            icon: notification.icon,
+            data: notification.data
+          });
+        }
+      });
+    }
+  }, [employeeNotifications, addNotification, internalNotifications]);
+
+  // Use external notifications if provided, otherwise use internal
   const notifications = externalNotifications || internalNotifications;
 
   const handleLogout = () => {
@@ -58,6 +87,9 @@ const DashboardLayout = ({
     
     if (onNotificationClick) {
       onNotificationClick(notification);
+    } else if (notification.data?.employeeId) {
+      // Navigate to employee details if employeeId is present
+      navigate(`/employees?id=${notification.data.employeeId}`);
     }
   };
 
