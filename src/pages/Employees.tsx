@@ -11,10 +11,13 @@ import { useEmployeeOperations } from "@/hooks/use-employee-operations";
 import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
 import { useLeaveAllowances } from "@/hooks/use-leave-allowances";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Notification as TypedNotification } from "@/hooks/use-notifications";
 
 interface EmployeesProps {
   onLogout?: () => void;
 }
+
+interface Notification extends TypedNotification {}
 
 const LOCAL_STORAGE_KEY = 'restaurant-employees-data';
 

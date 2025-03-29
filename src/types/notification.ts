@@ -1,14 +1,17 @@
-
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
 
 export interface Notification {
   id: string;
-  type: NotificationType;
+  type?: NotificationType;
   title: string;
   message: string;
   employeeId?: string;
-  timestamp: string;
+  timestamp?: string;
+  time: string;
+  read: boolean;
+  icon?: React.ReactNode;
   actionType?: 'view-employee' | 'approve-leave' | 'update-document';
+  data?: any;
 }
 
 export interface LeaveAllowance {

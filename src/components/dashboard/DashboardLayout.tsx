@@ -10,16 +10,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { useMobileCheck } from "@/hooks/use-mobile";
 import DashboardHeader from "./DashboardHeader";
 import { useNotifications } from "@/hooks/use-notifications";
+import { Notification as TypedNotification } from "@/hooks/use-notifications";
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-  icon?: React.ReactNode;
-  data?: any;
-}
+interface Notification extends TypedNotification {}
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -42,14 +35,12 @@ const DashboardLayout = ({
   const navigate = useNavigate();
   const isMobile = useMobileCheck();
   
-  // Use our notification hook
   const { 
     notifications: internalNotifications, 
     markAsRead,
     unreadCount
   } = useNotifications();
 
-  // Use provided notifications or internal ones
   const notifications = externalNotifications || internalNotifications;
 
   const handleLogout = () => {

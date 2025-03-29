@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { format, addYears, differenceInYears, parseISO, isBefore } from "date-fns";
-import { Notification, LeaveAllowance } from "@/types/notification";
+import { Notification } from "@/types/notification";
 
 export const useEmployeeNotifications = (employees: any[]) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -30,13 +30,15 @@ export const useEmployeeNotifications = (employees: any[]) => {
             message: `${employeeName} is eligible for annual leave.`,
             employeeId: employeeId,
             timestamp: new Date().toISOString(),
+            time: new Date().toLocaleString(),
+            read: false,
             actionType: 'view-employee'
           });
         }
         
         // Check for unused leave allowances
         if (employee.leaveAllowances && employee.leaveAllowances.length > 0) {
-          employee.leaveAllowances.forEach((allowance: LeaveAllowance) => {
+          employee.leaveAllowances.forEach((allowance: any) => {
             if (allowance.status === 'unused') {
               newNotifications.push({
                 id: `unused-leave-${employeeId}-${allowance.year}`,
@@ -45,6 +47,8 @@ export const useEmployeeNotifications = (employees: any[]) => {
                 message: `${employeeName} has not taken any of their ${allowance.daysEntitled} days of leave for ${allowance.year}.`,
                 employeeId: employeeId,
                 timestamp: new Date().toISOString(),
+                time: new Date().toLocaleString(),
+                read: false,
                 actionType: 'view-employee'
               });
             } else if (allowance.status === 'partially-used' && allowance.year < currentYear) {
@@ -55,6 +59,8 @@ export const useEmployeeNotifications = (employees: any[]) => {
                 message: `${employeeName} has ${allowance.remaining} remaining days of leave from ${allowance.year}.`,
                 employeeId: employeeId,
                 timestamp: new Date().toISOString(),
+                time: new Date().toLocaleString(),
+                read: false,
                 actionType: 'view-employee'
               });
             }
@@ -74,6 +80,8 @@ export const useEmployeeNotifications = (employees: any[]) => {
             message: `Today marks ${yearsEmployed} year${yearsEmployed > 1 ? 's' : ''} since ${employeeName} joined.`,
             employeeId: employeeId,
             timestamp: new Date().toISOString(),
+            time: new Date().toLocaleString(),
+            read: false,
             actionType: 'view-employee'
           });
         }
@@ -90,6 +98,8 @@ export const useEmployeeNotifications = (employees: any[]) => {
             message: `${employeeName}'s BI has expired or is invalid.`,
             employeeId: employeeId,
             timestamp: new Date().toISOString(),
+            time: new Date().toLocaleString(),
+            read: false,
           });
         }
       }
@@ -105,6 +115,8 @@ export const useEmployeeNotifications = (employees: any[]) => {
             message: `${employeeName}'s Health Card has expired or is invalid.`,
             employeeId: employeeId,
             timestamp: new Date().toISOString(),
+            time: new Date().toLocaleString(),
+            read: false,
           });
         }
       }
@@ -128,6 +140,8 @@ export const useEmployeeNotifications = (employees: any[]) => {
           message: `${employeeName} is missing: ${missingFields.join(', ')}`,
           employeeId: employeeId,
           timestamp: new Date().toISOString(),
+          time: new Date().toLocaleString(),
+          read: false,
         });
       }
     });

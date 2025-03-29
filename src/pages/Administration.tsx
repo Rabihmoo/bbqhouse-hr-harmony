@@ -1,644 +1,271 @@
 
-import React, { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Edit, Trash, UserPlus } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle, UserPlus, Settings, Shield, Database, Users } from "lucide-react";
 
-// Define user role types
-type UserRole = "admin" | "manager" | "staff";
-
-// Define permissions structure
-interface Permission {
-  id: string;
-  name: string;
-  description: string;
+interface AdministrationProps {
+  onLogout?: () => void;
 }
 
-// Define user structure
-interface User {
-  id: string;
-  username: string;
-  fullName: string;
-  email: string;
-  role: UserRole;
-  isActive: boolean;
-  permissions: Record<string, boolean>;
-  company?: string; // Add company field
-  department?: string; // Add department field
-  lastLogin?: string;
-}
-
-const Administration = () => {
-  const { toast } = useToast();
-  const [users, setUsers] = useState<User[]>(() => {
-    const savedUsers = localStorage.getItem('restaurant-users-data');
-    return savedUsers ? JSON.parse(savedUsers) : [
-      {
-        id: "1",
-        username: "admin",
-        fullName: "System Administrator",
-        email: "admin@example.com",
-        role: "admin",
-        isActive: true,
-        permissions: {
-          "manage_users": true,
-          "manage_employees": true, 
-          "manage_payroll": true,
-          "view_reports": true,
-          "manage_leaves": true
-        },
-        lastLogin: new Date().toISOString()
-      }
-    ];
-  });
-  
-  const [showAddUserDialog, setShowAddUserDialog] = useState(false);
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
-  
-  // Form state
-  const [formData, setFormData] = useState<Omit<User, "id"> & { password: string }>({
-    username: "",
-    fullName: "",
-    email: "",
-    password: "",
-    role: "staff",
-    isActive: true,
-    company: "BBQHouse LDA", // Default company
-    department: "",
-    permissions: {
-      "manage_users": false,
-      "manage_employees": false,
-      "manage_payroll": false,
-      "view_reports": true,
-      "manage_leaves": false
-    }
-  });
-
-  // Available permissions
-  const availablePermissions: Permission[] = [
-    { id: "manage_users", name: "Manage Users", description: "Create, edit, and delete user accounts" },
-    { id: "manage_employees", name: "Manage Employees", description: "Create, edit, and delete employee records" },
-    { id: "manage_payroll", name: "Manage Payroll", description: "Process and manage payroll" },
-    { id: "view_reports", name: "View Reports", description: "Access and download reports" },
-    { id: "manage_leaves", name: "Manage Leaves", description: "Approve and manage employee leaves" }
-  ];
-
-  // Companies for filtering
-  const companies = [
-    { id: "1", name: "BBQHouse LDA" },
-    { id: "2", name: "SALT" },
-    { id: "3", name: "CLEANING" }
-  ];
-
-  // Departments
-  const departments = [
-    "Management",
-    "HR",
-    "Finance",
-    "Kitchen",
-    "Sala",
-    "Bar",
-    "Cleaning",
-    "Takeaway"
-  ];
-
-  // Save users to localStorage
-  const saveUsers = (updatedUsers: User[]) => {
-    localStorage.setItem('restaurant-users-data', JSON.stringify(updatedUsers));
-    setUsers(updatedUsers);
-  };
-
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  // Handle role change
-  const handleRoleChange = (value: UserRole) => {
-    setFormData(prev => ({
-      ...prev,
-      role: value,
-      // Set default permissions based on role
-      permissions: {
-        ...prev.permissions,
-        "manage_users": value === "admin",
-        "manage_employees": value === "admin" || value === "manager",
-        "manage_payroll": value === "admin" || value === "manager",
-        "view_reports": true,
-        "manage_leaves": value === "admin" || value === "manager"
-      }
-    }));
-  };
-
-  // Handle permission toggle
-  const handlePermissionToggle = (permissionId: string, checked: boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      permissions: {
-        ...prev.permissions,
-        [permissionId]: checked
-      }
-    }));
-  };
-
-  // Handle select change for company and department
-  const handleSelectChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-
-  // Filter users by company
-  const [selectedCompanyFilter, setSelectedCompanyFilter] = useState<string | null>(null);
-  
-  const filteredUsers = selectedCompanyFilter 
-    ? users.filter(user => user.company === selectedCompanyFilter)
-    : users;
-
-  // Add or update user
-  const handleSaveUser = () => {
-    if (!formData.username || !formData.fullName || !formData.email) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (editingUser) {
-      // Update existing user
-      const updatedUsers = users.map(user => 
-        user.id === editingUser.id 
-          ? { 
-              ...user, 
-              username: formData.username,
-              fullName: formData.fullName,
-              email: formData.email,
-              role: formData.role,
-              isActive: formData.isActive,
-              company: formData.company,
-              department: formData.department,
-              permissions: formData.permissions
-            } 
-          : user
-      );
-      
-      saveUsers(updatedUsers);
-      toast({
-        title: "User Updated",
-        description: `${formData.fullName}'s account has been updated.`
-      });
-    } else {
-      // Add new user
-      if (!formData.password) {
-        toast({
-          title: "Validation Error",
-          description: "Password is required for new users.",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      const newUser: User = {
-        id: String(users.length + 1),
-        username: formData.username,
-        fullName: formData.fullName,
-        email: formData.email,
-        role: formData.role,
-        isActive: formData.isActive,
-        company: formData.company,
-        department: formData.department,
-        permissions: formData.permissions
-      };
-      
-      saveUsers([...users, newUser]);
-      toast({
-        title: "User Created",
-        description: `${formData.fullName}'s account has been created.`
-      });
-    }
-    
-    // Reset form and close dialog
-    resetForm();
-    setShowAddUserDialog(false);
-    setEditingUser(null);
-  };
-
-  // Reset form
-  const resetForm = () => {
-    setFormData({
-      username: "",
-      fullName: "",
-      email: "",
-      password: "",
-      role: "staff",
-      isActive: true,
-      company: "BBQHouse LDA",
-      department: "",
-      permissions: {
-        "manage_users": false,
-        "manage_employees": false,
-        "manage_payroll": false,
-        "view_reports": true,
-        "manage_leaves": false
-      }
-    });
-    setShowPassword(false);
-  };
-
-  // Edit user
-  const handleEditUser = (user: User) => {
-    setEditingUser(user);
-    setFormData({
-      username: user.username,
-      fullName: user.fullName,
-      email: user.email,
-      password: "", // Password is not updated unless explicitly reset
-      role: user.role,
-      isActive: user.isActive,
-      company: user.company || "BBQHouse LDA",
-      department: user.department || "",
-      permissions: { ...user.permissions }
-    });
-    setShowAddUserDialog(true);
-  };
-
-  // Delete user
-  const handleDeleteUser = (userId: string) => {
-    setUserToDelete(userId);
-    setShowDeleteConfirmation(true);
-  };
-
-  // Confirm delete user
-  const confirmDeleteUser = () => {
-    if (!userToDelete) return;
-    
-    const updatedUsers = users.filter(user => user.id !== userToDelete);
-    saveUsers(updatedUsers);
-    
-    toast({
-      title: "User Deleted",
-      description: "The user account has been deleted."
-    });
-    
-    setShowDeleteConfirmation(false);
-    setUserToDelete(null);
-  };
-
-  // Toggle user status
-  const toggleUserStatus = (userId: string, isActive: boolean) => {
-    const updatedUsers = users.map(user => 
-      user.id === userId 
-        ? { ...user, isActive } 
-        : user
-    );
-    
-    saveUsers(updatedUsers);
-    
-    toast({
-      title: `User ${isActive ? 'Activated' : 'Deactivated'}`,
-      description: `The user account has been ${isActive ? 'activated' : 'deactivated'}.`
-    });
-  };
-
+const Administration = ({ onLogout }: AdministrationProps) => {
   return (
     <DashboardLayout 
       title="Administration" 
-      subtitle="Manage user accounts and permissions"
+      subtitle="System administration and settings"
+      onLogout={onLogout}
     >
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">User Management</h2>
-          <p className="text-gray-500">Create and manage user accounts with different permission levels</p>
-        </div>
-        <Button 
-          onClick={() => {
-            resetForm();
-            setShowAddUserDialog(true);
-          }}
-          className="flex items-center gap-2"
-        >
-          <UserPlus size={16} />
-          Add User
-        </Button>
-      </div>
-
-      <div className="mb-6 flex items-center gap-4">
-        <Label htmlFor="companyFilter" className="whitespace-nowrap">Filter by company:</Label>
-        <Select
-          value={selectedCompanyFilter || "all"}
-          onValueChange={(value) => setSelectedCompanyFilter(value === "all" ? null : value)}
-        >
-          <SelectTrigger id="companyFilter" className="w-[200px]">
-            <SelectValue placeholder="All companies" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All companies</SelectItem>
-            {companies.map(company => (
-              <SelectItem key={company.id} value={company.name}>{company.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Users</CardTitle>
-          <CardDescription>Manage users and their access permissions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Username</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map(user => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.fullName}</TableCell>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell className="capitalize">{user.role}</TableCell>
-                  <TableCell>{user.company || "All Companies"}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      user.isActive 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {user.isActive ? 'Active' : 'Inactive'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleEditUser(user)}
-                      >
-                        <Edit size={16} />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => handleDeleteUser(user.id)}
-                        disabled={user.id === "1"} // Prevent deleting the main admin
-                      >
-                        <Trash size={16} />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Add/Edit User Dialog */}
-      <Dialog open={showAddUserDialog} onOpenChange={setShowAddUserDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{editingUser ? "Edit User" : "Add New User"}</DialogTitle>
-            <DialogDescription>
-              {editingUser 
-                ? "Update user information and permissions" 
-                : "Create a new user account with specific permissions"}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="fullName" className="text-right">
-                Full Name
-              </Label>
-              <Input
-                id="fullName"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="John Doe"
-                required
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="username" className="text-right">
-                Username
-              </Label>
-              <Input
-                id="username"
-                name="username"
-                value={formData.username}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="johndoe"
-                required
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="email" className="text-right">
-                Email
-              </Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className="col-span-3"
-                placeholder="john@example.com"
-                required
-              />
-            </div>
-            
-            {!editingUser && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="password" className="text-right">
-                  Password
-                </Label>
-                <div className="col-span-3 relative">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="pr-10"
-                    placeholder="Enter password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    {showPassword ? (
-                      <EyeOff size={16} className="text-gray-400" />
-                    ) : (
-                      <Eye size={16} className="text-gray-400" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="role" className="text-right">
-                Role
-              </Label>
-              <Select
-                value={formData.role}
-                onValueChange={(value) => handleRoleChange(value as UserRole)}
-              >
-                <SelectTrigger id="role" className="col-span-3">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Administrator</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="staff">Staff</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="company" className="text-right">
-                Company
-              </Label>
-              <Select
-                value={formData.company || "BBQHouse LDA"}
-                onValueChange={(value) => handleSelectChange("company", value)}
-              >
-                <SelectTrigger id="company" className="col-span-3">
-                  <SelectValue placeholder="Select company" />
-                </SelectTrigger>
-                <SelectContent>
-                  {companies.map(company => (
-                    <SelectItem key={company.id} value={company.name}>{company.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="department" className="text-right">
-                Department
-              </Label>
-              <Select
-                value={formData.department || "none"}
-                onValueChange={(value) => handleSelectChange("department", value === "none" ? "" : value)}
-              >
-                <SelectTrigger id="department" className="col-span-3">
-                  <SelectValue placeholder="Select department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">All Departments</SelectItem>
-                  {departments.map(dept => (
-                    <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="isActive" className="text-right">
-                Active
-              </Label>
-              <div className="col-span-3 flex items-center">
-                <Switch
-                  id="isActive"
-                  checked={formData.isActive}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isActive: checked }))}
-                />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-4 gap-4 items-start">
-              <Label className="text-right pt-2">Permissions</Label>
-              <div className="col-span-3 space-y-3">
-                {availablePermissions.map(permission => (
-                  <div key={permission.id} className="flex items-start space-x-2">
-                    <Switch
-                      id={`permission-${permission.id}`}
-                      checked={formData.permissions[permission.id] || false}
-                      onCheckedChange={(checked) => handlePermissionToggle(permission.id, checked)}
-                    />
-                    <div>
-                      <Label htmlFor={`permission-${permission.id}`} className="font-medium">
-                        {permission.name}
-                      </Label>
-                      <p className="text-xs text-gray-500">
-                        {permission.description}
-                      </p>
-                    </div>
+      <Tabs defaultValue="system">
+        <TabsList className="mb-6">
+          <TabsTrigger value="system">System Settings</TabsTrigger>
+          <TabsTrigger value="users">User Management</TabsTrigger>
+          <TabsTrigger value="backup">Backup & Restore</TabsTrigger>
+          <TabsTrigger value="logs">System Logs</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="system" className="space-y-6">
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Settings className="mr-2 h-5 w-5" />
+                  General Settings
+                </CardTitle>
+                <CardDescription>Configure system-wide settings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-2 border-b">
+                    <span>System Name</span>
+                    <span className="font-medium">BBQHOUSE HR</span>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="flex items-center justify-between py-2 border-b">
+                    <span>Version</span>
+                    <span className="font-medium">1.0.0</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b">
+                    <span>Language</span>
+                    <span className="font-medium">English</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span>Time Zone</span>
+                    <span className="font-medium">GMT+2</span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full">Edit Settings</Button>
+              </CardFooter>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Shield className="mr-2 h-5 w-5" />
+                  Security
+                </CardTitle>
+                <CardDescription>Manage security settings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between py-2 border-b">
+                    <span>Password Policy</span>
+                    <span className="font-medium">Strong</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b">
+                    <span>Two-Factor Auth</span>
+                    <span className="font-medium text-orange-500">Disabled</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-b">
+                    <span>Session Timeout</span>
+                    <span className="font-medium">30 minutes</span>
+                  </div>
+                  <div className="flex items-center justify-between py-2">
+                    <span>Account Lockout</span>
+                    <span className="font-medium">After 5 attempts</span>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button variant="outline" className="w-full">Configure Security</Button>
+              </CardFooter>
+            </Card>
           </div>
           
-          <DialogFooter className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => {
-              resetForm();
-              setShowAddUserDialog(false);
-              setEditingUser(null);
-            }}>
-              Cancel
-            </Button>
-            <Button onClick={handleSaveUser}>
-              {editingUser ? "Update User" : "Add User"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Delete User</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this user? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteConfirmation(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDeleteUser}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <CheckCircle className="mr-2 h-5 w-5" />
+                System Status
+              </CardTitle>
+              <CardDescription>View the current system status</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-lg">
+                    <div className="text-green-600 dark:text-green-400 text-sm font-medium">Database</div>
+                    <div className="text-2xl font-bold mt-1">Connected</div>
+                  </div>
+                  
+                  <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-lg">
+                    <div className="text-green-600 dark:text-green-400 text-sm font-medium">Services</div>
+                    <div className="text-2xl font-bold mt-1">Running</div>
+                  </div>
+                  
+                  <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-lg">
+                    <div className="text-green-600 dark:text-green-400 text-sm font-medium">Storage</div>
+                    <div className="text-2xl font-bold mt-1">72% Free</div>
+                  </div>
+                  
+                  <div className="bg-green-100 dark:bg-green-900/20 p-4 rounded-lg">
+                    <div className="text-green-600 dark:text-green-400 text-sm font-medium">Performance</div>
+                    <div className="text-2xl font-bold mt-1">Optimal</div>
+                  </div>
+                </div>
+                
+                <div className="text-sm text-muted-foreground">
+                  Last system check: Today at 09:45 AM
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline" className="w-full">Run System Diagnostics</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="users" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="mr-2 h-5 w-5" />
+                User Accounts
+              </CardTitle>
+              <CardDescription>Manage system users</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="border rounded-md overflow-hidden">
+                  <div className="grid grid-cols-3 bg-muted/50 p-3 font-medium text-sm">
+                    <div>Username</div>
+                    <div>Role</div>
+                    <div>Status</div>
+                  </div>
+                  
+                  <div className="divide-y">
+                    <div className="grid grid-cols-3 p-3 text-sm">
+                      <div>admin</div>
+                      <div>Administrator</div>
+                      <div className="text-green-600 dark:text-green-400">Active</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 p-3 text-sm">
+                      <div>manager</div>
+                      <div>HR Manager</div>
+                      <div className="text-green-600 dark:text-green-400">Active</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 p-3 text-sm">
+                      <div>user1</div>
+                      <div>HR Staff</div>
+                      <div className="text-amber-600 dark:text-amber-400">Inactive</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add User
+              </Button>
+              <Button variant="outline">Manage Roles</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="backup" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Database className="mr-2 h-5 w-5" />
+                Data Backup & Restore
+              </CardTitle>
+              <CardDescription>Manage system backups</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="border rounded-md overflow-hidden">
+                  <div className="grid grid-cols-3 bg-muted/50 p-3 font-medium text-sm">
+                    <div>Backup Name</div>
+                    <div>Date</div>
+                    <div>Size</div>
+                  </div>
+                  
+                  <div className="divide-y">
+                    <div className="grid grid-cols-3 p-3 text-sm">
+                      <div>Auto Backup</div>
+                      <div>Today at 00:00</div>
+                      <div>4.2 MB</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 p-3 text-sm">
+                      <div>Manual Backup</div>
+                      <div>Yesterday at 15:30</div>
+                      <div>4.1 MB</div>
+                    </div>
+                    
+                    <div className="grid grid-cols-3 p-3 text-sm">
+                      <div>Auto Backup</div>
+                      <div>2 days ago</div>
+                      <div>4.0 MB</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button>Create Backup</Button>
+              <Button variant="outline">Restore Backup</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="logs" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Logs</CardTitle>
+              <CardDescription>View and download system logs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="border rounded-md h-80 overflow-y-auto p-4 bg-muted/20 font-mono text-xs">
+                <div className="space-y-1 text-muted-foreground">
+                  <div>[2023-05-30 09:31:36] info: Initializing BBQHOUSE HR Management System</div>
+                  <div>[2023-05-30 09:31:43] info: User admin logged in successfully</div>
+                  <div>[2023-05-30 10:15:22] info: Employee profile updated (ID: EMP001)</div>
+                  <div>[2023-05-30 10:42:17] warning: Failed login attempt for user manager</div>
+                  <div>[2023-05-30 11:03:54] info: New leave request created (ID: LV087)</div>
+                  <div>[2023-05-30 11:30:12] info: Leave request approved (ID: LV087)</div>
+                  <div>[2023-05-30 13:45:36] info: Contract generated for employee (ID: EMP005)</div>
+                  <div>[2023-05-30 14:22:19] error: Database connection timeout</div>
+                  <div>[2023-05-30 14:22:45] info: Database connection reestablished</div>
+                  <div>[2023-05-30 15:10:33] info: System backup completed</div>
+                  <div>[2023-05-30 16:45:09] info: User admin logged out</div>
+                  <div>[2023-05-30 17:01:27] info: System shutdown initiated</div>
+                  <div>[2023-05-31 08:00:05] info: System startup</div>
+                  <div>[2023-05-31 08:05:12] info: User admin logged in successfully</div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-between">
+              <Button variant="outline">Refresh</Button>
+              <Button variant="outline">Download Logs</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </DashboardLayout>
   );
 };
