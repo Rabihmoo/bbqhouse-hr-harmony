@@ -14,26 +14,45 @@ interface ChecklistsProps {
   onLogout?: () => void;
 }
 
+// Define types for our data structure
+type CompanyId = 'bbq' | 'salt' | 'cleaning';
+type CategoryId = 'kitchen' | 'sala' | 'bar' | 'manager' | 'cleaning' | 'weekly' | 'monthly';
+
+interface ChecklistItem {
+  id: string;
+  name: string;
+  size: string;
+  date: string;
+}
+
+type CategoryChecklists = {
+  [key in CategoryId]: ChecklistItem[];
+};
+
+type CompanyChecklists = {
+  [key in CompanyId]: CategoryChecklists;
+};
+
 // The companies
 const companies = [
-  { id: 'bbq', name: 'BBQHouse LDA' },
-  { id: 'salt', name: 'SALT LDA' },
-  { id: 'cleaning', name: 'Executive Cleaning LDA' }
+  { id: 'bbq' as CompanyId, name: 'BBQHouse LDA' },
+  { id: 'salt' as CompanyId, name: 'SALT LDA' },
+  { id: 'cleaning' as CompanyId, name: 'Executive Cleaning LDA' }
 ];
 
 // Categories for checklists
 const categories = [
-  { id: 'kitchen', name: 'Kitchen Checklists' },
-  { id: 'sala', name: 'Sala Checklists' },
-  { id: 'bar', name: 'Bar Checklists' },
-  { id: 'manager', name: 'Manager Checklists' },
-  { id: 'cleaning', name: 'Cleaning Checklists' },
-  { id: 'weekly', name: 'Weekly Checklists' },
-  { id: 'monthly', name: 'Monthly Checklists' }
+  { id: 'kitchen' as CategoryId, name: 'Kitchen Checklists' },
+  { id: 'sala' as CategoryId, name: 'Sala Checklists' },
+  { id: 'bar' as CategoryId, name: 'Bar Checklists' },
+  { id: 'manager' as CategoryId, name: 'Manager Checklists' },
+  { id: 'cleaning' as CategoryId, name: 'Cleaning Checklists' },
+  { id: 'weekly' as CategoryId, name: 'Weekly Checklists' },
+  { id: 'monthly' as CategoryId, name: 'Monthly Checklists' }
 ];
 
 // Sample checklist data for demonstration
-const initialChecklists = {
+const initialChecklists: CompanyChecklists = {
   bbq: {
     kitchen: [
       { id: '1', name: 'Kitchen Opening Checklist.docx', size: '24KB', date: '2023-10-15' },
@@ -73,11 +92,11 @@ const initialChecklists = {
 };
 
 const Checklists = ({ onLogout }: ChecklistsProps) => {
-  const [activeCompany, setActiveCompany] = useState('bbq');
-  const [activeCategory, setActiveCategory] = useState('kitchen');
-  const [checklists, setChecklists] = useState(initialChecklists);
+  const [activeCompany, setActiveCompany] = useState<CompanyId>('bbq');
+  const [activeCategory, setActiveCategory] = useState<CategoryId>('kitchen');
+  const [checklists, setChecklists] = useState<CompanyChecklists>(initialChecklists);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-  const [newChecklist, setNewChecklist] = useState<{ name: string; category: string }>({
+  const [newChecklist, setNewChecklist] = useState<{ name: string; category: CategoryId }>({
     name: '',
     category: 'kitchen'
   });
@@ -95,7 +114,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
       ? newChecklist.name 
       : `${newChecklist.name}.docx`;
 
-    const newItem = {
+    const newItem: ChecklistItem = {
       id: Date.now().toString(),
       name: fileName,
       size: `${Math.floor(Math.random() * 50 + 10)}KB`,
@@ -106,9 +125,9 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
     setChecklists(prev => ({
       ...prev,
       [activeCompany]: {
-        ...prev[activeCompany as keyof typeof prev],
+        ...prev[activeCompany],
         [newChecklist.category]: [
-          ...prev[activeCompany as keyof typeof prev][newChecklist.category as keyof typeof prev[typeof activeCompany]],
+          ...prev[activeCompany][newChecklist.category],
           newItem
         ]
       }
@@ -136,18 +155,16 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
   // Function to delete a checklist
   const handleDeleteChecklist = (checklistId: string) => {
     setChecklists(prev => {
-      const updatedCompany = { ...prev[activeCompany as keyof typeof prev] };
+      const updatedCompany = { ...prev[activeCompany] };
       
       // Find which category contains the checklist and remove it
       for (const category of categories) {
         const categoryId = category.id;
-        const categoryChecklists = updatedCompany[categoryId as keyof typeof updatedCompany];
+        const categoryChecklists = updatedCompany[categoryId];
         
-        if (Array.isArray(categoryChecklists)) {
-          updatedCompany[categoryId as keyof typeof updatedCompany] = categoryChecklists.filter(
-            item => item.id !== checklistId
-          );
-        }
+        updatedCompany[categoryId] = categoryChecklists.filter(
+          item => item.id !== checklistId
+        );
       }
 
       return {
@@ -160,7 +177,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
   };
 
   // Filter checklists based on search query
-  const filteredChecklists = checklists[activeCompany as keyof typeof checklists][activeCategory as keyof typeof checklists[typeof activeCompany]]
+  const filteredChecklists = checklists[activeCompany][activeCategory]
     .filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (
