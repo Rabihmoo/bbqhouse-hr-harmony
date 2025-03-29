@@ -2,22 +2,25 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { DataTable } from "@/components/ui/data-table";
-import { leaveRequests as leaveRequestsData, departmentColors, statusColors, employees as initialEmployeesData, getEmployeeYearsOfService, calculateLeaveAllowance } from "@/lib/data";
+import { leaveRequests as leaveRequestsData, departmentColors, statusColors, employees as initialEmployeesData, getEmployeeYearsOfService, calculateLeaveAllowance, companies } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Plus } from "lucide-react";
+import { Filter, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveRequest, LeaveStatus } from "@/lib/data";
 import MissingLeavesList from "@/components/leaves/MissingLeavesList";
 import LeaveRecordsList from "@/components/leaves/LeaveRecordsList";
 import LeaveRequestForm from "@/components/leaves/LeaveRequestForm";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent } from "@/components/ui/card";
 
 const LOCAL_STORAGE_KEY = 'restaurant-employees-data';
 
-const Leaves = () => {
+const Leaves = ({ onLogout }: { onLogout?: () => void }) => {
   const [leaveRequests, setLeaveRequests] = useState(leaveRequestsData);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingLeaveRequest, setEditingLeaveRequest] = useState<LeaveRequest | null>(null);
+  const [companyFilter, setCompanyFilter] = useState<string>("");
   const { toast } = useToast();
   
   // Load employees data from localStorage
@@ -41,9 +44,14 @@ const Leaves = () => {
 
   // Filter only active employees
   const activeEmployees = employees.filter(emp => emp.status === 'Active' || emp.status === 'On Leave');
+  
+  // Apply company filter if selected
+  const filteredEmployees = companyFilter
+    ? activeEmployees.filter(emp => emp.company === companyFilter)
+    : activeEmployees;
 
-  // Gather all leave records from only active employees
-  const allLeaveRecords = activeEmployees.reduce((records: any[], employee: any) => {
+  // Gather all leave records from filtered employees
+  const allLeaveRecords = filteredEmployees.reduce((records: any[], employee: any) => {
     if (employee.leaveRecords && employee.leaveRecords.length > 0) {
       const employeeRecords = employee.leaveRecords.map((record: any) => ({
         ...record,
@@ -138,30 +146,60 @@ const Leaves = () => {
     });
   };
 
-  // Filter leaveRequests to only include active employees
-  const activeLeaveRequests = leaveRequests.filter(request => {
+  // Filter leaveRequests to only include active and company-filtered employees
+  const filteredLeaveRequests = leaveRequests.filter(request => {
     const employee = employees.find(emp => emp.id === request.employeeId);
-    return employee && (employee.status === 'Active' || employee.status === 'On Leave');
+    if (!employee || employee.status !== 'Active') return false;
+    return companyFilter ? employee.company === companyFilter : true;
   });
 
   return (
-    <DashboardLayout title="Leave Management" subtitle="Manage employee leave requests">
-      <div className="mb-6 flex justify-between items-center">
+    <DashboardLayout 
+      title="Leave Management" 
+      subtitle="Manage employee leave requests"
+      onLogout={onLogout}
+    >
+      <div className="mb-6 flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
         <div>
           <h2 className="text-2xl font-bold">Leave Requests</h2>
           <p className="text-muted-foreground">
-            Total {activeLeaveRequests.length} leave requests
+            Total {filteredLeaveRequests.length} leave requests
           </p>
         </div>
-        <Button onClick={() => setShowAddForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Request
-        </Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Card className="shadow-none border">
+            <CardContent className="p-2">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <Select
+                  value={companyFilter}
+                  onValueChange={setCompanyFilter}
+                >
+                  <SelectTrigger className="w-[180px] h-9 border-0">
+                    <SelectValue placeholder="Filter by company" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Companies</SelectItem>
+                    {companies.map(company => (
+                      <SelectItem key={company.id} value={company.name}>
+                        {company.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+          <Button onClick={() => setShowAddForm(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Request
+          </Button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-black/40 glass rounded-xl shadow-sm overflow-hidden mb-8">
         <DataTable
-          data={activeLeaveRequests}
+          data={filteredLeaveRequests}
           columns={[
             {
               key: "employeeName",
@@ -209,7 +247,7 @@ const Leaves = () => {
       {/* Employees with missing leaves section */}
       <div className="mb-8">
         <MissingLeavesList 
-          employees={activeEmployees} 
+          employees={filteredEmployees} 
           onAddLeave={handleAddLeaveRecord} 
         />
       </div>
@@ -230,6 +268,7 @@ const Leaves = () => {
             const { employeeId, ...leaveData } = data;
             handleAddLeaveRecord(employeeId, leaveData);
           }}
+          employees={filteredEmployees}
         />
       )}
     </DashboardLayout>

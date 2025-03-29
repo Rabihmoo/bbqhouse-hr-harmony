@@ -1,13 +1,14 @@
+
 import { useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import ContractGenerator from "@/components/contracts/ContractGenerator";
 import { toast } from "sonner";
-import { FileText, FileCheck, Folder } from "lucide-react";
+import { FileText, FileCheck, Folder, Download } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { companies } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 
-const Contracts = () => {
+const Contracts = ({ onLogout }: { onLogout?: () => void }) => {
   const [activeTab, setActiveTab] = useState("generate");
   const [generatedContracts, setGeneratedContracts] = useState<any[]>([]);
 
@@ -16,25 +17,45 @@ const Contracts = () => {
     // and potentially save it to a database or file storage
     
     // Add the contract to the history
-    setGeneratedContracts(prev => [
-      {
-        id: Date.now().toString(),
-        ...contractData,
-        generatedAt: new Date().toISOString(),
-      },
-      ...prev
-    ]);
+    const newContract = {
+      id: Date.now().toString(),
+      ...contractData,
+      generatedAt: new Date().toISOString(),
+      downloadUrl: `#contract-${Date.now()}` // In a real app, this would be an actual URL
+    };
+    
+    setGeneratedContracts(prev => [newContract, ...prev]);
+    
+    // Automatically switch to history tab to show the generated contract
+    setActiveTab("history");
     
     toast("Contract generated successfully", {
-      description: `The contract for ${contractData.employeeName} has been generated using ${contractData.companyTemplate} template.`,
+      description: `The contract for ${contractData.employeeName} has been generated using ${contractData.company} template.`,
       duration: 5000,
     });
+  };
+
+  const handleDownloadContract = (contract: any) => {
+    // In a real implementation, this would download the actual file
+    // For now, we'll just show a toast message
+    toast.success("Downloading contract", {
+      description: `Contract for ${contract.employeeName} is being downloaded.`
+    });
+    
+    // Simulate a file download by creating a temporary link
+    const link = document.createElement('a');
+    link.href = contract.downloadUrl;
+    link.setAttribute('download', `Contract_${contract.employeeName.replace(/ /g, '_')}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
     <DashboardLayout 
       title="Contracts" 
       subtitle="Generate and manage employee contracts"
+      onLogout={onLogout}
     >
       <Tabs defaultValue="generate" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
@@ -157,13 +178,13 @@ const Contracts = () => {
               <div className="grid gap-4">
                 {generatedContracts.map(contract => (
                   <div key={contract.id} className="border rounded-lg p-4 flex justify-between items-center">
-                    <div>
+                    <div className="text-left">
                       <h3 className="font-medium">{contract.employeeName}</h3>
                       <p className="text-sm text-muted-foreground">{contract.company} - Generated on {new Date(contract.generatedAt).toLocaleDateString()}</p>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => window.open(`data:application/pdf;base64,JVBERi0...`, '_blank')}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      View
+                    <Button variant="outline" size="sm" onClick={() => handleDownloadContract(contract)}>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
                     </Button>
                   </div>
                 ))}

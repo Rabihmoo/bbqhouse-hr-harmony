@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { employees, companies } from '@/lib/data';
 import { useEmployeeData } from "@/hooks/use-employee-data";
+import { toast } from "sonner";
 
 interface ContractGeneratorProps {
   onGenerate: (contractData: any) => void;
@@ -23,23 +23,29 @@ const ContractGenerator: React.FC<ContractGeneratorProps> = ({ onGenerate }) => 
   const [signatureDate, setSignatureDate] = useState<Date | undefined>(new Date());
   const [notes, setNotes] = useState<string>('');
   
-  // Use our hook to get only active employees
+  // Use our hook to get only active employees - ensure activeOnly is true
   const { employees: activeEmployees } = useEmployeeData(true);
 
   const handleGenerate = () => {
-    if (!selectedEmployee) return;
+    if (!selectedEmployee) {
+      toast.error("Please select an employee first");
+      return;
+    }
     
     const employee = activeEmployees.find(emp => emp.id === selectedEmployee);
-    if (!employee) return;
+    if (!employee) {
+      toast.error("Selected employee not found or no longer active");
+      return;
+    }
     
-    const company = companies.find(c => c.name === employee.company);
-    
-    onGenerate({
+    // Generate contract PDF (in a real system)
+    // For now, we'll just create the data structure
+    const contractData = {
       employeeId: employee.id,
       employeeName: employee.fullName,
       position: employee.position,
       company: employee.company,
-      companyTemplate: company?.contractTemplate || '',
+      companyTemplate: employee.company ? `${employee.company.replace(/ /g, '_')}_Contract.pdf` : 'Default_Contract.pdf',
       startDate: startDate ? format(startDate, 'dd/MM/yyyy') : '',
       signatureDate: signatureDate ? format(signatureDate, 'dd/MM/yyyy') : '',
       notes,
@@ -52,11 +58,26 @@ const ContractGenerator: React.FC<ContractGeneratorProps> = ({ onGenerate }) => 
         transportAllowance: employee.salaryStructure?.transportAllowance || 0,
         bonus: employee.salaryStructure?.bonus || 0,
       }
-    });
+    };
+    
+    onGenerate(contractData);
     
     // Reset form after generation
     setNotes('');
+    toast.success("Contract generated successfully", {
+      description: `Contract for ${employee.fullName} has been generated and is ready for download`
+    });
   };
+
+  useEffect(() => {
+    // Reset selected employee if it's not in the active list
+    if (selectedEmployee && activeEmployees.length > 0) {
+      const stillActive = activeEmployees.some(emp => emp.id === selectedEmployee);
+      if (!stillActive) {
+        setSelectedEmployee('');
+      }
+    }
+  }, [activeEmployees, selectedEmployee]);
 
   return (
     <Card>
@@ -80,11 +101,15 @@ const ContractGenerator: React.FC<ContractGeneratorProps> = ({ onGenerate }) => 
                   <SelectValue placeholder="Select an employee" />
                 </SelectTrigger>
                 <SelectContent>
-                  {activeEmployees.map((employee) => (
-                    <SelectItem key={employee.id} value={employee.id}>
-                      {employee.fullName} - {employee.position}
-                    </SelectItem>
-                  ))}
+                  {activeEmployees.length > 0 ? (
+                    activeEmployees.map((employee) => (
+                      <SelectItem key={employee.id} value={employee.id}>
+                        {employee.fullName} - {employee.position}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="none" disabled>No active employees found</SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>

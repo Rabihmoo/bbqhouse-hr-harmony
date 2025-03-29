@@ -1,5 +1,5 @@
 
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import { User } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useMobileCheck } from "@/hooks/use-mobile";
 import DashboardHeader from "./DashboardHeader";
+import { useNotifications } from "@/hooks/use-notifications";
 
 interface DashboardLayoutProps {
   children: ReactNode;
   title: string;
   subtitle: string;
-  notifications?: any[];
   onNotificationClick?: (notification: any) => void;
   onLogout?: () => void;
 }
@@ -24,13 +24,19 @@ const DashboardLayout = ({
   children, 
   title, 
   subtitle, 
-  notifications = [],
   onNotificationClick,
   onLogout
 }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = useMobileCheck();
+  
+  // Use our notification hook
+  const { 
+    notifications, 
+    markAsRead,
+    unreadCount
+  } = useNotifications();
 
   const handleLogout = () => {
     if (onLogout) {
@@ -43,6 +49,8 @@ const DashboardLayout = ({
   };
 
   const handleNotificationClick = (notification: any) => {
+    markAsRead(notification.id);
+    
     if (onNotificationClick) {
       onNotificationClick(notification);
     }
@@ -93,6 +101,7 @@ const DashboardLayout = ({
               <NotificationCenter 
                 notifications={notifications} 
                 onSelect={handleNotificationClick}
+                onMarkAsRead={markAsRead}
               />
               
               <DropdownMenu>
@@ -148,6 +157,9 @@ const DashboardLayout = ({
                     </TabsTrigger>
                     <TabsTrigger value="contracts" onClick={() => navigate("/contracts")}>
                       Contracts
+                    </TabsTrigger>
+                    <TabsTrigger value="checklists" onClick={() => navigate("/checklists")}>
+                      Checklists
                     </TabsTrigger>
                     <TabsTrigger value="administration" onClick={() => navigate("/administration")}>
                       Administration

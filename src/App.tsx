@@ -7,6 +7,7 @@ import Leaves from "./pages/Leaves";
 import Attendance from "./pages/Attendance";
 import Payroll from "./pages/Payroll";
 import Contracts from "./pages/Contracts";
+import Checklists from "./pages/Checklists";
 import Administration from "./pages/Administration";
 import NotFound from "./pages/NotFound";
 import "./App.css";
@@ -15,6 +16,7 @@ import { Input } from "./components/ui/input";
 import { Label } from "./components/ui/label";
 import { Button } from "./components/ui/button";
 import { Toaster } from "./components/ui/toaster";
+import { toast } from "sonner";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -55,6 +57,9 @@ function App() {
       setShowLoginDialog(false);
       localStorage.setItem("hr-auth", "true");
       setError("");
+      toast.success("Login successful", {
+        description: "Welcome to BBQHOUSE HR Management System"
+      });
     } else {
       setError("Invalid credentials. Please try again.");
     }
@@ -64,6 +69,7 @@ function App() {
     setIsAuthenticated(false);
     localStorage.removeItem("hr-auth");
     setShowLoginDialog(true);
+    toast.info("Logged out successfully");
   };
 
   return (
@@ -119,13 +125,14 @@ function App() {
         <Routes>
           {isAuthenticated ? (
             <>
-              <Route path="/" element={<Index />} />
-              <Route path="/employees" element={<Employees />} />
-              <Route path="/leaves" element={<Leaves />} />
-              <Route path="/attendance" element={<Attendance />} />
-              <Route path="/payroll" element={<Payroll />} />
-              <Route path="/contracts" element={<Contracts />} />
-              <Route path="/administration" element={<Administration />} />
+              <Route path="/" element={<Index onLogout={handleLogout} />} />
+              <Route path="/employees" element={<Employees onLogout={handleLogout} />} />
+              <Route path="/leaves" element={<Leaves onLogout={handleLogout} />} />
+              <Route path="/attendance" element={<Attendance onLogout={handleLogout} />} />
+              <Route path="/payroll" element={<Payroll onLogout={handleLogout} />} />
+              <Route path="/contracts" element={<Contracts onLogout={handleLogout} />} />
+              <Route path="/checklists" element={<Checklists onLogout={handleLogout} />} />
+              <Route path="/administration" element={<Administration onLogout={handleLogout} />} />
               <Route path="*" element={<NotFound />} />
             </>
           ) : (

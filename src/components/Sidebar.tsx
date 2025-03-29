@@ -1,114 +1,81 @@
 
-import React from "react";
-import { useLocation, Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import {
-  Home,
-  Users,
-  Clipboard,
-  Clock,
-  CreditCard,
-  Calendar,
-  Settings,
-  Menu,
-  X,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useMobileCheck } from "@/hooks/use-mobile";
+import { CalendarDays, ClipboardCheck, Clock, FileText, Home, Users, CreditCard, Settings } from "lucide-react";
 
 interface SidebarProps {
   open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpen: (open: boolean) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ open, setOpen }) => {
+const navItems = [
+  { icon: Home, label: "Dashboard", path: "/" },
+  { icon: Users, label: "Employees", path: "/employees" },
+  { icon: FileText, label: "Contracts", path: "/contracts" },
+  { icon: Clock, label: "Attendance", path: "/attendance" },
+  { icon: CreditCard, label: "Payroll", path: "/payroll" },
+  { icon: CalendarDays, label: "Leaves", path: "/leaves" },
+  { icon: ClipboardCheck, label: "Checklists", path: "/checklists" },
+  { icon: Settings, label: "Administration", path: "/administration" },
+];
+
+const Sidebar = ({ open, setOpen }: SidebarProps) => {
   const location = useLocation();
-  const isMobile = useMobileCheck();
-  
-  const isCurrentPage = (path: string) => {
-    return location.pathname === path;
-  };
-
-  const MenuItem = ({ path, name, icon }: { path: string; name: string; icon: React.ReactNode }) => {
-    const isActive = isCurrentPage(path);
-
-    return (
-      <li>
-        <Link
-          to={path}
-          className={cn(
-            "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
-            isActive
-              ? "bg-accent text-accent-foreground"
-              : "hover:bg-muted text-muted-foreground hover:text-foreground"
-          )}
-        >
-          {icon}
-          <span>{name}</span>
-        </Link>
-      </li>
-    );
-  };
 
   return (
     <>
-      {/* Mobile Menu Button */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="fixed left-4 top-4 z-50 md:hidden"
-        onClick={() => setOpen(!open)}
-        aria-label="Toggle menu"
-      >
-        {open ? <X size={20} /> : <Menu size={20} />}
-      </Button>
+      {/* Backdrop for mobile */}
+      {open && (
+        <div
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden"
+          onClick={() => setOpen(false)}
+        ></div>
+      )}
 
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 w-64 bg-background border-r transition-transform duration-300 ease-in-out md:translate-x-0",
+          "fixed top-0 left-0 z-50 h-full w-64 bg-white dark:bg-black border-r shadow-sm transition-transform duration-300 md:translate-x-0 md:z-0",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex flex-col h-full">
-          <div className="border-b py-6 px-4 mb-4 flex items-center space-x-2">
-            <img 
-              src="/lovable-uploads/3b0f2146-354a-4718-b5d4-d20dc1907ba1.png" 
-              alt="Company Logo" 
-              className="h-8 w-auto" 
-            />
-            <h2 className="text-xl font-bold">BBQHouse HRM</h2>
+          <div className="p-6 border-b">
+            <div className="flex items-center gap-3">
+              <img 
+                src="/lovable-uploads/3b0f2146-354a-4718-b5d4-d20dc1907ba1.png" 
+                alt="BBQ House Logo" 
+                className="h-8 w-8 object-contain"
+              />
+              <h1 className="text-xl font-semibold">BBQHouse HRM</h1>
+            </div>
           </div>
 
-          <nav className="flex-1 px-2">
-            <ul className="space-y-1">
-              <MenuItem path="/" name="Dashboard" icon={<Home size={18} />} />
-              <MenuItem path="/employees" name="Employees" icon={<Users size={18} />} />
-              <MenuItem path="/contracts" name="Contracts" icon={<Clipboard size={18} />} />
-              <MenuItem path="/attendance" name="Attendance" icon={<Clock size={18} />} />
-              <MenuItem path="/payroll" name="Payroll" icon={<CreditCard size={18} />} />
-              <MenuItem path="/leaves" name="Leaves" icon={<Calendar size={18} />} />
-              <MenuItem path="/administration" name="Administration" icon={<Settings size={18} />} />
-            </ul>
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            {navItems.map((item) => (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "flex items-center gap-3 px-4 py-3 rounded-md transition-colors",
+                  location.pathname === item.path
+                    ? "bg-bbqred text-white"
+                    : "hover:bg-muted"
+                )}
+              >
+                <item.icon className="h-5 w-5" />
+                <span>{item.label}</span>
+              </Link>
+            ))}
           </nav>
 
-          <div className="mt-auto border-t p-4">
-            <div className="text-sm text-muted-foreground">
-              <p>BBQHouse Management</p>
-              <p>Version 1.0.0</p>
+          <div className="p-6 border-t">
+            <div className="text-xs text-muted-foreground">
+              BBQHouse HR Management System
             </div>
           </div>
         </div>
       </div>
-
-      {/* Overlay to close mobile menu when clicking outside */}
-      {open && (
-        <div
-          className="fixed inset-0 z-30 bg-black/50 md:hidden"
-          onClick={() => setOpen(false)}
-          aria-hidden="true"
-        />
-      )}
     </>
   );
 };

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -9,18 +9,45 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-interface NotificationCenterProps {
-  notifications?: any[];
-  onSelect?: (notification: any) => void;
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  icon?: React.ReactNode;
 }
 
-const NotificationCenter = ({ notifications = [], onSelect }: NotificationCenterProps) => {
+interface NotificationCenterProps {
+  notifications?: Notification[];
+  onSelect?: (notification: Notification) => void;
+  onMarkAsRead?: (notificationId: string) => void;
+}
+
+const NotificationCenter = ({ 
+  notifications = [], 
+  onSelect,
+  onMarkAsRead
+}: NotificationCenterProps) => {
   const [open, setOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   
-  const handleNotificationClick = (notification: any) => {
+  useEffect(() => {
+    // Count unread notifications
+    const count = notifications.filter(notification => !notification.read).length;
+    setUnreadCount(count);
+  }, [notifications]);
+  
+  const handleNotificationClick = (notification: Notification) => {
     if (onSelect) {
       onSelect(notification);
     }
+    
+    // Mark as read only if the user has actually opened it
+    if (onMarkAsRead && !notification.read) {
+      onMarkAsRead(notification.id);
+    }
+    
     setOpen(false);
   };
 
@@ -29,8 +56,10 @@ const NotificationCenter = ({ notifications = [], onSelect }: NotificationCenter
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
-          {notifications.length > 0 && (
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 flex items-center justify-center text-white text-xs">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
           )}
         </Button>
       </PopoverTrigger>
@@ -45,9 +74,9 @@ const NotificationCenter = ({ notifications = [], onSelect }: NotificationCenter
             </p>
           ) : (
             <ul className="divide-y divide-border">
-              {notifications.map((notification, index) => (
+              {notifications.map((notification) => (
                 <li 
-                  key={index} 
+                  key={notification.id} 
                   className={cn(
                     "px-4 py-3 hover:bg-muted/50 cursor-pointer transition-colors",
                     notification.read ? "opacity-60" : ""

@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { employees, leaveRequests } from '@/lib/data';
 
-export const useEmployeeData = (activeOnly = true) => {
+export const useEmployeeData = (activeOnly = true, companyFilter?: string) => {
   const [employeeList, setEmployeeList] = useState([]);
   const [leavesList, setLeavesList] = useState([]);
   
@@ -15,14 +15,19 @@ export const useEmployeeData = (activeOnly = true) => {
     const employeeData = storedEmployees ? JSON.parse(storedEmployees) : employees;
     const leavesData = storedLeaves ? JSON.parse(storedLeaves) : leaveRequests;
     
-    // Filter employees to include only those with 'Active' status (not "On Leave")
-    const filteredEmployees = activeOnly 
+    // Apply active filter first
+    let filteredEmployees = activeOnly 
       ? employeeData.filter(emp => emp.status === 'Active')
       : employeeData;
-      
-    // Filter leaves to only include active employees if activeOnly is true
+    
+    // Then apply company filter if provided
+    if (companyFilter) {
+      filteredEmployees = filteredEmployees.filter(emp => emp.company === companyFilter);
+    }
+    
+    // Filter leaves to only include employees that match our current filters
     const relevantEmployeeIds = filteredEmployees.map(emp => emp.id);
-      
+    
     const filteredLeaves = leavesData.filter(leave => 
       relevantEmployeeIds.includes(leave.employeeId)
     );
@@ -42,7 +47,7 @@ export const useEmployeeData = (activeOnly = true) => {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, [activeOnly]);
+  }, [activeOnly, companyFilter]);
 
   return {
     employees: employeeList,
