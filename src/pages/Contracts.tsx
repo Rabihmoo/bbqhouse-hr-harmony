@@ -38,32 +38,45 @@ const Contracts = ({ onLogout }: { onLogout?: () => void }) => {
 
   const handleDownloadContract = (contract: any) => {
     // In a real implementation, this would download an actual Word document
-    // For now, we'll simulate a download with a .docx file
     
     toast.success("Downloading contract", {
       description: `Contract for ${contract.employeeName} is being downloaded as a Word document.`
     });
     
-    // Create a Blob that would represent a Word document
-    // In a real implementation, this would be the actual docx content
-    const dummyContent = `
-      Contract for ${contract.employeeName}
-      Position: ${contract.position}
-      Company: ${contract.company}
-      Start Date: ${contract.startDate}
-      Signature Date: ${contract.signatureDate}
-      
-      Notes: ${contract.notes}
-    `;
+    // Create properly formatted content for Word document
+    // We're creating a simple XML representation of a Word document
+    const wordXmlContent = `
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?mso-application progid="Word.Document"?>
+<w:wordDocument xmlns:w="http://schemas.microsoft.com/office/word/2003/wordml">
+  <w:body>
+    <w:p><w:r><w:t>EMPLOYMENT CONTRACT</w:t></w:r></w:p>
+    <w:p><w:r><w:t></w:t></w:r></w:p>
+    <w:p><w:r><w:t>Employee: ${contract.employeeName}</w:t></w:r></w:p>
+    <w:p><w:r><w:t>Position: ${contract.position}</w:t></w:r></w:p>
+    <w:p><w:r><w:t>Company: ${contract.company}</w:t></w:r></w:p>
+    <w:p><w:r><w:t>Start Date: ${contract.startDate}</w:t></w:r></w:p>
+    <w:p><w:r><w:t>BI Number: ${contract.employeeInfo.biNumber || "N/A"}</w:t></w:r></w:p>
+    <w:p><w:r><w:t>Address: ${contract.employeeInfo.address || "N/A"}</w:t></w:r></w:p>
+    <w:p><w:r><w:t></w:t></w:r></w:p>
+    <w:p><w:r><w:t>Base Salary: 8,900.00 MT</w:t></w:r></w:p>
+    <w:p><w:r><w:t>Transport Allowance: ${contract.employeeInfo.transportAllowance || 0} MT</w:t></w:r></w:p>
+    <w:p><w:r><w:t>Bonus: ${contract.employeeInfo.bonus || 0} MT</w:t></w:r></w:p>
+    <w:p><w:r><w:t></w:t></w:r></w:p>
+    <w:p><w:r><w:t>Notes: ${contract.notes || "N/A"}</w:t></w:r></w:p>
+    <w:p><w:r><w:t></w:t></w:r></w:p>
+    <w:p><w:r><w:t>Signature Date: ${contract.signatureDate}</w:t></w:r></w:p>
+  </w:body>
+</w:wordDocument>`;
     
     // Create a blob with Word document MIME type
-    const blob = new Blob([dummyContent], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const blob = new Blob([wordXmlContent], { type: 'application/vnd.ms-word' });
     
     // Create a link to download the blob
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `Contract_${contract.employeeName.replace(/ /g, '_')}.docx`);
+    link.setAttribute('download', `Contract_${contract.employeeName.replace(/ /g, '_')}.doc`);
     document.body.appendChild(link);
     link.click();
     

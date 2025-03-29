@@ -74,6 +74,7 @@ html, body {
   .container {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+    margin-left: 16rem; /* Add margin to account for the sidebar width */
   }
 }
 

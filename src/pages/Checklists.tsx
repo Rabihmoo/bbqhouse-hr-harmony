@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -101,6 +101,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
     category: 'kitchen'
   });
   const [searchQuery, setSearchQuery] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Function to handle company tab change with proper type casting
   const handleCompanyChange = (value: string) => {
@@ -115,6 +116,37 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
     // We need to validate that the value is a valid CategoryId
     if (categories.some(cat => cat.id === value)) {
       setActiveCategory(value as CategoryId);
+    }
+  };
+
+  // Function to open file dialog directly
+  const handleUploadClick = () => {
+    // Instead of opening the dialog, trigger the file input directly
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Function to handle file selection
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      // Extract the file name without extension
+      const fileName = file.name.replace(/\.[^/.]+$/, "");
+      
+      // Open dialog to confirm and set category
+      setNewChecklist({
+        name: file.name,
+        category: activeCategory
+      });
+      setIsUploadDialogOpen(true);
+    }
+    
+    // Reset file input so the same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -203,6 +235,15 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
       onLogout={onLogout}
     >
       <div className="space-y-6">
+        {/* Hidden file input for uploading */}
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          className="hidden" 
+          accept=".doc,.docx,.pdf,.xls,.xlsx"
+          onChange={handleFileSelect}
+        />
+      
         {/* Company Tabs */}
         <Tabs defaultValue="bbq" value={activeCompany} onValueChange={handleCompanyChange}>
           <div className="flex justify-between items-center mb-4">
@@ -221,7 +262,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-64"
               />
-              <Button onClick={() => setIsUploadDialogOpen(true)}>
+              <Button onClick={handleUploadClick}>
                 <Upload className="h-4 w-4 mr-2" />
                 Upload Checklist
               </Button>
@@ -231,7 +272,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
           {/* Content for each company */}
           {companies.map(company => (
             <TabsContent key={company.id} value={company.id} className="mt-0">
-              <div className="grid grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {/* Left sidebar - Categories */}
                 <div className="col-span-1 bg-white dark:bg-black/40 glass rounded-xl shadow-sm p-4">
                   <h3 className="font-medium text-lg mb-4">Categories</h3>
@@ -254,7 +295,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
                 </div>
 
                 {/* Right content - Checklist files */}
-                <div className="col-span-3 bg-white dark:bg-black/40 glass rounded-xl shadow-sm p-6">
+                <div className="col-span-1 md:col-span-3 bg-white dark:bg-black/40 glass rounded-xl shadow-sm p-6">
                   <h2 className="text-xl font-semibold mb-4">
                     {categories.find(c => c.id === activeCategory)?.name || 'Checklists'}
                   </h2>
@@ -307,7 +348,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
                         variant="outline" 
                         size="sm" 
                         className="mt-4"
-                        onClick={() => setIsUploadDialogOpen(true)}
+                        onClick={handleUploadClick}
                       >
                         <Plus className="h-4 w-4 mr-2" />
                         Add Checklist
@@ -327,7 +368,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
           <DialogHeader>
             <DialogTitle>Upload Checklist</DialogTitle>
             <DialogDescription>
-              Upload a new checklist to the selected company and category.
+              Confirm details for the uploaded checklist.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -375,7 +416,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
               Cancel
             </Button>
             <Button type="button" onClick={handleUploadChecklist}>
-              Upload
+              Confirm Upload
             </Button>
           </DialogFooter>
         </DialogContent>
