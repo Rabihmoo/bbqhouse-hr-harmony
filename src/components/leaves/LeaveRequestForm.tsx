@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -18,27 +17,33 @@ interface LeaveRequestFormProps {
   onClose: () => void;
   onSubmit: (data: any) => void;
   employees?: any[];
+  initialEmployeeId?: string;
 }
 
 const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({ 
   open, 
   onClose,
   onSubmit,
-  employees: providedEmployees 
+  employees: providedEmployees,
+  initialEmployeeId 
 }) => {
-  const [employeeId, setEmployeeId] = useState("");
+  const [employeeId, setEmployeeId] = useState(initialEmployeeId || "");
   const [leaveType, setLeaveType] = useState("annual");
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(addDays(new Date(), 1));
   const [notes, setNotes] = useState("");
   
-  // Use provided employees or fetch active employees if not provided
   const { employees: activeEmployees } = useEmployeeData(true);
   const employees = providedEmployees || activeEmployees;
   
+  useEffect(() => {
+    if (initialEmployeeId) {
+      setEmployeeId(initialEmployeeId);
+    }
+  }, [initialEmployeeId]);
+  
   const calculateDays = () => {
     if (!startDate || !endDate) return 0;
-    // +1 because we want to include both start and end dates
     return differenceInDays(endDate, startDate) + 1;
   };
   
@@ -151,7 +156,6 @@ const LeaveRequestForm: React.FC<LeaveRequestFormProps> = ({
                       selected={startDate}
                       onSelect={(date) => {
                         setStartDate(date);
-                        // If end date is before the new start date, update it
                         if (endDate && date && endDate < date) {
                           setEndDate(date);
                         }

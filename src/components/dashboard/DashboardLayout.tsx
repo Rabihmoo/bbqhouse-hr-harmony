@@ -1,4 +1,3 @@
-
 import { ReactNode, useState, useEffect } from "react";
 import { User } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,10 +11,21 @@ import { useMobileCheck } from "@/hooks/use-mobile";
 import DashboardHeader from "./DashboardHeader";
 import { useNotifications } from "@/hooks/use-notifications";
 
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  icon?: React.ReactNode;
+  data?: any;
+}
+
 interface DashboardLayoutProps {
   children: ReactNode;
   title: string;
   subtitle: string;
+  notifications?: Notification[];
   onNotificationClick?: (notification: any) => void;
   onLogout?: () => void;
 }
@@ -24,6 +34,7 @@ const DashboardLayout = ({
   children, 
   title, 
   subtitle, 
+  notifications: externalNotifications,
   onNotificationClick,
   onLogout
 }: DashboardLayoutProps) => {
@@ -33,10 +44,13 @@ const DashboardLayout = ({
   
   // Use our notification hook
   const { 
-    notifications, 
+    notifications: internalNotifications, 
     markAsRead,
     unreadCount
   } = useNotifications();
+
+  // Use provided notifications or internal ones
+  const notifications = externalNotifications || internalNotifications;
 
   const handleLogout = () => {
     if (onLogout) {
