@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { Bell } from "lucide-react";
+import { Bell, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   Popover,
@@ -31,7 +31,7 @@ const NotificationCenter = ({
   onMarkAsRead,
   onClearAll
 }: NotificationCenterProps) => {
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   
   useEffect(() => {
@@ -50,11 +50,15 @@ const NotificationCenter = ({
       onMarkAsRead(notification.id);
     }
     
-    setOpen(false);
+    setIsOpen(false);
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
@@ -65,7 +69,7 @@ const NotificationCenter = ({
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
+      <PopoverContent className="w-80 p-0" align="end" forceMount>
         <div className="px-4 py-3 border-b border-border flex justify-between items-center">
           <h3 className="text-sm font-semibold">Notifications</h3>
           {notifications.length > 0 && onClearAll && (
@@ -81,7 +85,7 @@ const NotificationCenter = ({
             </p>
           ) : (
             <ul className="divide-y divide-border">
-              {notifications.slice(0, 50).map((notification) => (
+              {notifications.slice(0, 25).map((notification) => (
                 <li 
                   key={notification.id} 
                   className={cn(

@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 export interface Notification {
   id: string;
@@ -11,11 +11,12 @@ export interface Notification {
   data?: any;
 }
 
-// Maximum number of notifications to store in localStorage
-const MAX_NOTIFICATIONS = 50;
+// Further reduce maximum notifications to prevent quota errors
+const MAX_NOTIFICATIONS = 25;
 
 export const useNotifications = (initialNotifications: Notification[] = []) => {
   const STORAGE_KEY = 'bbq-notifications';
+  const effectRan = useRef(false);
   
   // Load notifications from localStorage or use initial
   const [notifications, setNotifications] = useState<Notification[]>(() => {
@@ -28,51 +29,102 @@ export const useNotifications = (initialNotifications: Notification[] = []) => {
     }
   });
 
-  // Save notifications to localStorage whenever they change
+  // Save notifications to localStorage whenever they change - with useRef guard to prevent infinite loops
   useEffect(() => {
+    // Skip the first render to prevent potential infinite loops
+    if (effectRan.current === false) {
+      effectRan.current = true;
+      return;
+    }
+    
     try {
-      // Limit the number of notifications to prevent quota errors
+      // More aggressive limitation of stored notifications
       const limitedNotifications = notifications.slice(0, MAX_NOTIFICATIONS);
       
-      // Only store essential data to reduce storage size
+      // Optimize stored data size by removing unnecessary fields and truncating long messages
       const storageData = limitedNotifications.map(notification => ({
         id: notification.id,
-        title: notification.title,
-        message: notification.message,
+        title: notification.title.substring(0, 50), // Limit title length
+        message: notification.message.substring(0, 100), // Limit message length
         time: notification.time,
         read: notification.read,
-        // Don't store the icon in localStorage as it might be a React component
-        // Store any additional data that's not a React component
-        data: notification.data ? JSON.parse(JSON.stringify(notification.data)) : undefined
+        // Don't store icon as it might be a React component
+        // Store minimal data object if present
+        data: notification.data ? 
+          // Only store employeeId if available, drop other data
+          (notification.data.employeeId ? { employeeId: notification.data.employeeId } : undefined)
+          : undefined
       }));
       
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(storageData));
+      // Try to compress data by stringifying once
+      const storageString = JSON.stringify(storageData);
+      
+      // Check if the string is too large before trying to store it (5MB is typical limit)
+      if (storageString.length > 4 * 1024 * 1024) {
+        // Too large, store a reduced set
+        const reducedData = storageData.slice(0, 10); // Only keep 10 most recent
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(reducedData));
+        console.warn('Notifications data was too large, reduced to 10 items');
+      } else {
+        localStorage.setItem(STORAGE_KEY, storageString);
+      }
     } catch (error) {
       console.error('Error saving notifications to localStorage:', error);
       
-      // If we encounter a quota error, try removing older notifications
-      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
-        const reducedNotifications = notifications.slice(0, Math.floor(MAX_NOTIFICATIONS / 2));
+      // Handle quota exceeded error
+      if (error instanceof DOMException && 
+         (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
+        console.warn('Storage quota exceeded, attempting to save reduced data');
+        
         try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(reducedNotifications));
+          // Clear existing storage for this key
+          localStorage.removeItem(STORAGE_KEY);
+          
+          // Try with just 5 most recent, unread notifications
+          const criticalNotifications = notifications
+            .filter(n => !n.read)
+            .slice(0, 5)
+            .map(n => ({
+              id: n.id,
+              title: n.title.substring(0, 30),
+              message: n.message.substring(0, 50),
+              time: n.time,
+              read: n.read
+              // No data or other fields
+            }));
+            
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(criticalNotifications));
         } catch (innerError) {
-          // If still failing, clear notifications storage
+          // If still failing, give up on storage
+          console.error('Failed to save even reduced notifications set:', innerError);
           localStorage.removeItem(STORAGE_KEY);
         }
       }
     }
   }, [notifications]);
 
-  // Add a new notification
+  // Add a new notification with deduplication
   const addNotification = useCallback((notification: Omit<Notification, 'id' | 'time' | 'read'>) => {
     const newNotification: Notification = {
       ...notification,
-      id: Date.now().toString(),
+      id: `notif-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       time: new Date().toLocaleString(),
       read: false
     };
     
     setNotifications(prev => {
+      // Check if similar notification already exists (by title)
+      const exists = prev.some(n => 
+        n.title === notification.title && 
+        !n.read &&
+        // Only consider notifications from the last hour as duplicates
+        (new Date().getTime() - new Date(n.time).getTime() < 3600000)
+      );
+      
+      if (exists) {
+        return prev; // Don't add duplicate recent notifications
+      }
+      
       // Add at the beginning and maintain max limit
       const updated = [newNotification, ...prev].slice(0, MAX_NOTIFICATIONS);
       return updated;
@@ -100,6 +152,11 @@ export const useNotifications = (initialNotifications: Notification[] = []) => {
   // Clear all notifications
   const clearAllNotifications = useCallback(() => {
     setNotifications([]);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      console.error('Error clearing notifications from localStorage:', error);
+    }
   }, []);
 
   // Get unread count
