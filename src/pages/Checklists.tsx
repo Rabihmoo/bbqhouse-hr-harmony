@@ -102,6 +102,22 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
   });
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Function to handle company tab change with proper type casting
+  const handleCompanyChange = (value: string) => {
+    // Ensure the value is a valid CompanyId before setting it
+    if (value === 'bbq' || value === 'salt' || value === 'cleaning') {
+      setActiveCompany(value);
+    }
+  };
+
+  // Function to handle category change with proper type casting
+  const handleCategoryChange = (value: string) => {
+    // We need to validate that the value is a valid CategoryId
+    if (categories.some(cat => cat.id === value)) {
+      setActiveCategory(value as CategoryId);
+    }
+  };
+
   // Function to upload a new checklist
   const handleUploadChecklist = () => {
     if (!newChecklist.name) {
@@ -188,7 +204,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
     >
       <div className="space-y-6">
         {/* Company Tabs */}
-        <Tabs defaultValue="bbq" value={activeCompany} onValueChange={setActiveCompany}>
+        <Tabs defaultValue="bbq" value={activeCompany} onValueChange={handleCompanyChange}>
           <div className="flex justify-between items-center mb-4">
             <TabsList>
               {companies.map(company => (
@@ -223,7 +239,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
                     {categories.map(category => (
                       <button
                         key={category.id}
-                        onClick={() => setActiveCategory(category.id)}
+                        onClick={() => handleCategoryChange(category.id)}
                         className={`w-full text-left px-3 py-2 rounded-md transition-colors flex items-center ${
                           activeCategory === category.id
                             ? "bg-bbqred text-white"
@@ -333,7 +349,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
               </Label>
               <Select
                 value={newChecklist.category}
-                onValueChange={(value) => setNewChecklist({...newChecklist, category: value})}
+                onValueChange={(value: CategoryId) => setNewChecklist({...newChecklist, category: value})}
               >
                 <SelectTrigger id="category" className="col-span-3">
                   <SelectValue placeholder="Select a category" />
