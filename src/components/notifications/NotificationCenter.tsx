@@ -22,12 +22,14 @@ interface NotificationCenterProps {
   notifications?: Notification[];
   onSelect?: (notification: Notification) => void;
   onMarkAsRead?: (notificationId: string) => void;
+  onClearAll?: () => void;
 }
 
 const NotificationCenter = ({ 
   notifications = [], 
   onSelect,
-  onMarkAsRead
+  onMarkAsRead,
+  onClearAll
 }: NotificationCenterProps) => {
   const [open, setOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -64,8 +66,13 @@ const NotificationCenter = ({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">
-        <div className="px-4 py-3 border-b border-border">
+        <div className="px-4 py-3 border-b border-border flex justify-between items-center">
           <h3 className="text-sm font-semibold">Notifications</h3>
+          {notifications.length > 0 && onClearAll && (
+            <Button variant="ghost" size="sm" onClick={onClearAll}>
+              Clear all
+            </Button>
+          )}
         </div>
         <div className="max-h-80 overflow-y-auto">
           {notifications.length === 0 ? (
@@ -74,7 +81,7 @@ const NotificationCenter = ({
             </p>
           ) : (
             <ul className="divide-y divide-border">
-              {notifications.map((notification) => (
+              {notifications.slice(0, 50).map((notification) => (
                 <li 
                   key={notification.id} 
                   className={cn(

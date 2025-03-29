@@ -1,4 +1,3 @@
-
 import { ReactNode, useState, useEffect } from "react";
 import { User } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,12 +46,13 @@ const DashboardLayout = ({
     notifications: internalNotifications, 
     markAsRead,
     addNotification,
+    clearAllNotifications,
     unreadCount
   } = useNotifications();
 
   // Combine notifications with employee notifications
   useEffect(() => {
-    // Add employee notifications to the notification system
+    // Add employee notifications to the notification system if they don't already exist
     if (employeeNotifications && employeeNotifications.length > 0) {
       employeeNotifications.forEach(notification => {
         // Check if notification already exists to avoid duplicates
@@ -139,6 +139,7 @@ const DashboardLayout = ({
                 notifications={notifications} 
                 onSelect={handleNotificationClick}
                 onMarkAsRead={markAsRead}
+                onClearAll={clearAllNotifications}
               />
               
               <DropdownMenu>
