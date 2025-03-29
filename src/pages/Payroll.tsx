@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,7 +47,6 @@ const Payroll = ({ onLogout }: PayrollProps) => {
   const [payrollRecords, setPayrollRecords] = useState<PayrollRecord[]>([]);
   const { employees } = useEmployeeData();
   
-  // New payroll record state
   const [newPayroll, setNewPayroll] = useState({
     employeeId: "",
     month: new Date().getMonth(),
@@ -63,20 +61,16 @@ const Payroll = ({ onLogout }: PayrollProps) => {
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
   
-  // Load payroll data
   useEffect(() => {
     const loadPayrollData = () => {
-      // Check if we have stored payroll records
       const storedPayroll = localStorage.getItem('bbq-payroll-records');
       if (storedPayroll) {
         setPayrollRecords(JSON.parse(storedPayroll));
       } else {
-        // Generate some sample payroll records if none exist
         const sampleRecords: PayrollRecord[] = [];
         const currentMonth = new Date().getMonth();
         const currentYear = new Date().getFullYear();
         
-        // Create records for current and previous month
         for (let i = 0; i < 2; i++) {
           const month = i === 0 ? currentMonth : (currentMonth === 0 ? 11 : currentMonth - 1);
           const year = i === 0 ? currentYear : (currentMonth === 0 ? currentYear - 1 : currentYear);
@@ -91,10 +85,10 @@ const Payroll = ({ onLogout }: PayrollProps) => {
               };
               
               const overtimeHours = Math.floor(Math.random() * 20);
-              const overtimeRate = 1.5 * (salaryStructure.basicSalary / 176); // Assuming 176 working hours per month
+              const overtimeRate = 1.5 * (salaryStructure.basicSalary / 176);
               const overtimeAmount = Math.round(overtimeHours * overtimeRate);
               
-              const deductions = Math.round(salaryStructure.basicSalary * 0.03); // Example: 3% for taxes
+              const deductions = Math.round(salaryStructure.basicSalary * 0.03);
               
               const netSalary = (
                 salaryStructure.basicSalary +
@@ -135,7 +129,6 @@ const Payroll = ({ onLogout }: PayrollProps) => {
     loadPayrollData();
   }, [employees]);
   
-  // Filter payroll records by month, year, and company
   const filteredPayrollRecords = payrollRecords.filter(record => {
     const matchesPeriod = record.month === selectedMonth && record.year === selectedYear;
     if (!matchesPeriod) return false;
@@ -146,14 +139,12 @@ const Payroll = ({ onLogout }: PayrollProps) => {
     return employee?.company?.toLowerCase().includes(activeCompany);
   });
   
-  // Calculate totals for the filtered records
   const totalBasicSalary = filteredPayrollRecords.reduce((sum, record) => sum + record.basicSalary, 0);
   const totalAllowances = filteredPayrollRecords.reduce((sum, record) => sum + record.transportAllowance + record.accommodationAllowance, 0);
   const totalOvertime = filteredPayrollRecords.reduce((sum, record) => sum + record.overtimeAmount, 0);
   const totalDeductions = filteredPayrollRecords.reduce((sum, record) => sum + record.deductions, 0);
   const totalNetSalary = filteredPayrollRecords.reduce((sum, record) => sum + record.netSalary, 0);
   
-  // Get employees without payroll records for the selected period
   const employeesWithoutPayroll = employees.filter(employee => {
     if (employee.status !== 'Active') return false;
     if (activeCompany !== 'all' && !employee.company?.toLowerCase().includes(activeCompany)) return false;
@@ -167,7 +158,6 @@ const Payroll = ({ onLogout }: PayrollProps) => {
     return !hasRecord;
   });
   
-  // Handle new payroll record generation
   const handleGeneratePayroll = () => {
     if (!newPayroll.employeeId) {
       toast.error("Please select an employee");
@@ -218,7 +208,6 @@ const Payroll = ({ onLogout }: PayrollProps) => {
       paymentDate: newPayroll.status === 'paid' ? format(new Date(), 'yyyy-MM-dd') : undefined
     };
     
-    // Check if record already exists for this employee in this period
     const existingIndex = payrollRecords.findIndex(
       record => record.employeeId === employee.id && 
                record.month === newPayroll.month && 
@@ -227,12 +216,10 @@ const Payroll = ({ onLogout }: PayrollProps) => {
     
     let updatedRecords;
     if (existingIndex >= 0) {
-      // Update existing record
       updatedRecords = [...payrollRecords];
       updatedRecords[existingIndex] = newRecord;
       toast.success("Payroll record updated");
     } else {
-      // Add new record
       updatedRecords = [...payrollRecords, newRecord];
       toast.success("Payroll record generated");
     }
@@ -240,7 +227,6 @@ const Payroll = ({ onLogout }: PayrollProps) => {
     setPayrollRecords(updatedRecords);
     localStorage.setItem('bbq-payroll-records', JSON.stringify(updatedRecords));
     
-    // Reset form
     setNewPayroll({
       employeeId: "",
       month: new Date().getMonth(),
@@ -250,13 +236,11 @@ const Payroll = ({ onLogout }: PayrollProps) => {
       status: "draft"
     });
     
-    // Update selected period to match the new record and switch to payslips tab
     setSelectedMonth(newPayroll.month);
     setSelectedYear(newPayroll.year);
     setActiveTab("payslips");
   };
   
-  // Handle payroll status change
   const handleUpdateStatus = (record: PayrollRecord, newStatus: 'draft' | 'processed' | 'paid') => {
     const updatedRecord = {
       ...record,
@@ -274,14 +258,11 @@ const Payroll = ({ onLogout }: PayrollProps) => {
     toast.success(`Payroll status updated to ${newStatus}`);
   };
   
-  // Handle download payslip
   const handleDownloadPayslip = (record: PayrollRecord) => {
     toast.success("Downloading payslip", {
       description: `Payslip for ${record.employeeName} - ${record.periodLabel} is being downloaded.`
     });
     
-    // In a real implementation, this would generate and download a PDF file
-    // For now, let's just simulate a download
     setTimeout(() => {
       const filename = `Payslip_${record.employeeName.replace(/ /g, '_')}_${record.periodLabel.replace(/ /g, '_')}.pdf`;
       const dummyLink = document.createElement('a');
@@ -396,7 +377,7 @@ const Payroll = ({ onLogout }: PayrollProps) => {
                         ),
                       },
                       {
-                        key: "allowances",
+                        key: "totalAllowances",
                         header: "Allowances",
                         render: (row) => (
                           <span>{(row.transportAllowance + row.accommodationAllowance).toLocaleString()} MT</span>

@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar as CalendarIcon, FileText, Check, X, Clock, Calendar } from "lucide-react";
+import { FileText, Check, X, Clock, Calendar as CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -185,7 +185,7 @@ const Leaves = ({ onLogout }: LeavesProps) => {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <TabsList>
               <TabsTrigger value="requests">
-                <Calendar className="h-4 w-4 mr-2" />
+                <CalendarIcon className="h-4 w-4 mr-2" />
                 Leave Requests
               </TabsTrigger>
               <TabsTrigger value="allowances">
@@ -460,6 +460,7 @@ const Leaves = ({ onLogout }: LeavesProps) => {
                             selected={newLeaveRequest.startDate}
                             onSelect={(date) => setNewLeaveRequest({...newLeaveRequest, startDate: date})}
                             initialFocus
+                            className="p-3 pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>
@@ -489,6 +490,7 @@ const Leaves = ({ onLogout }: LeavesProps) => {
                             disabled={(date) => 
                               !newLeaveRequest.startDate || date < newLeaveRequest.startDate
                             }
+                            className="p-3 pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>
