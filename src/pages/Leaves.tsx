@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FileText, Check, X, Clock, Calendar as CalendarIcon } from "lucide-react";
+import { FileText, Check, X, Clock, CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -280,7 +280,7 @@ const Leaves = ({ onLogout }: LeavesProps) => {
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   const updatedRecords = leaveRecords.map(rec =>
-                                    rec.id === row.id ? { ...rec, status: "completed" } : rec
+                                    rec.id === row.id ? { ...rec, status: "completed" as const } : rec
                                   );
                                   setLeaveRecords(updatedRecords);
                                   localStorage.setItem('bbq-leave-records', JSON.stringify(updatedRecords));
@@ -460,7 +460,6 @@ const Leaves = ({ onLogout }: LeavesProps) => {
                             selected={newLeaveRequest.startDate}
                             onSelect={(date) => setNewLeaveRequest({...newLeaveRequest, startDate: date})}
                             initialFocus
-                            className="p-3 pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>
@@ -490,7 +489,6 @@ const Leaves = ({ onLogout }: LeavesProps) => {
                             disabled={(date) => 
                               !newLeaveRequest.startDate || date < newLeaveRequest.startDate
                             }
-                            className="p-3 pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>

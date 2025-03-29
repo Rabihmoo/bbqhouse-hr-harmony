@@ -377,7 +377,7 @@ const Payroll = ({ onLogout }: PayrollProps) => {
                         ),
                       },
                       {
-                        key: "totalAllowances",
+                        key: "allowances",
                         header: "Allowances",
                         render: (row) => (
                           <span>{(row.transportAllowance + row.accommodationAllowance).toLocaleString()} MT</span>
