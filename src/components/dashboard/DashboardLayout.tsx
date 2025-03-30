@@ -1,19 +1,16 @@
+
 import { ReactNode, useState, useEffect } from "react";
-import { User } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
-import NotificationCenter from "@/components/notifications/NotificationCenter";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useMobileCheck } from "@/hooks/use-mobile";
-import DashboardHeader from "./DashboardHeader";
 import { useNotifications } from "@/hooks/use-notifications";
 import { Notification as TypedNotification } from "@/hooks/use-notifications";
 import { useEmployeeData } from "@/hooks/use-employee-data";
 import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
+import DashboardHeader from "./DashboardHeader";
+
 interface Notification extends TypedNotification {}
+
 interface DashboardLayoutProps {
   children: ReactNode;
   title: string;
@@ -22,6 +19,7 @@ interface DashboardLayoutProps {
   onNotificationClick?: (notification: any) => void;
   onLogout?: () => void;
 }
+
 const DashboardLayout = ({
   children,
   title,
@@ -35,13 +33,11 @@ const DashboardLayout = ({
   const isMobile = useMobileCheck();
 
   // Get employees data to generate notifications
-  const {
-    employees
-  } = useEmployeeData();
+  const { employees } = useEmployeeData();
+  
   // Get employee-based notifications
-  const {
-    notifications: employeeNotifications
-  } = useEmployeeNotifications(employees);
+  const { notifications: employeeNotifications } = useEmployeeNotifications(employees);
+  
   const {
     notifications: internalNotifications,
     markAsRead,
@@ -71,6 +67,7 @@ const DashboardLayout = ({
 
   // Use external notifications if provided, otherwise use internal
   const notifications = externalNotifications || internalNotifications;
+  
   const handleLogout = () => {
     if (onLogout) {
       onLogout();
@@ -80,6 +77,7 @@ const DashboardLayout = ({
       window.location.reload();
     }
   };
+  
   const handleNotificationClick = (notification: any) => {
     markAsRead(notification.id);
     if (onNotificationClick) {
@@ -89,16 +87,20 @@ const DashboardLayout = ({
       navigate(`/employees?id=${notification.data.employeeId}`);
     }
   };
-  return <div className="flex h-screen overflow-hidden w-full">
+
+  return (
+    <div className="flex h-screen overflow-hidden w-full">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
-      <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80 w-full">
+      <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80 ml-16">
+        <DashboardHeader title={title} subtitle={subtitle} />
         
-        
-        <main className="flex-1 container py-6 w-full">
+        <main className="flex-1 container max-w-5xl py-6 px-4 md:px-6">
           {children}
         </main>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default DashboardLayout;
