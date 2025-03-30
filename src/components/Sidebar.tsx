@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Bell, CalendarDays, ClipboardCheck, Clock, FileText, Home, Users, CreditCard, Settings } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
-import { NotificationCenter } from "@/components/notifications/NotificationCenter";
+import NotificationCenter from "@/components/notifications/NotificationCenter";
 
 interface SidebarProps {
   open: boolean;

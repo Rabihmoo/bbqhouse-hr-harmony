@@ -60,7 +60,7 @@ const DashboardLayout = ({
             message: notification.message,
             icon: notification.icon,
             data: notification.data,
-            actionType: notification.actionType
+            type: notification.type // Use type instead of actionType
           });
         }
       });
@@ -89,12 +89,12 @@ const DashboardLayout = ({
     }
     
     // Handle different notification action types
-    if (notification.actionType === 'view-employee' && notification.data?.employeeId) {
+    if (notification.type === 'view-employee' && notification.data?.employeeId) {
       // Navigate to employee details
       navigate(`/employees?id=${notification.data.employeeId}`);
       toast.success("Navigated to employee record");
     } 
-    else if (notification.actionType === 'approve-leave' && notification.data?.employeeId) {
+    else if (notification.type === 'approve-leave' && notification.data?.employeeId) {
       // Navigate to leave approvals
       navigate(`/leaves?tab=requests&employeeId=${notification.data.employeeId}`);
       toast.success("Navigated to leave requests");
