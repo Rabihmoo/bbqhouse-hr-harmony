@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -128,6 +129,17 @@ const Leaves = ({ onLogout }: LeavesProps) => {
     handleTabChange("requests");
   };
 
+  // Check for employeeId parameter and highlight relevant employee
+  useEffect(() => {
+    if (employeeIdParam) {
+      // If there's an employee ID in the URL and we're in the missing tab,
+      // find that employee and potentially scroll to them or highlight them
+      toast.info("Employee record loaded", {
+        description: "Viewing leave information for selected employee"
+      });
+    }
+  }, [employeeIdParam]);
+
   return (
     <DashboardLayout 
       title="Leaves" 
@@ -135,7 +147,7 @@ const Leaves = ({ onLogout }: LeavesProps) => {
       onLogout={onLogout}
     >
       <div className="space-y-6">
-        <Tabs defaultValue="requests" value={activeTab} onValueChange={handleTabChange}>
+        <Tabs defaultValue={tabParam || "requests"} value={activeTab} onValueChange={handleTabChange}>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <TabsList>
               <TabsTrigger value="requests">
@@ -183,6 +195,7 @@ const Leaves = ({ onLogout }: LeavesProps) => {
                 activeCompany === 'all' || emp.company?.toLowerCase().includes(activeCompany)
               )}
               onAddLeave={handleAddLeaveRecord}
+              highlightEmployeeId={employeeIdParam}
             />
           </TabsContent>
           
@@ -192,6 +205,7 @@ const Leaves = ({ onLogout }: LeavesProps) => {
               leaveRecords={leaveRecords}
               setLeaveRecords={setLeaveRecords}
               onSuccess={() => handleTabChange("requests")}
+              initialEmployeeId={employeeIdParam}
             />
           </TabsContent>
         </Tabs>

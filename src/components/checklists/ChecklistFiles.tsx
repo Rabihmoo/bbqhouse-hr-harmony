@@ -21,6 +21,14 @@ const ChecklistFiles = ({
   onUploadClick,
   categoryName
 }: ChecklistFilesProps) => {
+  // Helper function to ensure file has .docx extension
+  const ensureDocxExtension = (filename: string) => {
+    if (!filename.toLowerCase().endsWith('.docx')) {
+      return `${filename}.docx`;
+    }
+    return filename;
+  };
+  
   return (
     <div className="col-span-1 md:col-span-3 bg-white dark:bg-black/40 glass rounded-xl shadow-sm p-6">
       <h2 className="text-xl font-semibold mb-4">
@@ -37,7 +45,7 @@ const ChecklistFiles = ({
               <div className="flex items-center">
                 <FileText className="h-5 w-5 mr-3 text-bbqred" />
                 <div>
-                  <p className="font-medium">{checklist.name}</p>
+                  <p className="font-medium">{ensureDocxExtension(checklist.name)}</p>
                   <p className="text-sm text-muted-foreground">
                     {checklist.size} • Uploaded on {checklist.date}
                   </p>
@@ -47,7 +55,10 @@ const ChecklistFiles = ({
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => onDownloadChecklist(checklist)}
+                  onClick={() => onDownloadChecklist({
+                    ...checklist,
+                    name: ensureDocxExtension(checklist.name)
+                  })}
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Download

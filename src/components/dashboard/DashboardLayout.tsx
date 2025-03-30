@@ -101,8 +101,18 @@ const DashboardLayout = ({
     }
     else if (notification.type === 'warning' && notification.title.includes('Leave')) {
       // Navigate to leaves with the missing leaves tab active
+      navigate(`/leaves?tab=missing`);
+      toast.success("Navigated to missing leaves");
+    }
+    else if (notification.title.includes('Annual Leave')) {
+      // Navigate to the leaves page for annual leave management
       navigate(`/leaves?tab=allowances`);
       toast.success("Navigated to leave allowances");
+    }
+    else if (notification.title.includes('Unused Annual Leave')) {
+      // Navigate to the leaves page for missing leaves
+      navigate(`/leaves?tab=missing`);
+      toast.success("Navigated to missing leaves");
     }
     else if (notification.title.includes('Expired') || notification.title.includes('Missing')) {
       // Navigate to the employee that has missing or expired documents
@@ -110,6 +120,11 @@ const DashboardLayout = ({
         navigate(`/employees?id=${notification.data.employeeId}`);
         toast.success("Navigated to employee with document issues");
       }
+    }
+    else if (notification.title.includes('Checklist')) {
+      // Navigate to the checklists page
+      navigate('/checklists');
+      toast.success("Navigated to checklists");
     }
     else {
       // Default to employee list if there's an employeeId
@@ -123,7 +138,11 @@ const DashboardLayout = ({
 
   return (
     <div className="flex h-screen overflow-hidden w-full">
-      <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+      <Sidebar 
+        open={sidebarOpen} 
+        setOpen={setSidebarOpen} 
+        onNotificationClick={handleNotificationClick}
+      />
       
       <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80 ml-16">
         <DashboardHeader title={title} subtitle={subtitle} />

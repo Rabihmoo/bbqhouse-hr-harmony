@@ -105,13 +105,24 @@ export const useChecklists = () => {
 
   // Function to download a checklist
   const handleDownloadChecklist = (checklist: { name: string }) => {
-    // In a real implementation, this would download the actual file
-    toast.success(`Downloading ${checklist.name}`);
+    // Ensure filename has .docx extension
+    const fileName = checklist.name.endsWith('.docx') 
+      ? checklist.name 
+      : `${checklist.name}.docx`;
+    
+    toast.success(`Downloading ${fileName}`);
     
     // Create a temporary anchor element to trigger download
     const link = document.createElement('a');
-    link.href = `#${checklist.name}`;
-    link.setAttribute('download', checklist.name);
+    
+    // In a real app, this would be a URL to the actual file
+    // For now, we'll create a placeholder Word document with some content
+    const blob = new Blob([
+      '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>BBQHOUSE Checklist</title></head><body><h1>BBQHOUSE Checklist</h1><p>This is a placeholder for the checklist content.</p></body></html>'
+    ], { type: 'application/vnd.ms-word' });
+    
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute('download', fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

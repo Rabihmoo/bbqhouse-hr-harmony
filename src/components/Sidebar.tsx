@@ -8,6 +8,7 @@ import NotificationCenter from "@/components/notifications/NotificationCenter";
 interface SidebarProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  onNotificationClick?: (notification: any) => void;
 }
 
 const navItems = [{
@@ -46,7 +47,8 @@ const navItems = [{
 
 const Sidebar = ({
   open,
-  setOpen
+  setOpen,
+  onNotificationClick
 }: SidebarProps) => {
   const location = useLocation();
   const { notifications, markAsRead, clearAllNotifications, unreadCount } = useNotifications();
@@ -69,7 +71,9 @@ const Sidebar = ({
                 notifications={notifications}
                 onSelect={(notification) => {
                   markAsRead(notification.id);
-                  // Navigation will be handled by DashboardLayout
+                  if (onNotificationClick) {
+                    onNotificationClick(notification);
+                  }
                 }}
                 onMarkAsRead={markAsRead}
                 onClearAll={clearAllNotifications}

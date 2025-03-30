@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { cn } from "@/lib/utils";
 import { departmentColors, getEmployeeYearsOfService } from "@/lib/data";
@@ -11,9 +11,14 @@ import LeaveRequestForm from "./LeaveRequestForm";
 interface MissingLeavesListProps {
   employees: any[];
   onAddLeave: (employeeId: string, leaveData: any) => void;
+  highlightEmployeeId?: string | null;
 }
 
-const MissingLeavesList = ({ employees, onAddLeave }: MissingLeavesListProps) => {
+const MissingLeavesList = ({ 
+  employees, 
+  onAddLeave,
+  highlightEmployeeId 
+}: MissingLeavesListProps) => {
   const [showLeaveForm, setShowLeaveForm] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   
@@ -34,6 +39,26 @@ const MissingLeavesList = ({ employees, onAddLeave }: MissingLeavesListProps) =>
     
     return hasUnusedLeaves;
   });
+
+  // If there's a highlighted employee ID, select that employee
+  useEffect(() => {
+    if (highlightEmployeeId) {
+      const employee = employees.find(emp => emp.id === highlightEmployeeId);
+      if (employee) {
+        // Scroll to that employee or highlight them
+        setTimeout(() => {
+          const element = document.getElementById(`employee-row-${highlightEmployeeId}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            element.classList.add('bg-primary/10');
+            setTimeout(() => {
+              element.classList.remove('bg-primary/10');
+            }, 2000);
+          }
+        }, 500);
+      }
+    }
+  }, [highlightEmployeeId, employees]);
 
   const handleAddLeaveClick = (employee: any) => {
     setSelectedEmployee(employee);
@@ -62,6 +87,14 @@ const MissingLeavesList = ({ employees, onAddLeave }: MissingLeavesListProps) =>
               {
                 key: "fullName",
                 header: "Employee Name",
+                render: (row) => (
+                  <div id={`employee-row-${row.id}`} className={cn(
+                    "py-1",
+                    highlightEmployeeId === row.id ? "bg-primary/5" : ""
+                  )}>
+                    {row.fullName}
+                  </div>
+                ),
               },
               {
                 key: "department",
