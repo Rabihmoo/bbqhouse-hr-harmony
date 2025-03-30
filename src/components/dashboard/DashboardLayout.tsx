@@ -146,34 +146,7 @@ const DashboardLayout = ({
             <DashboardHeader title={title} subtitle={subtitle} />
             
             {!isMobile && <div className="mb-6">
-                <Tabs defaultValue="dashboard">
-                  <TabsList>
-                    <TabsTrigger value="dashboard" onClick={() => navigate("/")}>
-                      Dashboard
-                    </TabsTrigger>
-                    <TabsTrigger value="employees" onClick={() => navigate("/employees")}>
-                      Employees
-                    </TabsTrigger>
-                    <TabsTrigger value="leaves" onClick={() => navigate("/leaves")}>
-                      Leaves
-                    </TabsTrigger>
-                    <TabsTrigger value="attendance" onClick={() => navigate("/attendance")}>
-                      Attendance
-                    </TabsTrigger>
-                    <TabsTrigger value="payroll" onClick={() => navigate("/payroll")}>
-                      Payroll
-                    </TabsTrigger>
-                    <TabsTrigger value="contracts" onClick={() => navigate("/contracts")}>
-                      Contracts
-                    </TabsTrigger>
-                    <TabsTrigger value="checklists" onClick={() => navigate("/checklists")}>
-                      Checklists
-                    </TabsTrigger>
-                    <TabsTrigger value="administration" onClick={() => navigate("/administration")}>
-                      Administration
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
+                
               </div>}
           </div>
         </header>
