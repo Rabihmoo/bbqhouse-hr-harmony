@@ -13,9 +13,7 @@ import { useNotifications } from "@/hooks/use-notifications";
 import { Notification as TypedNotification } from "@/hooks/use-notifications";
 import { useEmployeeData } from "@/hooks/use-employee-data";
 import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
-
 interface Notification extends TypedNotification {}
-
 interface DashboardLayoutProps {
   children: ReactNode;
   title: string;
@@ -24,11 +22,10 @@ interface DashboardLayoutProps {
   onNotificationClick?: (notification: any) => void;
   onLogout?: () => void;
 }
-
-const DashboardLayout = ({ 
-  children, 
-  title, 
-  subtitle, 
+const DashboardLayout = ({
+  children,
+  title,
+  subtitle,
   notifications: externalNotifications,
   onNotificationClick,
   onLogout
@@ -36,14 +33,17 @@ const DashboardLayout = ({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = useMobileCheck();
-  
+
   // Get employees data to generate notifications
-  const { employees } = useEmployeeData();
+  const {
+    employees
+  } = useEmployeeData();
   // Get employee-based notifications
-  const { notifications: employeeNotifications } = useEmployeeNotifications(employees);
-  
-  const { 
-    notifications: internalNotifications, 
+  const {
+    notifications: employeeNotifications
+  } = useEmployeeNotifications(employees);
+  const {
+    notifications: internalNotifications,
     markAsRead,
     addNotification,
     clearAllNotifications,
@@ -71,7 +71,6 @@ const DashboardLayout = ({
 
   // Use external notifications if provided, otherwise use internal
   const notifications = externalNotifications || internalNotifications;
-
   const handleLogout = () => {
     if (onLogout) {
       onLogout();
@@ -81,10 +80,8 @@ const DashboardLayout = ({
       window.location.reload();
     }
   };
-
   const handleNotificationClick = (notification: any) => {
     markAsRead(notification.id);
-    
     if (onNotificationClick) {
       onNotificationClick(notification);
     } else if (notification.data?.employeeId) {
@@ -92,55 +89,29 @@ const DashboardLayout = ({
       navigate(`/employees?id=${notification.data.employeeId}`);
     }
   };
-
-  return (
-    <div className="flex h-screen overflow-hidden w-full">
+  return <div className="flex h-screen overflow-hidden w-full">
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
       <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80 w-full">
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b shadow-sm w-full">
-          <div className="container py-3 flex justify-between items-center w-full">
+          <div className="container flex justify-between items-center w-full my-0 py-0 px-0 mx-[240px]">
             <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="md:hidden"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  width="24" 
-                  height="24" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <line x1="4" x2="20" y1="12" y2="12"/>
-                  <line x1="4" x2="20" y1="6" y2="6"/>
-                  <line x1="4" x2="20" y1="18" y2="18"/>
+              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="4" x2="20" y1="12" y2="12" />
+                  <line x1="4" x2="20" y1="6" y2="6" />
+                  <line x1="4" x2="20" y1="18" y2="18" />
                 </svg>
               </Button>
               
               <div className="flex items-center gap-2">
-                <img 
-                  src="/lovable-uploads/3b0f2146-354a-4718-b5d4-d20dc1907ba1.png" 
-                  alt="BBQ House Logo" 
-                  className="h-8 w-8 object-contain"
-                />
+                <img src="/lovable-uploads/3b0f2146-354a-4718-b5d4-d20dc1907ba1.png" alt="BBQ House Logo" className="h-8 w-8 object-contain" />
                 <h1 className="text-xl font-semibold hidden md:block">BBQHOUSE HR</h1>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <NotificationCenter 
-                notifications={notifications} 
-                onSelect={handleNotificationClick}
-                onMarkAsRead={markAsRead}
-                onClearAll={clearAllNotifications}
-              />
+              <NotificationCenter notifications={notifications} onSelect={handleNotificationClick} onMarkAsRead={markAsRead} onClearAll={clearAllNotifications} />
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -174,8 +145,7 @@ const DashboardLayout = ({
           <div className="container w-full">
             <DashboardHeader title={title} subtitle={subtitle} />
             
-            {!isMobile && (
-              <div className="mb-6">
+            {!isMobile && <div className="mb-6">
                 <Tabs defaultValue="dashboard">
                   <TabsList>
                     <TabsTrigger value="dashboard" onClick={() => navigate("/")}>
@@ -204,8 +174,7 @@ const DashboardLayout = ({
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
-              </div>
-            )}
+              </div>}
           </div>
         </header>
         
@@ -213,8 +182,6 @@ const DashboardLayout = ({
           {children}
         </main>
       </div>
-    </div>
-  );
-}
-
+    </div>;
+};
 export default DashboardLayout;
