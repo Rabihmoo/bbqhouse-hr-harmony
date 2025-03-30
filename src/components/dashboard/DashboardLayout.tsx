@@ -93,63 +93,7 @@ const DashboardLayout = ({
       <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
       
       <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80 w-full">
-        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur border-b shadow-sm w-full">
-          <div className="container flex justify-between items-center w-full my-0 py-0 px-0 mx-[240px]">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="4" x2="20" y1="12" y2="12" />
-                  <line x1="4" x2="20" y1="6" y2="6" />
-                  <line x1="4" x2="20" y1="18" y2="18" />
-                </svg>
-              </Button>
-              
-              <div className="flex items-center gap-2">
-                <img src="/lovable-uploads/3b0f2146-354a-4718-b5d4-d20dc1907ba1.png" alt="BBQ House Logo" className="h-8 w-8 object-contain" />
-                <h1 className="text-xl font-semibold hidden md:block">BBQHOUSE HR</h1>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <NotificationCenter notifications={notifications} onSelect={handleNotificationClick} onMarkAsRead={markAsRead} onClearAll={clearAllNotifications} />
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src="/placeholder.svg" alt="User" />
-                      <AvatarFallback>
-                        <User className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">Admin</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        admin@bbqhouse.com
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    Log out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-          
-          <div className="container w-full">
-            <DashboardHeader title={title} subtitle={subtitle} />
-            
-            {!isMobile && <div className="mb-6">
-                
-              </div>}
-          </div>
-        </header>
+        
         
         <main className="flex-1 container py-6 w-full">
           {children}
