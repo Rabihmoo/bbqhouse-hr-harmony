@@ -1,23 +1,34 @@
 
 import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CalendarIcon, FileText, Clock } from "lucide-react";
+import { CalendarIcon, FileText, Clock, AlertTriangle } from "lucide-react";
 import { useEmployeeData } from "@/hooks/use-employee-data";
 import { LeaveRecord } from "@/types/notification";
+import { toast } from "sonner";
 
-// Import the new components
+// Import the components
 import LeaveRequests from '@/components/leaves/LeaveRequests';
 import LeaveAllowances from '@/components/leaves/LeaveAllowances';
 import NewLeaveRequest from '@/components/leaves/NewLeaveRequest';
 import CompanyFilter from '@/components/leaves/CompanyFilter';
+import MissingLeavesList from '@/components/leaves/MissingLeavesList';
 
 interface LeavesProps {
   onLogout?: () => void;
 }
 
 const Leaves = ({ onLogout }: LeavesProps) => {
-  const [activeTab, setActiveTab] = useState("requests");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = new URLSearchParams(location.search);
+  
+  // Get URL parameters
+  const tabParam = searchParams.get('tab');
+  const employeeIdParam = searchParams.get('employeeId');
+  
+  const [activeTab, setActiveTab] = useState(tabParam || "requests");
   const [activeCompany, setActiveCompany] = useState<string>("all");
   const [leaveRecords, setLeaveRecords] = useState<LeaveRecord[]>([]);
   const { employees } = useEmployeeData();
@@ -72,6 +83,50 @@ const Leaves = ({ onLogout }: LeavesProps) => {
         return employee?.company?.toLowerCase().includes(activeCompany);
       });
 
+  // Update tab when URL parameter changes
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+  
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    // Update URL with the selected tab
+    navigate(`/leaves?tab=${value}`, { replace: true });
+  };
+  
+  // Handle adding new leave record
+  const handleAddLeaveRecord = (employeeId: string, leaveData: any) => {
+    const employee = employees.find(emp => emp.id === employeeId);
+    if (!employee) return;
+    
+    const newLeaveRecord = {
+      id: `leave-${employeeId}-${Date.now()}`,
+      employeeId: employeeId,
+      employeeName: employee.fullName,
+      startDate: leaveData.startDate,
+      endDate: leaveData.endDate,
+      days: leaveData.days,
+      type: leaveData.type,
+      status: "scheduled",
+      year: new Date(leaveData.startDate).getFullYear(),
+      notes: leaveData.notes || "Annual leave"
+    };
+    
+    const updatedRecords = [newLeaveRecord, ...leaveRecords];
+    setLeaveRecords(updatedRecords);
+    localStorage.setItem('bbq-leave-records', JSON.stringify(updatedRecords));
+    
+    toast.success("Leave record added", {
+      description: `Added leave for ${employee.fullName}`
+    });
+    
+    // Switch to requests tab
+    handleTabChange("requests");
+  };
+
   return (
     <DashboardLayout 
       title="Leaves" 
@@ -79,7 +134,7 @@ const Leaves = ({ onLogout }: LeavesProps) => {
       onLogout={onLogout}
     >
       <div className="space-y-6">
-        <Tabs defaultValue="requests" value={activeTab} onValueChange={setActiveTab}>
+        <Tabs defaultValue="requests" value={activeTab} onValueChange={handleTabChange}>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <TabsList>
               <TabsTrigger value="requests">
@@ -89,6 +144,10 @@ const Leaves = ({ onLogout }: LeavesProps) => {
               <TabsTrigger value="allowances">
                 <FileText className="h-4 w-4 mr-2" />
                 Leave Allowances
+              </TabsTrigger>
+              <TabsTrigger value="missing">
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Missing Leaves
               </TabsTrigger>
               <TabsTrigger value="new">
                 <Clock className="h-4 w-4 mr-2" />
@@ -117,12 +176,21 @@ const Leaves = ({ onLogout }: LeavesProps) => {
             />
           </TabsContent>
           
+          <TabsContent value="missing" className="mt-0 space-y-6">
+            <MissingLeavesList 
+              employees={employees.filter(emp => 
+                activeCompany === 'all' || emp.company?.toLowerCase().includes(activeCompany)
+              )}
+              onAddLeave={handleAddLeaveRecord}
+            />
+          </TabsContent>
+          
           <TabsContent value="new" className="mt-0 space-y-6">
             <NewLeaveRequest 
               employees={employees}
               leaveRecords={leaveRecords}
               setLeaveRecords={setLeaveRecords}
-              onSuccess={() => setActiveTab("requests")}
+              onSuccess={() => handleTabChange("requests")}
             />
           </TabsContent>
         </Tabs>

@@ -8,6 +8,7 @@ import { Notification as TypedNotification } from "@/hooks/use-notifications";
 import { useEmployeeData } from "@/hooks/use-employee-data";
 import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
 import DashboardHeader from "./DashboardHeader";
+import { toast } from "sonner";
 
 interface Notification extends TypedNotification {}
 
@@ -58,7 +59,8 @@ const DashboardLayout = ({
             title: notification.title,
             message: notification.message,
             icon: notification.icon,
-            data: notification.data
+            data: notification.data,
+            actionType: notification.actionType
           });
         }
       });
@@ -80,11 +82,42 @@ const DashboardLayout = ({
   
   const handleNotificationClick = (notification: any) => {
     markAsRead(notification.id);
+    
     if (onNotificationClick) {
       onNotificationClick(notification);
-    } else if (notification.data?.employeeId) {
-      // Navigate to employee details if employeeId is present
+      return;
+    }
+    
+    // Handle different notification action types
+    if (notification.actionType === 'view-employee' && notification.data?.employeeId) {
+      // Navigate to employee details
       navigate(`/employees?id=${notification.data.employeeId}`);
+      toast.success("Navigated to employee record");
+    } 
+    else if (notification.actionType === 'approve-leave' && notification.data?.employeeId) {
+      // Navigate to leave approvals
+      navigate(`/leaves?tab=requests&employeeId=${notification.data.employeeId}`);
+      toast.success("Navigated to leave requests");
+    }
+    else if (notification.type === 'warning' && notification.title.includes('Leave')) {
+      // Navigate to leaves with the missing leaves tab active
+      navigate(`/leaves?tab=allowances`);
+      toast.success("Navigated to leave allowances");
+    }
+    else if (notification.title.includes('Expired') || notification.title.includes('Missing')) {
+      // Navigate to the employee that has missing or expired documents
+      if (notification.data?.employeeId) {
+        navigate(`/employees?id=${notification.data.employeeId}`);
+        toast.success("Navigated to employee with document issues");
+      }
+    }
+    else {
+      // Default to employee list if there's an employeeId
+      if (notification.data?.employeeId) {
+        navigate(`/employees?id=${notification.data.employeeId}`);
+      } else {
+        navigate('/employees');
+      }
     }
   };
 

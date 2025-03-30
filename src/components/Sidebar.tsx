@@ -1,7 +1,9 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { CalendarDays, ClipboardCheck, Clock, FileText, Home, Users, CreditCard, Settings } from "lucide-react";
+import { Bell, CalendarDays, ClipboardCheck, Clock, FileText, Home, Users, CreditCard, Settings } from "lucide-react";
+import { useNotifications } from "@/hooks/use-notifications";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 interface SidebarProps {
   open: boolean;
@@ -47,6 +49,7 @@ const Sidebar = ({
   setOpen
 }: SidebarProps) => {
   const location = useLocation();
+  const { notifications, markAsRead, clearAllNotifications, unreadCount } = useNotifications();
   
   return <>
       {/* Backdrop for mobile */}
@@ -57,6 +60,21 @@ const Sidebar = ({
         <div className="flex flex-col h-full">
           <div className="p-3 border-b flex justify-center">
             <img src="/lovable-uploads/3b0f2146-354a-4718-b5d4-d20dc1907ba1.png" alt="BBQ House Logo" className="h-8 w-8 object-contain" />
+          </div>
+
+          {/* Notification Center */}
+          <div className="p-2 border-b flex justify-center">
+            <div className="w-10 h-10 flex items-center justify-center">
+              <NotificationCenter 
+                notifications={notifications}
+                onSelect={(notification) => {
+                  markAsRead(notification.id);
+                  // Navigation will be handled by DashboardLayout
+                }}
+                onMarkAsRead={markAsRead}
+                onClearAll={clearAllNotifications}
+              />
+            </div>
           </div>
 
           <nav className="flex-1 p-2 space-y-4 overflow-y-auto">
