@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -18,16 +18,27 @@ interface NewLeaveRequestProps {
   leaveRecords: LeaveRecord[];
   setLeaveRecords: React.Dispatch<React.SetStateAction<LeaveRecord[]>>;
   onSuccess: () => void;
+  initialEmployeeId?: string; // Added this prop
 }
 
-const NewLeaveRequest = ({ employees, leaveRecords, setLeaveRecords, onSuccess }: NewLeaveRequestProps) => {
+const NewLeaveRequest = ({ employees, leaveRecords, setLeaveRecords, onSuccess, initialEmployeeId }: NewLeaveRequestProps) => {
   const [newLeaveRequest, setNewLeaveRequest] = useState({
-    employeeId: "",
+    employeeId: initialEmployeeId || "", // Use initialEmployeeId if provided
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
     type: "annual" as "annual" | "sick" | "unpaid" | "other",
     notes: ""
   });
+  
+  // Effect to update employee ID when initialEmployeeId prop changes
+  useEffect(() => {
+    if (initialEmployeeId) {
+      setNewLeaveRequest(prev => ({
+        ...prev,
+        employeeId: initialEmployeeId
+      }));
+    }
+  }, [initialEmployeeId]);
   
   const handleSubmitLeaveRequest = () => {
     if (!newLeaveRequest.employeeId || !newLeaveRequest.startDate || !newLeaveRequest.endDate) {
