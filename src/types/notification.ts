@@ -1,8 +1,9 @@
+
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
 
 export interface Notification {
   id: string;
-  type?: NotificationType;
+  type?: NotificationType | string;
   title: string;
   message: string;
   employeeId?: string;
@@ -10,7 +11,6 @@ export interface Notification {
   time: string;
   read: boolean;
   icon?: React.ReactNode;
-  actionType?: 'view-employee' | 'approve-leave' | 'update-document';
   data?: any;
 }
 

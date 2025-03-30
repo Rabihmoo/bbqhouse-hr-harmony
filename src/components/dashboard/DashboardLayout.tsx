@@ -60,7 +60,7 @@ const DashboardLayout = ({
             message: notification.message,
             icon: notification.icon,
             data: notification.data,
-            type: notification.type // Use type instead of actionType
+            type: notification.type
           });
         }
       });

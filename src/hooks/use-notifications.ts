@@ -8,6 +8,7 @@ export interface Notification {
   time: string;
   read: boolean;
   icon?: React.ReactNode;
+  type?: string; // Adding the type property here
   data?: any;
 }
 

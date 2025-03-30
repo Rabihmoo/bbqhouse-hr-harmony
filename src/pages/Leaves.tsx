@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
@@ -102,7 +101,8 @@ const Leaves = ({ onLogout }: LeavesProps) => {
     const employee = employees.find(emp => emp.id === employeeId);
     if (!employee) return;
     
-    const newLeaveRecord = {
+    // Ensure we're creating a properly typed LeaveRecord with valid status
+    const newLeaveRecord: LeaveRecord = {
       id: `leave-${employeeId}-${Date.now()}`,
       employeeId: employeeId,
       employeeName: employee.fullName,
@@ -110,12 +110,13 @@ const Leaves = ({ onLogout }: LeavesProps) => {
       endDate: leaveData.endDate,
       days: leaveData.days,
       type: leaveData.type,
-      status: "scheduled",
+      status: "scheduled", // Explicitly using a valid status value
       year: new Date(leaveData.startDate).getFullYear(),
       notes: leaveData.notes || "Annual leave"
     };
     
-    const updatedRecords = [newLeaveRecord, ...leaveRecords];
+    // Create a properly typed updated records array
+    const updatedRecords: LeaveRecord[] = [...leaveRecords, newLeaveRecord];
     setLeaveRecords(updatedRecords);
     localStorage.setItem('bbq-leave-records', JSON.stringify(updatedRecords));
     

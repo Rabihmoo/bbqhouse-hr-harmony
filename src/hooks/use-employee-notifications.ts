@@ -32,7 +32,7 @@ export const useEmployeeNotifications = (employees: any[]) => {
             timestamp: new Date().toISOString(),
             time: new Date().toLocaleString(),
             read: false,
-            actionType: 'view-employee'
+            data: { employeeId: employeeId }
           });
         }
         
@@ -49,7 +49,7 @@ export const useEmployeeNotifications = (employees: any[]) => {
                 timestamp: new Date().toISOString(),
                 time: new Date().toLocaleString(),
                 read: false,
-                actionType: 'view-employee'
+                data: { employeeId: employeeId }
               });
             } else if (allowance.status === 'partially-used' && allowance.year < currentYear) {
               newNotifications.push({
@@ -61,7 +61,7 @@ export const useEmployeeNotifications = (employees: any[]) => {
                 timestamp: new Date().toISOString(),
                 time: new Date().toLocaleString(),
                 read: false,
-                actionType: 'view-employee'
+                data: { employeeId: employeeId }
               });
             }
           });
@@ -82,7 +82,7 @@ export const useEmployeeNotifications = (employees: any[]) => {
             timestamp: new Date().toISOString(),
             time: new Date().toLocaleString(),
             read: false,
-            actionType: 'view-employee'
+            data: { employeeId: employeeId }
           });
         }
       }
@@ -100,6 +100,7 @@ export const useEmployeeNotifications = (employees: any[]) => {
             timestamp: new Date().toISOString(),
             time: new Date().toLocaleString(),
             read: false,
+            data: { employeeId: employeeId }
           });
         }
       }
@@ -117,6 +118,7 @@ export const useEmployeeNotifications = (employees: any[]) => {
             timestamp: new Date().toISOString(),
             time: new Date().toLocaleString(),
             read: false,
+            data: { employeeId: employeeId }
           });
         }
       }
@@ -142,6 +144,7 @@ export const useEmployeeNotifications = (employees: any[]) => {
           timestamp: new Date().toISOString(),
           time: new Date().toLocaleString(),
           read: false,
+          data: { employeeId: employeeId }
         });
       }
     });
