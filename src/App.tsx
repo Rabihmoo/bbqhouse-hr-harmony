@@ -58,7 +58,7 @@ function App() {
       localStorage.setItem("hr-auth", "true");
       setError("");
       toast.success("Login successful", {
-        description: "Welcome to BBQHOUSE HR Management System"
+        description: "Welcome to MYR System Management"
       });
     } else {
       setError("Invalid credentials. Please try again.");
@@ -72,14 +72,19 @@ function App() {
     toast.info("Logged out successfully");
   };
 
+  // Update the document title
+  useEffect(() => {
+    document.title = "MYR System Management";
+  }, []);
+
   return (
     <Router>
       <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Login to BBQHOUSE HR Management</DialogTitle>
+            <DialogTitle>Login to MYR System Management</DialogTitle>
             <DialogDescription>
-              Enter your credentials to access the HR management system.
+              Enter your credentials to access the system management platform.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">

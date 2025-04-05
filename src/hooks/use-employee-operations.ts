@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveRecord } from "@/types/notification";
 import { parseISO, differenceInYears } from "date-fns";
+import { sendEmailNotification, exportToExcel } from "@/utils/notificationService";
 
 export const useEmployeeOperations = (
   employees: any[],
@@ -13,7 +13,6 @@ export const useEmployeeOperations = (
   const [editingEmployee, setEditingEmployee] = useState<any>(null);
   const { toast } = useToast();
 
-  // Load data from localStorage when the component mounts
   useEffect(() => {
     const storedEmployees = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (storedEmployees) {
@@ -26,7 +25,6 @@ export const useEmployeeOperations = (
     }
   }, [LOCAL_STORAGE_KEY, setEmployees]);
 
-  // Listen for storage events to sync data across tabs
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === LOCAL_STORAGE_KEY && event.newValue) {
@@ -45,20 +43,18 @@ export const useEmployeeOperations = (
     };
   }, [LOCAL_STORAGE_KEY, setEmployees]);
 
-  // Save to localStorage whenever employees data changes
   const saveEmployeesToLocalStorage = (updatedEmployees: any[]) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedEmployees));
-    // Trigger storage event for real-time updates across tabs
     window.dispatchEvent(new Event('storage'));
   };
 
-  const handleAddEmployee = (data: any) => {
+  const handleAddEmployee = async (data: any) => {
     const newEmployee = {
       ...data,
       id: String(employees.length + 1),
       status: data.status || 'Active',
       company: data.company || '',
-      remainingLeaves: 0, // Start with 0 leave days for new employees
+      remainingLeaves: 0,
     };
     
     const updatedEmployees = [...employees, newEmployee];
@@ -70,10 +66,12 @@ export const useEmployeeOperations = (
       title: "Employee added",
       description: `${data.fullName} has been successfully added and saved.`,
     });
+    
+    await sendEmailNotification('employee', newEmployee);
+    await exportToExcel('employee', newEmployee);
   };
 
   const handleEditEmployee = (data: any) => {
-    // Log complete received data
     console.log("Editing employee with data:", data);
     console.log("Status value in edit:", data.status);
     console.log("Company value in edit:", data.company);
@@ -82,14 +80,11 @@ export const useEmployeeOperations = (
     console.log("Phone value in edit:", data.phone);
     console.log("Salary value in edit:", data.salary);
     
-    // Find the existing employee to preserve any fields not in the form
     const existingEmployee = employees.find(emp => emp.id === data.id) || {};
     
-    // Create updated employee with preserved fields and new data
     const updatedEmployee = { 
       ...existingEmployee, 
       ...data,
-      // Explicitly ensure these fields are updated from the form data
       status: data.status,
       company: data.company,
       address: data.address,
@@ -121,9 +116,7 @@ export const useEmployeeOperations = (
     setEditingEmployee(employee);
   };
 
-  // Handle adding a leave record to an employee - fixed to deduct from oldest year first
-  // Update this to mark the year as "fully-used" when used
-  const handleAddLeaveRecord = (employeeId: string, leaveRecord: Omit<LeaveRecord, 'id'>) => {
+  const handleAddLeaveRecord = async (employeeId: string, leaveRecord: Omit<LeaveRecord, 'id'>) => {
     const updatedEmployees = employees.map(emp => {
       if (emp.id === employeeId) {
         const leaveRecords = emp.leaveRecords || [];
@@ -132,10 +125,8 @@ export const useEmployeeOperations = (
           id: `leave-${Date.now()}`
         };
         
-        // Get the employee's leave allowances and sort by oldest year first
         const allowances = [...(emp.leaveAllowances || [])].sort((a, b) => a.year - b.year);
         
-        // Deduct leave days from the oldest year first
         let remainingDaysToDeduct = newRecord.days;
         
         const updatedAllowances = allowances.map(allowance => {
@@ -146,11 +137,9 @@ export const useEmployeeOperations = (
           const daysToDeduct = Math.min(allowance.remaining, remainingDaysToDeduct);
           remainingDaysToDeduct -= daysToDeduct;
           
-          // Mark as fully-used if all days are used
           const newRemaining = allowance.remaining - daysToDeduct;
           const newStatus = newRemaining === 0 ? 'fully-used' : 'partially-used';
           
-          // Create notification for fully used leave
           if (newRemaining === 0) {
             toast({
               title: "Leave Fully Used",
@@ -165,6 +154,16 @@ export const useEmployeeOperations = (
             status: newStatus
           };
         });
+        
+        if (newRecord.type === 'annual') {
+          const recordWithName = {
+            ...newRecord,
+            employeeName: emp.fullName
+          };
+          
+          await sendEmailNotification('leave', recordWithName);
+          await exportToExcel('leave', recordWithName);
+        }
         
         return {
           ...emp,
@@ -191,12 +190,10 @@ export const useEmployeeOperations = (
         const hireDate = parseISO(employee.hireDate);
         const yearsEmployed = differenceInYears(today, hireDate);
         
-        // Check if today is their work anniversary
         const isAnniversaryToday = 
           today.getDate() === hireDate.getDate() && 
           today.getMonth() === hireDate.getMonth();
         
-        // Send anniversary notification
         if (isAnniversaryToday && yearsEmployed > 0) {
           toast({
             title: `Work Anniversary: ${employee.fullName}`,
@@ -207,7 +204,6 @@ export const useEmployeeOperations = (
     });
   };
 
-  // Check for missing documents and send notifications
   const checkMissingDocuments = () => {
     employees.forEach(employee => {
       if (!employee.documents) return;
@@ -231,7 +227,6 @@ export const useEmployeeOperations = (
     const departments = ["Kitchen", "Sala", "Bar", "Cleaning", "Takeaway"];
     const result: { [key: string]: number } = {};
     
-    // Only include active employees in the department count
     const activeEmployees = employees.filter(emp => emp.status === 'Active' || emp.status === 'On Leave');
     
     departments.forEach(dept => {

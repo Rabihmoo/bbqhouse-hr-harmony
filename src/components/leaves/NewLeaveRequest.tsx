@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -12,25 +11,25 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { LeaveRecord } from "@/types/notification";
+import { sendEmailNotification, exportToExcel } from "@/utils/notificationService";
 
 interface NewLeaveRequestProps {
   employees: any[];
   leaveRecords: LeaveRecord[];
   setLeaveRecords: React.Dispatch<React.SetStateAction<LeaveRecord[]>>;
   onSuccess: () => void;
-  initialEmployeeId?: string; // Added this prop
+  initialEmployeeId?: string;
 }
 
 const NewLeaveRequest = ({ employees, leaveRecords, setLeaveRecords, onSuccess, initialEmployeeId }: NewLeaveRequestProps) => {
   const [newLeaveRequest, setNewLeaveRequest] = useState({
-    employeeId: initialEmployeeId || "", // Use initialEmployeeId if provided
+    employeeId: initialEmployeeId || "",
     startDate: undefined as Date | undefined,
     endDate: undefined as Date | undefined,
     type: "annual" as "annual" | "sick" | "unpaid" | "other",
     notes: ""
   });
   
-  // Effect to update employee ID when initialEmployeeId prop changes
   useEffect(() => {
     if (initialEmployeeId) {
       setNewLeaveRequest(prev => ({
@@ -40,7 +39,7 @@ const NewLeaveRequest = ({ employees, leaveRecords, setLeaveRecords, onSuccess, 
     }
   }, [initialEmployeeId]);
   
-  const handleSubmitLeaveRequest = () => {
+  const handleSubmitLeaveRequest = async () => {
     if (!newLeaveRequest.employeeId || !newLeaveRequest.startDate || !newLeaveRequest.endDate) {
       toast.error("Please fill in all required fields");
       return;
@@ -52,7 +51,6 @@ const NewLeaveRequest = ({ employees, leaveRecords, setLeaveRecords, onSuccess, 
       return;
     }
     
-    // Calculate number of days (excluding weekends)
     const start = new Date(newLeaveRequest.startDate);
     const end = new Date(newLeaveRequest.endDate);
     let days = 0;
@@ -60,7 +58,7 @@ const NewLeaveRequest = ({ employees, leaveRecords, setLeaveRecords, onSuccess, 
     
     while (currentDate <= end) {
       const dayOfWeek = currentDate.getDay();
-      if (dayOfWeek !== 0 && dayOfWeek !== 6) { // Skip weekends (0 = Sunday, 6 = Saturday)
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
         days++;
       }
       currentDate.setDate(currentDate.getDate() + 1);
@@ -79,12 +77,15 @@ const NewLeaveRequest = ({ employees, leaveRecords, setLeaveRecords, onSuccess, 
       notes: newLeaveRequest.notes
     };
     
-    // Add to leave records
     const updatedLeaveRecords = [...leaveRecords, newLeave];
     setLeaveRecords(updatedLeaveRecords);
     localStorage.setItem('bbq-leave-records', JSON.stringify(updatedLeaveRecords));
     
-    // Reset form
+    if (newLeaveRequest.type === 'annual') {
+      await sendEmailNotification('leave', newLeave);
+      await exportToExcel('leave', newLeave);
+    }
+    
     setNewLeaveRequest({
       employeeId: "",
       startDate: undefined,

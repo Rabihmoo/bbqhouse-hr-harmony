@@ -34,7 +34,7 @@ const DashboardHeader = ({
       
       {/* New line under title and subtitle */}
       <div className="w-full bg-primary/10 px-6 py-2 text-sm text-primary-foreground/70">
-        BBQHOUSE HR Management System - Employee Dashboard
+        MYR System Management - Employee Dashboard
       </div>
     </div>
   );
