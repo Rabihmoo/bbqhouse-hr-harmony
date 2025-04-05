@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { LeaveRecord } from "@/types/notification";
@@ -117,6 +118,7 @@ export const useEmployeeOperations = (
   };
 
   const handleAddLeaveRecord = async (employeeId: string, leaveRecord: Omit<LeaveRecord, 'id'>) => {
+    // Here we change to use Promise.all with map and make each callback async
     const updatedEmployees = await Promise.all(employees.map(async emp => {
       if (emp.id === employeeId) {
         const leaveRecords = emp.leaveRecords || [];
@@ -161,8 +163,13 @@ export const useEmployeeOperations = (
             employeeName: emp.fullName
           };
           
-          await sendEmailNotification('leave', recordWithName);
-          await exportToExcel('leave', recordWithName);
+          // Now we can use await here because the parent callback is async
+          try {
+            await sendEmailNotification('leave', recordWithName);
+            await exportToExcel('leave', recordWithName);
+          } catch (error) {
+            console.error('Error sending leave notifications:', error);
+          }
         }
         
         return {
