@@ -117,7 +117,7 @@ export const useEmployeeOperations = (
   };
 
   const handleAddLeaveRecord = async (employeeId: string, leaveRecord: Omit<LeaveRecord, 'id'>) => {
-    const updatedEmployees = employees.map(emp => {
+    const updatedEmployees = await Promise.all(employees.map(async emp => {
       if (emp.id === employeeId) {
         const leaveRecords = emp.leaveRecords || [];
         const newRecord = {
@@ -172,7 +172,7 @@ export const useEmployeeOperations = (
         };
       }
       return emp;
-    });
+    }));
     
     setEmployees(updatedEmployees);
     saveEmployeesToLocalStorage(updatedEmployees);

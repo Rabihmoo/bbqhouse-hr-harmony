@@ -1,11 +1,22 @@
 
 import { toast } from "sonner";
 
+// Define response types for type safety
+interface EmailResponse {
+  success: boolean;
+  error?: string;
+}
+
+interface ExcelResponse {
+  success: boolean;
+  error?: string;
+}
+
 // Email notification service
 export const sendEmailNotification = async (
   type: 'employee' | 'leave',
   data: any
-) => {
+): Promise<boolean> => {
   // Email configuration
   const emailConfig = {
     to: 'rabih.moughabat12@gmail.com',
@@ -36,7 +47,7 @@ export const sendEmailNotification = async (
 };
 
 // Function to simulate email sending
-const simulateEmailSending = async (emailConfig: any) => {
+const simulateEmailSending = async (emailConfig: any): Promise<EmailResponse> => {
   // This is a simulation - in production, you would call an actual email API
   console.log('Email would be sent with config:', emailConfig);
   
@@ -82,7 +93,7 @@ const formatEmailBody = (type: 'employee' | 'leave', data: any) => {
 export const exportToExcel = async (
   type: 'employee' | 'leave',
   data: any
-) => {
+): Promise<boolean> => {
   try {
     console.log(`Exporting new ${type} data to Excel:`, data);
     
@@ -106,7 +117,7 @@ export const exportToExcel = async (
 };
 
 // Function to simulate Excel export
-const simulateExcelExport = async (type: string, data: any) => {
+const simulateExcelExport = async (type: string, data: any): Promise<ExcelResponse> => {
   // This is a simulation - in production, you would call an actual export service or API
   console.log(`Excel export would save ${type} data:`, data);
   

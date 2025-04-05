@@ -82,8 +82,12 @@ const NewLeaveRequest = ({ employees, leaveRecords, setLeaveRecords, onSuccess, 
     localStorage.setItem('bbq-leave-records', JSON.stringify(updatedLeaveRecords));
     
     if (newLeaveRequest.type === 'annual') {
-      await sendEmailNotification('leave', newLeave);
-      await exportToExcel('leave', newLeave);
+      try {
+        await sendEmailNotification('leave', newLeave);
+        await exportToExcel('leave', newLeave);
+      } catch (error) {
+        console.error("Error sending notifications:", error);
+      }
     }
     
     setNewLeaveRequest({
