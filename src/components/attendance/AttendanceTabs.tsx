@@ -4,12 +4,15 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { CalendarDays, FileText, FileUp } from "lucide-react";
+import { DateFilter } from './DateFilter';
 
 interface AttendanceTabsProps {
   activeTab: string;
   setActiveTab: (value: string) => void;
   activeCompany: string;
   setActiveCompany: (value: string) => void;
+  selectedDate?: Date;
+  setSelectedDate?: (date: Date) => void;
 }
 
 export const AttendanceTabs = ({
