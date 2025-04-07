@@ -1,7 +1,7 @@
 
 import { format } from "date-fns";
 import { employees } from "@/lib/data";
-import { calculateWorkingHours, formatTime } from "./timeCalculations";
+import { calculateWorkingHours } from "./timeCalculations";
 import { AttendanceReport, EmployeeAttendanceRecord, EmployeeReport } from "./types";
 import * as XLSX from "xlsx";
 

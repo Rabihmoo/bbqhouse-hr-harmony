@@ -9,10 +9,22 @@ export const formatTime = (hours: number): string => {
 
 // Calculate working hours and extra hours
 export const calculateWorkingHours = (clockIn: string, clockOut: string): { workTime: string, extraHours: string } => {
-  if (!clockIn || !clockOut || clockIn === 'FOLGA' || clockIn === 'nao entrada' || clockOut === 'nao saida') {
-    if (clockIn === 'FOLGA') {
+  if (!clockIn || !clockOut) {
+    // Both missing - mark as day off
+    if (!clockIn && !clockOut) {
       return { workTime: '00:00', extraHours: '00:00' };
     }
+    // One is missing - standard 4:30 work time
+    return { workTime: '04:30', extraHours: '00:00' };
+  }
+  
+  // Handle special case for FOLGA
+  if (clockIn === 'FOLGA' || clockOut === 'FOLGA') {
+    return { workTime: '00:00', extraHours: '00:00' };
+  }
+  
+  // Handle special cases for missing data
+  if (clockIn === 'nao entrada' || clockOut === 'nao saida') {
     return { workTime: '04:30', extraHours: '00:00' };
   }
 
@@ -28,7 +40,7 @@ export const calculateWorkingHours = (clockIn: string, clockOut: string): { work
     const workHours = totalMinutes / 60;
     const workTime = formatTime(workHours);
     
-    // Calculate extra hours
+    // Calculate extra hours (if work time > 8 hours)
     const extraMinutes = Math.max(0, totalMinutes - 8 * 60); // 8 hours = 480 minutes
     const extraHourTime = extraMinutes > 0 ? formatTime(extraMinutes / 60) : '00:00';
     
