@@ -51,12 +51,17 @@ const ContractGenerator: React.FC<ContractGeneratorProps> = ({ onGenerate }) => 
       notes,
       employeeInfo: {
         biNumber: employee.biNumber,
+        biDetails: employee.biDetails || { 
+          issueDate: employee.biValidUntil ? '01/01/2020' : '', 
+          expiryDate: employee.biValidUntil || '' 
+        },
         address: employee.address,
         secondAddress: employee.secondAddress,
         biValidUntil: employee.biValidUntil,
         // Include salary structure details
         transportAllowance: employee.salaryStructure?.transportAllowance || 0,
         bonus: employee.salaryStructure?.bonus || 0,
+        accommodationAllowance: employee.salaryStructure?.accommodationAllowance || 0,
       }
     };
     
