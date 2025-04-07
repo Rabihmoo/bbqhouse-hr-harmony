@@ -210,7 +210,7 @@ const AttendanceReportDialog = ({ open, onOpenChange, reportData }: AttendanceRe
                         </TableRow>
                       ))}
                     </TableBody>
-                    <TableFooter>
+                    <tfoot className="border-t bg-muted/50 font-medium [&>tr]:last:border-b-0">
                       <TableRow>
                         <TableCell colSpan={4} className="text-right font-bold">Totals:</TableCell>
                         <TableCell className="font-bold">{formatTime(selectedEmployeeReport.totalHours)}</TableCell>
@@ -220,7 +220,7 @@ const AttendanceReportDialog = ({ open, onOpenChange, reportData }: AttendanceRe
                         <TableCell colSpan={4} className="text-right font-bold">Working Days:</TableCell>
                         <TableCell colSpan={2} className="font-bold">{selectedEmployeeReport.workingDays}</TableCell>
                       </TableRow>
-                    </TableFooter>
+                    </tfoot>
                   </Table>
                   
                   <div className="pt-8 pb-8">
