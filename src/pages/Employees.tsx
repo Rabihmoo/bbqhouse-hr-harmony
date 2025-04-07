@@ -7,7 +7,7 @@ import EmployeesList from "@/components/employees/EmployeesList";
 import PageHeader from "@/components/employees/PageHeader";
 import AttendanceUploader from "@/components/employees/AttendanceUploader";
 import DepartmentSummary from "@/components/employees/DepartmentSummary";
-import { useEmployeeOperations } from "@/hooks/use-employee-operations";
+import { useEmployeeOperations } from "@/hooks/employee-operations";
 import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
 import { useLeaveAllowances } from "@/hooks/use-leave-allowances";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
