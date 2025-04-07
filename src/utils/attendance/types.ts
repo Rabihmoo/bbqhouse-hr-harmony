@@ -1,4 +1,6 @@
 
+// Add explicit export keywords to each interface
+
 export interface EmployeeAttendanceRecord {
   date: string;
   clockIn: string;
