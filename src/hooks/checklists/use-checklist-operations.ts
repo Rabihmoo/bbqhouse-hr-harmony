@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 import { ChecklistItem, CategoryId } from '@/types/checklists';
 import { getMimeTypeFromExtension, createDownloadableBlob } from '@/utils/fileOperations';
@@ -79,6 +78,72 @@ export const useChecklistOperations = ({
     reader.readAsArrayBuffer(file);
   };
 
+  // Function to replace an existing checklist file
+  const handleReplaceChecklist = (checklistId: string, file: File) => {
+    if (!file) {
+      toast.error("No file selected for replacement");
+      return;
+    }
+
+    // Find which category contains the checklist
+    let foundCategory: CategoryId | null = null;
+    let foundChecklist: ChecklistItem | null = null;
+
+    // Search through all categories to find the checklist
+    Object.keys(checklists[activeCompany]).forEach((category) => {
+      const found = checklists[activeCompany][category].find(
+        (item: ChecklistItem) => item.id === checklistId
+      );
+      if (found) {
+        foundCategory = category as CategoryId;
+        foundChecklist = found;
+      }
+    });
+
+    if (!foundCategory || !foundChecklist) {
+      toast.error("Checklist not found");
+      return;
+    }
+
+    // Read the new file
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const fileData = e.target?.result as ArrayBuffer;
+      
+      // Update the checklist with new file data but keep the same name and id
+      setChecklists(prev => {
+        const updatedChecklists = { ...prev };
+        
+        // Find and update the specific checklist
+        const categoryItems = [...updatedChecklists[activeCompany][foundCategory!]];
+        const checklistIndex = categoryItems.findIndex(item => item.id === checklistId);
+        
+        if (checklistIndex !== -1) {
+          categoryItems[checklistIndex] = {
+            ...categoryItems[checklistIndex],
+            fileData: fileData,
+            size: `${Math.round(file.size / 1024)}KB`,
+            date: new Date().toISOString().split('T')[0],
+            mimeType: file.type || getMimeTypeFromExtension(file.name)
+          };
+          
+          // Update the category with modified items
+          updatedChecklists[activeCompany][foundCategory!] = categoryItems;
+        }
+        
+        return updatedChecklists;
+      });
+
+      toast.success(`"${foundChecklist!.name}" has been updated with the new file`);
+    };
+    
+    reader.onerror = () => {
+      toast.error("Failed to read replacement file");
+    };
+    
+    reader.readAsArrayBuffer(file);
+  };
+
   // Function to download a checklist
   const handleDownloadChecklist = (checklist: ChecklistItem) => {
     try {
@@ -138,6 +203,7 @@ export const useChecklistOperations = ({
   return {
     handleFileSelection,
     handleUploadChecklist,
+    handleReplaceChecklist,
     handleDownloadChecklist,
     handleDeleteChecklist
   };

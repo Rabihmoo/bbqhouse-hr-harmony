@@ -1,6 +1,8 @@
 
+import { useState } from 'react';
 import { useChecklistState } from './checklists/use-checklist-state';
 import { useChecklistOperations } from './checklists/use-checklist-operations';
+import { ChecklistItem } from '@/types/checklists';
 
 export const useChecklists = () => {
   const {
@@ -21,6 +23,7 @@ export const useChecklists = () => {
   const {
     handleFileSelection,
     handleUploadChecklist,
+    handleReplaceChecklist,
     handleDownloadChecklist,
     handleDeleteChecklist
   } = useChecklistOperations({
@@ -28,6 +31,10 @@ export const useChecklists = () => {
     checklists,
     setChecklists
   });
+
+  // State for replace file dialog
+  const [isReplaceDialogOpen, setIsReplaceDialogOpen] = useState(false);
+  const [selectedChecklist, setSelectedChecklist] = useState<ChecklistItem | null>(null);
 
   // Function to handle file selection in the main hook
   const handleFileSelect = (file: File) => {
@@ -41,6 +48,17 @@ export const useChecklists = () => {
   // Function to upload checklist in the main hook
   const handleUpload = () => {
     handleUploadChecklist(newChecklist, setIsUploadDialogOpen, setNewChecklist);
+  };
+
+  // Function to replace a checklist file
+  const handleReplaceFile = (checklistId: string, file: File) => {
+    handleReplaceChecklist(checklistId, file);
+  };
+
+  // Function to handle clicking the replace button
+  const handleReplaceClick = (checklist: ChecklistItem) => {
+    setSelectedChecklist(checklist);
+    setIsReplaceDialogOpen(true);
   };
 
   // Function to delete checklist in the main hook
@@ -63,11 +81,16 @@ export const useChecklists = () => {
     newChecklist,
     setNewChecklist,
     filteredChecklists,
+    isReplaceDialogOpen,
+    setIsReplaceDialogOpen,
+    selectedChecklist,
     handleCompanyChange,
     handleCategoryChange,
     handleUploadChecklist: handleUpload,
     handleDownloadChecklist,
     handleDeleteChecklist: handleDelete,
-    handleFileSelection: handleFileSelect
+    handleFileSelection: handleFileSelect,
+    handleReplaceClick,
+    handleReplaceFile
   };
 };

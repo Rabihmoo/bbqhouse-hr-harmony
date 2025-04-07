@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FileText, Download, Trash2, Plus } from 'lucide-react';
+import { FileText, Download, Trash2, Plus, Replace } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChecklistItem } from '@/types/checklists';
 
@@ -9,6 +9,7 @@ interface ChecklistFilesProps {
   searchQuery: string;
   onDownloadChecklist: (checklist: ChecklistItem) => void;
   onDeleteChecklist: (checklistId: string) => void;
+  onReplaceClick: (checklist: ChecklistItem) => void;
   onUploadClick: () => void;
   categoryName: string;
 }
@@ -18,6 +19,7 @@ const ChecklistFiles = ({
   searchQuery,
   onDownloadChecklist,
   onDeleteChecklist,
+  onReplaceClick,
   onUploadClick,
   categoryName
 }: ChecklistFilesProps) => {
@@ -51,6 +53,30 @@ const ChecklistFiles = ({
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Download
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onReplaceClick(checklist)}
+                >
+                  <svg 
+                    xmlns="http://www.w3.org/2000/svg" 
+                    width="16" 
+                    height="16" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    className="h-4 w-4 mr-2"
+                  >
+                    <path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6" />
+                    <circle cx="16" cy="8" r="2" />
+                    <path d="M18 12 9 3" />
+                    <path d="m13 7 4 1 1 4" />
+                  </svg>
+                  Replace
                 </Button>
                 <Button 
                   variant="ghost" 

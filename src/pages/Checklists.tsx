@@ -8,6 +8,7 @@ import ChecklistToolbar from '@/components/checklists/ChecklistToolbar';
 import ChecklistCategories from '@/components/checklists/ChecklistCategories';
 import ChecklistFiles from '@/components/checklists/ChecklistFiles';
 import UploadDialog from '@/components/checklists/UploadDialog';
+import ReplaceFileDialog from '@/components/checklists/ReplaceFileDialog';
 
 interface ChecklistsProps {
   onLogout?: () => void;
@@ -43,12 +44,17 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
     newChecklist,
     setNewChecklist,
     filteredChecklists,
+    isReplaceDialogOpen,
+    setIsReplaceDialogOpen,
+    selectedChecklist,
     handleCompanyChange,
     handleCategoryChange,
     handleUploadChecklist,
     handleDownloadChecklist,
     handleDeleteChecklist,
-    handleFileSelection
+    handleFileSelection,
+    handleReplaceClick,
+    handleReplaceFile
   } = useChecklists();
 
   // Function to open file dialog directly
@@ -118,6 +124,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
                   searchQuery={searchQuery}
                   onDownloadChecklist={handleDownloadChecklist}
                   onDeleteChecklist={handleDeleteChecklist}
+                  onReplaceClick={handleReplaceClick}
                   onUploadClick={handleUploadClick}
                   categoryName={categories.find(c => c.id === activeCategory)?.name || 'Checklists'}
                 />
@@ -137,6 +144,14 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
         activeCompany={activeCompany}
         companies={companies}
         categories={categories}
+      />
+
+      {/* Replace File Dialog */}
+      <ReplaceFileDialog
+        isOpen={isReplaceDialogOpen}
+        onOpenChange={setIsReplaceDialogOpen}
+        checklist={selectedChecklist}
+        onReplaceFile={handleReplaceFile}
       />
     </DashboardLayout>
   );
