@@ -105,7 +105,7 @@ const Sidebar = ({
       )}>
         <div className="flex flex-col h-full">
           <div className="p-3 border-b flex justify-center items-center">
-            <img src="/lovable-uploads/3b0f2146-354a-4718-b5d4-d20dc1907ba1.png" alt="MYR System Logo" className="h-8 w-8 object-contain" title="MYR System Management" />
+            <img src="/lovable-uploads/85bfdaaa-0d60-4268-b917-9b4fd6a1720e.png" alt="MYR System Logo" className="h-8 w-8 object-contain" title="MYR System Management" />
             {expanded && <span className="ml-2 text-sm font-medium">MYR HR Management</span>}
           </div>
 
