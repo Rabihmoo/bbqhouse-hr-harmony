@@ -1,6 +1,6 @@
 
 import { ReactNode, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "@/components/Sidebar";
 import { useMobileCheck } from "@/hooks/use-mobile";
 import { useNotifications } from "@/hooks/use-notifications";
@@ -31,6 +31,7 @@ const DashboardLayout = ({
 }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useMobileCheck();
 
   // Get employees data to generate notifications
@@ -130,6 +131,10 @@ const DashboardLayout = ({
       // Default to employee list if there's an employeeId
       if (notification.data?.employeeId) {
         navigate(`/employees?id=${notification.data.employeeId}`);
+      } else if (notification.data?.page) {
+        // Navigate to specific page if provided
+        navigate(notification.data.page);
+        toast.success(`Navigated to ${notification.data.page.substring(1)}`);
       } else {
         navigate('/employees');
       }
@@ -144,10 +149,10 @@ const DashboardLayout = ({
         onNotificationClick={handleNotificationClick}
       />
       
-      <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80 ml-16">
+      <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80 ml-16 w-full">
         <DashboardHeader title={title} subtitle={subtitle} />
         
-        <main className="flex-1 container max-w-5xl py-6 px-4 md:px-6">
+        <main className="flex-1 container py-6 px-4 md:px-6 w-full max-w-full">
           {children}
         </main>
       </div>

@@ -47,7 +47,8 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
     handleCategoryChange,
     handleUploadChecklist,
     handleDownloadChecklist,
-    handleDeleteChecklist
+    handleDeleteChecklist,
+    handleFileSelection
   } = useChecklists();
 
   // Function to open file dialog directly
@@ -64,11 +65,8 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
     if (files && files.length > 0) {
       const file = files[0];
       
-      // Open dialog to confirm and set category
-      setNewChecklist({
-        name: file.name,
-        category: activeCategory
-      });
+      // Store the file in state and open dialog
+      handleFileSelection(file);
       setIsUploadDialogOpen(true);
     }
     
@@ -84,7 +82,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
       subtitle="Download and manage checklists"
       onLogout={onLogout}
     >
-      <div className="space-y-6">
+      <div className="space-y-6 w-full">
         {/* Hidden file input for uploading */}
         <input 
           type="file" 
@@ -106,7 +104,7 @@ const Checklists = ({ onLogout }: ChecklistsProps) => {
           {/* Content for each company */}
           {companies.map(company => (
             <TabsContent key={company.id} value={company.id} className="mt-0">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full">
                 {/* Left sidebar - Categories */}
                 <ChecklistCategories 
                   categories={categories}

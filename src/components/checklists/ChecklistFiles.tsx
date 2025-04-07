@@ -7,7 +7,7 @@ import { ChecklistItem } from '@/types/checklists';
 interface ChecklistFilesProps {
   filteredChecklists: ChecklistItem[];
   searchQuery: string;
-  onDownloadChecklist: (checklist: { name: string }) => void;
+  onDownloadChecklist: (checklist: ChecklistItem) => void;
   onDeleteChecklist: (checklistId: string) => void;
   onUploadClick: () => void;
   categoryName: string;
@@ -21,31 +21,23 @@ const ChecklistFiles = ({
   onUploadClick,
   categoryName
 }: ChecklistFilesProps) => {
-  // Helper function to ensure file has .docx extension
-  const ensureDocxExtension = (filename: string) => {
-    if (!filename.toLowerCase().endsWith('.docx')) {
-      return `${filename}.docx`;
-    }
-    return filename;
-  };
-  
   return (
-    <div className="col-span-1 md:col-span-3 bg-white dark:bg-black/40 glass rounded-xl shadow-sm p-6">
-      <h2 className="text-xl font-semibold mb-4">
+    <div className="col-span-1 md:col-span-3 bg-white dark:bg-black/40 glass rounded-xl shadow-sm p-6 w-full">
+      <h2 className="text-xl font-semibold mb-4 text-left">
         {categoryName}
       </h2>
       
       {filteredChecklists.length > 0 ? (
-        <div className="divide-y">
+        <div className="divide-y w-full">
           {filteredChecklists.map(checklist => (
             <div 
               key={checklist.id} 
-              className="py-3 flex items-center justify-between"
+              className="py-3 flex items-center justify-between w-full"
             >
               <div className="flex items-center">
-                <FileText className="h-5 w-5 mr-3 text-bbqred" />
-                <div>
-                  <p className="font-medium">{ensureDocxExtension(checklist.name)}</p>
+                <FileText className="h-5 w-5 mr-3 text-bbqred flex-shrink-0" />
+                <div className="text-left">
+                  <p className="font-medium">{checklist.name}</p>
                   <p className="text-sm text-muted-foreground">
                     {checklist.size} • Uploaded on {checklist.date}
                   </p>
@@ -55,10 +47,7 @@ const ChecklistFiles = ({
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => onDownloadChecklist({
-                    ...checklist,
-                    name: ensureDocxExtension(checklist.name)
-                  })}
+                  onClick={() => onDownloadChecklist(checklist)}
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Download
@@ -75,11 +64,11 @@ const ChecklistFiles = ({
           ))}
         </div>
       ) : searchQuery ? (
-        <div className="text-center py-8">
+        <div className="text-center py-8 w-full">
           <p className="text-muted-foreground">No checklists found matching "{searchQuery}"</p>
         </div>
       ) : (
-        <div className="text-center py-8 border border-dashed rounded-lg">
+        <div className="text-center py-8 border border-dashed rounded-lg w-full">
           <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
           <p className="text-muted-foreground">No checklists available in this category</p>
           <Button 

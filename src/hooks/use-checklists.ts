@@ -7,14 +7,14 @@ import { CompanyId, CategoryId, CompanyChecklists, ChecklistItem } from '@/types
 const initialChecklists: CompanyChecklists = {
   bbq: {
     kitchen: [
-      { id: '1', name: 'Kitchen Opening Checklist.docx', size: '24KB', date: '2023-10-15' },
-      { id: '2', name: 'Kitchen Closing Checklist.docx', size: '32KB', date: '2023-10-15' }
+      { id: '1', name: 'Kitchen Opening Checklist.docx', size: '24KB', date: '2023-10-15', fileData: null },
+      { id: '2', name: 'Kitchen Closing Checklist.docx', size: '32KB', date: '2023-10-15', fileData: null }
     ],
     sala: [
-      { id: '3', name: 'Sala Opening Procedures.docx', size: '18KB', date: '2023-10-10' }
+      { id: '3', name: 'Sala Opening Procedures.docx', size: '18KB', date: '2023-10-10', fileData: null }
     ],
     bar: [
-      { id: '4', name: 'Bar Inventory Checklist.docx', size: '42KB', date: '2023-10-01' }
+      { id: '4', name: 'Bar Inventory Checklist.docx', size: '42KB', date: '2023-10-01', fileData: null }
     ],
     manager: [],
     cleaning: [],
@@ -36,7 +36,7 @@ const initialChecklists: CompanyChecklists = {
     bar: [],
     manager: [],
     cleaning: [
-      { id: '5', name: 'Daily Cleaning Schedule.docx', size: '28KB', date: '2023-09-28' }
+      { id: '5', name: 'Daily Cleaning Schedule.docx', size: '28KB', date: '2023-09-28', fileData: null }
     ],
     weekly: [],
     monthly: []
@@ -49,7 +49,7 @@ export const useChecklists = () => {
   const [checklists, setChecklists] = useState<CompanyChecklists>(initialChecklists);
   const [searchQuery, setSearchQuery] = useState('');
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-  const [newChecklist, setNewChecklist] = useState<{ name: string; category: CategoryId }>({
+  const [newChecklist, setNewChecklist] = useState<{ name: string; category: CategoryId; file?: File }>({
     name: '',
     category: 'kitchen'
   });
@@ -67,6 +67,16 @@ export const useChecklists = () => {
     setActiveCategory(value);
   };
 
+  // Function to handle file selection
+  const handleFileSelection = (file: File) => {
+    // Store the file in the newChecklist state
+    setNewChecklist(prev => ({
+      ...prev,
+      name: file.name,
+      file: file
+    }));
+  };
+
   // Function to upload a new checklist
   const handleUploadChecklist = () => {
     if (!newChecklist.name) {
@@ -74,58 +84,90 @@ export const useChecklists = () => {
       return;
     }
 
-    // Add .docx extension if not already included
-    const fileName = newChecklist.name.endsWith('.docx') 
-      ? newChecklist.name 
-      : `${newChecklist.name}.docx`;
+    const file = newChecklist.file;
+    if (!file) {
+      toast.error("No file selected");
+      return;
+    }
 
-    const newItem: ChecklistItem = {
-      id: Date.now().toString(),
-      name: fileName,
-      size: `${Math.floor(Math.random() * 50 + 10)}KB`,
-      date: new Date().toISOString().split('T')[0]
+    // Read the file as an ArrayBuffer to preserve binary content
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const fileData = e.target?.result;
+      
+      // Add the new checklist to the appropriate company and category
+      const newItem: ChecklistItem = {
+        id: Date.now().toString(),
+        name: newChecklist.name,
+        size: `${Math.round(file.size / 1024)}KB`,
+        date: new Date().toISOString().split('T')[0],
+        fileData: fileData,
+        mimeType: file.type || getMimeTypeFromExtension(newChecklist.name)
+      };
+
+      setChecklists(prev => ({
+        ...prev,
+        [activeCompany]: {
+          ...prev[activeCompany],
+          [newChecklist.category]: [
+            ...prev[activeCompany][newChecklist.category],
+            newItem
+          ]
+        }
+      }));
+
+      setIsUploadDialogOpen(false);
+      setNewChecklist({ name: '', category: 'kitchen' });
+      toast.success("Checklist uploaded successfully");
     };
+    
+    reader.onerror = () => {
+      toast.error("Failed to read file");
+    };
+    
+    reader.readAsArrayBuffer(file);
+  };
 
-    // Add the new checklist to the appropriate company and category
-    setChecklists(prev => ({
-      ...prev,
-      [activeCompany]: {
-        ...prev[activeCompany],
-        [newChecklist.category]: [
-          ...prev[activeCompany][newChecklist.category],
-          newItem
-        ]
-      }
-    }));
-
-    setIsUploadDialogOpen(false);
-    setNewChecklist({ name: '', category: 'kitchen' });
-    toast.success("Checklist uploaded successfully");
+  // Function to get MIME type from file extension
+  const getMimeTypeFromExtension = (filename: string): string => {
+    const extension = filename.split('.').pop()?.toLowerCase();
+    switch(extension) {
+      case 'pdf': 
+        return 'application/pdf';
+      case 'docx':
+        return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      case 'doc':
+        return 'application/msword';
+      case 'xlsx':
+        return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      case 'xls':
+        return 'application/vnd.ms-excel';
+      default:
+        return 'application/octet-stream';
+    }
   };
 
   // Function to download a checklist
-  const handleDownloadChecklist = (checklist: { name: string }) => {
-    // Ensure filename has .docx extension
-    const fileName = checklist.name.endsWith('.docx') 
-      ? checklist.name 
-      : `${checklist.name}.docx`;
+  const handleDownloadChecklist = (checklist: ChecklistItem) => {
+    if (!checklist.fileData) {
+      toast.error(`Cannot download ${checklist.name}. No file data available.`);
+      return;
+    }
     
-    toast.success(`Downloading ${fileName}`);
+    // Create a blob from the stored file data
+    const blob = new Blob([checklist.fileData], { 
+      type: checklist.mimeType || getMimeTypeFromExtension(checklist.name) 
+    });
     
-    // Create a temporary anchor element to trigger download
+    // Create a download link
     const link = document.createElement('a');
-    
-    // In a real app, this would be a URL to the actual file
-    // For now, we'll create a placeholder Word document with some content
-    const blob = new Blob([
-      '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>BBQHOUSE Checklist</title></head><body><h1>BBQHOUSE Checklist</h1><p>This is a placeholder for the checklist content.</p></body></html>'
-    ], { type: 'application/vnd.ms-word' });
-    
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', fileName);
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', checklist.name);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    toast.success(`Downloading ${checklist.name}`);
   };
 
   // Function to delete a checklist
@@ -168,6 +210,7 @@ export const useChecklists = () => {
     handleCategoryChange,
     handleUploadChecklist,
     handleDownloadChecklist,
-    handleDeleteChecklist
+    handleDeleteChecklist,
+    handleFileSelection
   };
 };

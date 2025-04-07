@@ -1,10 +1,10 @@
 
 #root {
   max-width: 100vw;
-  width: 100vw;
+  width: 100%;
   margin: 0 auto;
   padding: 0;
-  text-align: center;
+  text-align: left;
 }
 
 .logo {
@@ -45,7 +45,7 @@
 
 .app {
   min-height: 100vh;
-  width: 100vw;
+  width: 100%;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
@@ -63,8 +63,8 @@ html, body {
 .container {
   width: 100%;
   max-width: 100%;
-  margin-right: auto;
-  margin-left: auto;
+  margin-right: 0;
+  margin-left: 0;
   padding-left: 1rem;
   padding-right: 1rem;
 }
@@ -74,7 +74,6 @@ html, body {
   .container {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
-    margin-left: 16rem; /* Add margin to account for the sidebar width */
   }
 }
 
@@ -89,4 +88,19 @@ html, body {
 .data-table-container {
   width: 100%;
   overflow-x: auto;
+}
+
+/* Ensure all content is full width */
+.w-full {
+  width: 100%;
+}
+
+/* Fix text alignment */
+h1, h2, h3, h4, h5, h6 {
+  text-align: left;
+}
+
+/* Make sure dialogs and popups are properly centered */
+[role="dialog"] {
+  text-align: left;
 }

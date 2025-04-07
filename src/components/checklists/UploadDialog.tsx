@@ -6,12 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CategoryId, CompanyId } from '@/types/checklists';
+import { FileUpload } from 'lucide-react';
 
 interface UploadDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  newChecklist: { name: string; category: CategoryId };
-  setNewChecklist: React.Dispatch<React.SetStateAction<{ name: string; category: CategoryId }>>;
+  newChecklist: { name: string; category: CategoryId; file?: File };
+  setNewChecklist: React.Dispatch<React.SetStateAction<{ name: string; category: CategoryId; file?: File }>>;
   handleUploadChecklist: () => void;
   activeCompany: CompanyId;
   companies: { id: CompanyId; name: string }[];
@@ -28,6 +29,15 @@ const UploadDialog = ({
   companies,
   categories
 }: UploadDialogProps) => {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setNewChecklist({...newChecklist, name: file.name, file});
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -38,6 +48,35 @@ const UploadDialog = ({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="file" className="text-right">
+              Select File
+            </Label>
+            <div className="col-span-3">
+              <input
+                type="file"
+                id="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept=".doc,.docx,.pdf,.xls,.xlsx"
+                onChange={handleFileChange}
+              />
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full justify-start"
+                >
+                  <FileUpload className="mr-2 h-4 w-4" />
+                  Choose file
+                </Button>
+                <span className="text-sm text-muted-foreground self-center truncate max-w-[150px]">
+                  {newChecklist.file ? newChecklist.file.name : 'No file chosen'}
+                </span>
+              </div>
+            </div>
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">
               File Name
@@ -81,7 +120,11 @@ const UploadDialog = ({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button type="button" onClick={handleUploadChecklist}>
+          <Button 
+            type="button" 
+            onClick={handleUploadChecklist}
+            disabled={!newChecklist.file}
+          >
             Confirm Upload
           </Button>
         </DialogFooter>
