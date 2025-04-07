@@ -6,7 +6,7 @@ import { useMobileCheck } from "@/hooks/use-mobile";
 import { useNotifications } from "@/hooks/use-notifications";
 import { Notification as TypedNotification } from "@/hooks/use-notifications";
 import { useEmployeeData } from "@/hooks/use-employee-data";
-import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
+import { useEmployeeNotifications } from "@/hooks/employee-notifications";
 import DashboardHeader from "./DashboardHeader";
 import { toast } from "sonner";
 
