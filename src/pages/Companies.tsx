@@ -5,7 +5,7 @@ import CompaniesTable from "@/components/companies/CompaniesTable";
 import CompanyForm from "@/components/companies/CompanyForm";
 import CompanyProfile from "@/components/companies/CompanyProfile";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building, FileFolder, Plus } from "lucide-react";
+import { Building, FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCompanyData } from "@/hooks/use-company-data";
 import { Company } from "@/types/company";
@@ -90,13 +90,13 @@ const Companies = ({ onLogout }: { onLogout?: () => void }) => {
             )}
             {selectedCompany && (
               <TabsTrigger value="view">
-                <FileFolder className="h-4 w-4 mr-2" />
+                <FileText className="h-4 w-4 mr-2" />
                 Company Profile
               </TabsTrigger>
             )}
             {selectedCompany && (
               <TabsTrigger value="edit">
-                <FileFolder className="h-4 w-4 mr-2" />
+                <FileText className="h-4 w-4 mr-2" />
                 Edit Company
               </TabsTrigger>
             )}
