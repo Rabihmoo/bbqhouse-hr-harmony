@@ -3,109 +3,139 @@ import { format } from "date-fns";
 import { employees } from "@/lib/data";
 import { calculateWorkingHours, formatTime } from "./timeCalculations";
 import { AttendanceReport, EmployeeAttendanceRecord, EmployeeReport } from "./types";
+import * as XLSX from "xlsx";
 
-export const processAttendanceData = (fileData: any): AttendanceReport => {
-  // In a real implementation, this would parse the Excel file
-  // For now, we'll simulate the data processing
-  
-  const currentDate = new Date();
-  const months = [
-    "janeiro", "fevereiro", "março", "abril",
-    "maio", "junho", "julho", "agosto",
-    "setembro", "outubro", "novembro", "dezembro"
-  ];
-  const month = months[currentDate.getMonth()];
-  const year = currentDate.getFullYear().toString();
-  
-  try {
-    // Generate reports per employee
-    const employeeReports = employees.map(employee => {
-      // Generate random attendance records for simulation
-      const daysInMonth = 20;
-      const attendanceRecords: EmployeeAttendanceRecord[] = [];
-      let totalWorkHours = 0;
-      let totalExtraHours = 0;
-      let workingDays = 0;
-      
-      for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-        if (date > currentDate) continue; // Don't generate future dates
-        
-        // Generate random attendance
-        const rand = Math.random();
-        let clockIn = "";
-        let clockOut = "";
-        
-        if (rand < 0.05) {
-          // Absence (FOLGA)
-          clockIn = "FOLGA";
-          clockOut = "";
-        } else if (rand < 0.10) {
-          // No entrance
-          clockIn = "nao entrada";
-          clockOut = "17:00";
-        } else if (rand < 0.15) {
-          // No exit
-          clockIn = "08:00";
-          clockOut = "nao saida";
-        } else {
-          // Regular day with random variation
-          const hour = 8 + Math.floor(Math.random() * 2);
-          const minute = Math.floor(Math.random() * 60);
-          clockIn = `0${hour}:${minute < 10 ? '0' + minute : minute}`;
-          
-          const outHour = 16 + Math.floor(Math.random() * 4);
-          const outMinute = Math.floor(Math.random() * 60);
-          clockOut = `${outHour}:${outMinute < 10 ? '0' + outMinute : outMinute}`;
-        }
-        
-        // Calculate work time and extra hours
-        const { workTime, extraHours } = calculateWorkingHours(clockIn, clockOut);
-        
-        // Convert HH:MM to hours for totaling
-        const workTimeParts = workTime.split(':').map(Number);
-        const extraHoursParts = extraHours.split(':').map(Number);
-        
-        const workTimeHours = workTimeParts[0] + workTimeParts[1] / 60;
-        const extraHoursTime = extraHoursParts[0] + extraHoursParts[1] / 60;
-        
-        totalWorkHours += workTimeHours;
-        totalExtraHours += extraHoursTime;
-        
-        if (workTimeHours > 0) {
-          workingDays++;
-        }
-        
-        attendanceRecords.push({
-          date: format(date, 'MM/dd/yyyy'),
-          clockIn,
-          clockOut,
-          workTime,
-          extraHours
-        });
-      }
-      
-      return {
-        employeeId: employee.id,
-        employeeName: employee.fullName,
-        biNumber: employee.biNumber || "000000000",
-        department: employee.department || "Not specified",
-        company: employee.company || "MYR HR Management",
-        workingDays,
-        totalHours: Math.round(totalWorkHours * 10) / 10,
-        extraHours: Math.round(totalExtraHours * 10) / 10,
-        attendanceRecords
-      };
-    });
+export const processAttendanceData = (file: File): Promise<AttendanceReport> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
     
-    return {
-      reportDate: new Date().toISOString(),
-      month,
-      year,
-      employeeReports
+    reader.onload = (e) => {
+      try {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'array' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        
+        // Convert sheet to JSON
+        const rows = XLSX.utils.sheet_to_json(worksheet);
+        
+        // Get current date information
+        const currentDate = new Date();
+        const months = [
+          "janeiro", "fevereiro", "março", "abril",
+          "maio", "junho", "julho", "agosto",
+          "setembro", "outubro", "novembro", "dezembro"
+        ];
+        const month = months[currentDate.getMonth()];
+        const year = currentDate.getFullYear().toString();
+        
+        // Process employee data from the rows
+        const employeeRecords = new Map<string, { 
+          name: string, 
+          records: EmployeeAttendanceRecord[],
+          totalHours: number,
+          extraHours: number,
+          workingDays: number
+        }>();
+        
+        // Process each row in the Excel file
+        rows.forEach((row: any) => {
+          // This is just an example - adjust based on your actual Excel structure
+          const employeeName = row.Name || row.Employee || row.EmployeeName;
+          const employeeId = row.ID || row.EmployeeID || employeeName;
+          const date = row.Date;
+          let clockIn = row.ClockIn || row["Clock In"];
+          let clockOut = row.ClockOut || row["Clock Out"];
+          
+          // Apply data rules
+          if (!clockIn && !clockOut) {
+            clockIn = "FOLGA";
+            clockOut = "";
+          } else if (!clockIn) {
+            clockIn = "nao entrada";
+          } else if (!clockOut) {
+            clockOut = "nao saida";
+          }
+          
+          // Calculate working hours and extra hours
+          const { workTime, extraHours } = calculateWorkingHours(clockIn, clockOut);
+          
+          // Convert time to numeric values for totaling
+          const workTimeParts = workTime.split(':').map(Number);
+          const extraHoursParts = extraHours.split(':').map(Number);
+          const workTimeHours = workTimeParts[0] + (workTimeParts[1] / 60);
+          const extraHoursTime = extraHoursParts[0] + (extraHoursParts[1] / 60);
+          
+          // Check if we already have records for this employee
+          if (!employeeRecords.has(employeeId)) {
+            employeeRecords.set(employeeId, { 
+              name: employeeName, 
+              records: [], 
+              totalHours: 0, 
+              extraHours: 0,
+              workingDays: 0
+            });
+          }
+          
+          // Add to the employee's records
+          const employeeData = employeeRecords.get(employeeId)!;
+          
+          employeeData.records.push({
+            date: format(new Date(date), 'MM/dd/yyyy'),
+            clockIn,
+            clockOut,
+            workTime,
+            extraHours
+          });
+          
+          employeeData.totalHours += workTimeHours;
+          employeeData.extraHours += extraHoursTime;
+          if (workTimeHours > 0) {
+            employeeData.workingDays += 1;
+          }
+        });
+        
+        // Generate the final report structure
+        const employeeReports: EmployeeReport[] = [];
+        
+        employeeRecords.forEach((data, id) => {
+          // Find employee in our system to get additional information
+          const employeeInfo = employees.find(e => 
+            e.fullName === data.name || e.id === id || e.fullName.toLowerCase().includes(data.name.toLowerCase())
+          );
+          
+          employeeReports.push({
+            employeeId: id,
+            employeeName: data.name,
+            biNumber: employeeInfo?.biNumber || "000000000",
+            department: employeeInfo?.department || "Not specified",
+            company: employeeInfo?.company || "MYR HR Management",
+            workingDays: data.workingDays,
+            totalHours: Math.round(data.totalHours * 10) / 10,
+            extraHours: Math.round(data.extraHours * 10) / 10,
+            attendanceRecords: data.records
+          });
+        });
+        
+        const report: AttendanceReport = {
+          reportDate: new Date().toISOString(),
+          month,
+          year,
+          employeeReports
+        };
+        
+        resolve(report);
+        
+      } catch (error) {
+        console.error("Error processing attendance data:", error);
+        reject(new Error("Failed to process attendance data file"));
+      }
     };
-  } catch (error) {
-    console.error("Error processing attendance data:", error);
-    throw new Error("Failed to process attendance data");
-  }
+    
+    reader.onerror = () => {
+      reject(new Error("Failed to read the file"));
+    };
+    
+    reader.readAsArrayBuffer(file);
+  });
 };

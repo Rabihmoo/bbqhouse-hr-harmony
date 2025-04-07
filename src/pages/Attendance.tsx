@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +14,7 @@ import { format, addDays, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useEmployeeData } from "@/hooks/use-employee-data";
 import { toast } from "sonner";
+import AttendanceUploader from '@/components/employees/AttendanceUploader';
 
 interface AttendanceProps {
   onLogout?: () => void;
@@ -39,7 +39,6 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([]);
   const { employees } = useEmployeeData();
   
-  // Manual attendance record state
   const [newAttendance, setNewAttendance] = useState({
     employeeId: "",
     date: new Date(),
@@ -49,30 +48,24 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
     notes: ""
   });
 
-  // Load attendance data
   useEffect(() => {
     const loadAttendanceData = () => {
-      // Check if we have stored attendance records
       const storedAttendance = localStorage.getItem('bbq-attendance-records');
       if (storedAttendance) {
         setAttendanceRecords(JSON.parse(storedAttendance));
       } else {
-        // Generate some sample attendance records if none exist
         const sampleRecords: AttendanceRecord[] = [];
         const currentDate = new Date();
         
-        // Generate attendance for the past 7 days
         for (let i = 0; i < 7; i++) {
           const date = subDays(currentDate, i);
           const dateStr = format(date, 'yyyy-MM-dd');
           
           employees.forEach(employee => {
             if (employee.status === 'Active') {
-              // Random status with a bias toward present
               const statuses: ('present' | 'absent' | 'late' | 'half-day')[] = ['present', 'present', 'present', 'present', 'late', 'half-day', 'absent'];
               const status = statuses[Math.floor(Math.random() * statuses.length)];
               
-              // Clock times based on status
               let clockIn = "08:00";
               let clockOut = "17:00";
               let totalHours = 9;
@@ -113,7 +106,6 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
     loadAttendanceData();
   }, [employees]);
   
-  // Filter attendance records by date and company
   const filteredDailyRecords = attendanceRecords.filter(record => {
     const matchesDate = record.date === format(selectedDate, 'yyyy-MM-dd');
     if (!matchesDate) return false;
@@ -124,7 +116,6 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
     return employee?.company?.toLowerCase().includes(activeCompany);
   });
   
-  // Get employees without attendance records for the selected date
   const employeesWithoutAttendance = employees.filter(employee => {
     if (employee.status !== 'Active') return false;
     if (activeCompany !== 'all' && !employee.company?.toLowerCase().includes(activeCompany)) return false;
@@ -136,7 +127,6 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
     return !hasRecord;
   });
   
-  // Handle new attendance record submission
   const handleSubmitAttendance = () => {
     if (!newAttendance.employeeId) {
       toast.error("Please select an employee");
@@ -149,7 +139,6 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
       return;
     }
     
-    // Calculate total hours
     let totalHours = 0;
     if (newAttendance.status !== 'absent' && newAttendance.clockIn && newAttendance.clockOut) {
       const clockInParts = newAttendance.clockIn.split(':').map(Number);
@@ -159,7 +148,7 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
       const clockOutHours = clockOutParts[0] + (clockOutParts[1] / 60);
       
       totalHours = clockOutHours - clockInHours;
-      totalHours = Math.round(totalHours * 10) / 10; // Round to 1 decimal place
+      totalHours = Math.round(totalHours * 10) / 10;
     }
     
     const dateStr = format(newAttendance.date, 'yyyy-MM-dd');
@@ -175,19 +164,16 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
       notes: newAttendance.notes
     };
     
-    // Check if record already exists for this employee on this date
     const existingIndex = attendanceRecords.findIndex(
       record => record.employeeId === employee.id && record.date === dateStr
     );
     
     let updatedRecords;
     if (existingIndex >= 0) {
-      // Update existing record
       updatedRecords = [...attendanceRecords];
       updatedRecords[existingIndex] = newRecord;
       toast.success("Attendance record updated");
     } else {
-      // Add new record
       updatedRecords = [...attendanceRecords, newRecord];
       toast.success("Attendance record created");
     }
@@ -195,7 +181,6 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
     setAttendanceRecords(updatedRecords);
     localStorage.setItem('bbq-attendance-records', JSON.stringify(updatedRecords));
     
-    // Reset form
     setNewAttendance({
       employeeId: "",
       date: new Date(),
@@ -205,7 +190,6 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
       notes: ""
     });
     
-    // Switch to daily tab to see the record
     setActiveTab("daily");
     setSelectedDate(newAttendance.date);
   };
@@ -217,6 +201,14 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
       onLogout={onLogout}
     >
       <div className="space-y-6">
+        <AttendanceUploader 
+          onFileUploaded={(data) => {
+            if (data && data.employeeReports) {
+              toast.success("Attendance data processed successfully");
+            }
+          }}
+        />
+        
         <Tabs defaultValue="daily" value={activeTab} onValueChange={setActiveTab}>
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
             <TabsList>
@@ -376,7 +368,6 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
                             size="sm"
                             className="h-8"
                             onClick={() => {
-                              // Set up form for editing
                               setNewAttendance({
                                 employeeId: row.employeeId,
                                 date: new Date(row.date),
