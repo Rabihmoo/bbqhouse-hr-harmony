@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Download, FileSpreadsheet } from "lucide-react";
+import { FileDown, FileSpreadsheet } from "lucide-react";
 import { AttendanceRecord } from '@/types/attendance';
 import { toast } from "sonner";
 import { 
@@ -57,10 +56,60 @@ export const AttendanceReportTab = ({
     const fileName = getExportFileName('Attendance_Summary');
 
     if (type === 'csv') {
+      // Export combined data
       exportToCsv(summaryData, fileName);
+      
+      // Export individual employee data
+      employees
+        .filter(emp => emp.status === 'Active')
+        .filter(emp => {
+          if (activeCompany === 'all') return true;
+          return emp.company?.toLowerCase().includes(activeCompany);
+        })
+        .forEach(employee => {
+          const empRecords = attendanceRecords.filter(r => r.employeeId === employee.id);
+          if (empRecords.length > 0) {
+            const individualFileName = `${employee.fullName.replace(/\s+/g, '_')}_Summary`;
+            const employeeData = [{
+              'Employee': employee.fullName,
+              'Present Days': empRecords.filter(r => r.status === 'present').length,
+              'Absent Days': empRecords.filter(r => r.status === 'absent').length,
+              'Late Days': empRecords.filter(r => r.status === 'late').length,
+              'Half Days': empRecords.filter(r => r.status === 'half-day').length,
+              'Total Hours': empRecords.reduce((sum, r) => sum + r.totalHours, 0).toFixed(1)
+            }];
+            exportToCsv(employeeData, individualFileName, employee.id);
+          }
+        });
+      
       toast.success("Attendance summary exported as CSV");
     } else {
+      // Export combined data
       exportToExcel(summaryData, fileName);
+      
+      // Export individual employee data
+      employees
+        .filter(emp => emp.status === 'Active')
+        .filter(emp => {
+          if (activeCompany === 'all') return true;
+          return emp.company?.toLowerCase().includes(activeCompany);
+        })
+        .forEach(employee => {
+          const empRecords = attendanceRecords.filter(r => r.employeeId === employee.id);
+          if (empRecords.length > 0) {
+            const individualFileName = `${employee.fullName.replace(/\s+/g, '_')}_Summary`;
+            const employeeData = [{
+              'Employee': employee.fullName,
+              'Present Days': empRecords.filter(r => r.status === 'present').length,
+              'Absent Days': empRecords.filter(r => r.status === 'absent').length,
+              'Late Days': empRecords.filter(r => r.status === 'late').length,
+              'Half Days': empRecords.filter(r => r.status === 'half-day').length,
+              'Total Hours': empRecords.reduce((sum, r) => sum + r.totalHours, 0).toFixed(1)
+            }];
+            exportToExcel(employeeData, individualFileName, employee.id);
+          }
+        });
+      
       toast.success("Attendance summary exported as Excel");
     }
   };
@@ -72,7 +121,7 @@ export const AttendanceReportTab = ({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
+              <FileDown className="h-4 w-4" />
               Export Report
             </Button>
           </DropdownMenuTrigger>

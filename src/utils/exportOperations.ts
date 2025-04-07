@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 /**
  * Export data as CSV file
  */
-export const exportToCsv = (data: any[], filename: string) => {
+export const exportToCsv = (data: any[], filename: string, employeeId?: string) => {
   // Convert data to CSV string
   const header = Object.keys(data[0]).join(',');
   const rows = data.map(row => 
@@ -26,12 +26,15 @@ export const exportToCsv = (data: any[], filename: string) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  
+  // Register the export in attendance records
+  registerExport(employeeId, filename, 'csv');
 };
 
 /**
  * Export data as Excel file
  */
-export const exportToExcel = (data: any[], filename: string) => {
+export const exportToExcel = (data: any[], filename: string, employeeId?: string) => {
   // Convert data to worksheet
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
@@ -50,6 +53,35 @@ export const exportToExcel = (data: any[], filename: string) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  
+  // Register the export in attendance records
+  registerExport(employeeId, filename, 'xlsx');
+};
+
+/**
+ * Register export in localStorage for tracking
+ */
+const registerExport = (employeeId?: string, filename?: string, fileType?: string) => {
+  try {
+    // Get existing export records
+    const exportRecordsStr = localStorage.getItem('bbq-export-records') || '[]';
+    const exportRecords = JSON.parse(exportRecordsStr);
+    
+    // Add new record
+    exportRecords.push({
+      id: `export-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      employeeId: employeeId || 'all',
+      filename,
+      fileType,
+      user: 'current-user' // In a real app, get this from auth context
+    });
+    
+    // Save back to storage
+    localStorage.setItem('bbq-export-records', JSON.stringify(exportRecords));
+  } catch (error) {
+    console.error('Error registering export:', error);
+  }
 };
 
 /**

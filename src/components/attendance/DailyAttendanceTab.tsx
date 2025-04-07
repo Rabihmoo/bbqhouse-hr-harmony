@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { format, subDays, addDays } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, User, Download, FileSpreadsheet } from "lucide-react";
+import { CalendarIcon, User, Download, FileSpreadsheet, FileDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
@@ -43,12 +44,33 @@ export const DailyAttendanceTab = ({
 
     const exportData = prepareAttendanceDataForExport(filteredDailyRecords);
     const fileName = getExportFileName(`Attendance_${format(selectedDate, 'yyyy-MM-dd')}`);
+    
+    // Group records by employee for individual exports
+    const employeeGroups: {[key: string]: AttendanceRecord[]} = {};
+    filteredDailyRecords.forEach(record => {
+      if (!employeeGroups[record.employeeId]) {
+        employeeGroups[record.employeeId] = [];
+      }
+      employeeGroups[record.employeeId].push(record);
+    });
 
     if (type === 'csv') {
       exportToCsv(exportData, fileName);
+      // Register individual exports
+      Object.entries(employeeGroups).forEach(([employeeId, records]) => {
+        const employeeName = records[0].employeeName.replace(/\s+/g, '_');
+        const individualFileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
+        exportToCsv(prepareAttendanceDataForExport(records), individualFileName, employeeId);
+      });
       toast.success("Attendance data exported as CSV");
     } else {
       exportToExcel(exportData, fileName);
+      // Register individual exports
+      Object.entries(employeeGroups).forEach(([employeeId, records]) => {
+        const employeeName = records[0].employeeName.replace(/\s+/g, '_');
+        const individualFileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
+        exportToExcel(prepareAttendanceDataForExport(records), individualFileName, employeeId);
+      });
       toast.success("Attendance data exported as Excel");
     }
   };
@@ -72,7 +94,7 @@ export const DailyAttendanceTab = ({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="flex items-center gap-2">
-                  <Download className="h-4 w-4" />
+                  <FileDown className="h-4 w-4" />
                   Export
                 </Button>
               </DropdownMenuTrigger>
