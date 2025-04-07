@@ -150,25 +150,36 @@ export const useChecklists = () => {
 
   // Function to download a checklist
   const handleDownloadChecklist = (checklist: ChecklistItem) => {
-    if (!checklist.fileData) {
-      toast.error(`Cannot download ${checklist.name}. No file data available.`);
-      return;
+    try {
+      if (!checklist.fileData) {
+        toast.error(`Cannot download ${checklist.name}. No file data available.`);
+        return;
+      }
+      
+      // Create a blob from the stored file data
+      const blob = new Blob([checklist.fileData], { 
+        type: checklist.mimeType || getMimeTypeFromExtension(checklist.name) 
+      });
+      
+      // Create a download link and trigger download
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', checklist.name);
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
+      
+      toast.success(`Downloading ${checklist.name}`);
+    } catch (error) {
+      console.error('Download error:', error);
+      toast.error(`Failed to download ${checklist.name}. Please try again.`);
     }
-    
-    // Create a blob from the stored file data
-    const blob = new Blob([checklist.fileData], { 
-      type: checklist.mimeType || getMimeTypeFromExtension(checklist.name) 
-    });
-    
-    // Create a download link
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', checklist.name);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast.success(`Downloading ${checklist.name}`);
   };
 
   // Function to delete a checklist

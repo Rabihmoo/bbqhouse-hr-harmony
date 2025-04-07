@@ -58,7 +58,7 @@ function App() {
       localStorage.setItem("hr-auth", "true");
       setError("");
       toast.success("Login successful", {
-        description: "Welcome to MYR System Management"
+        description: "Welcome to MYR HR Management"
       });
     } else {
       setError("Invalid credentials. Please try again.");
@@ -74,7 +74,7 @@ function App() {
 
   // Update the document title
   useEffect(() => {
-    document.title = "MYR System Management";
+    document.title = "MYR HR Management";
   }, []);
 
   return (
@@ -82,9 +82,9 @@ function App() {
       <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Login to MYR System Management</DialogTitle>
+            <DialogTitle>Login to MYR HR Management</DialogTitle>
             <DialogDescription>
-              Enter your credentials to access the system management platform.
+              Enter your credentials to access the HR management platform.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
