@@ -11,7 +11,9 @@ import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useEmployeeData } from "@/hooks/use-employee-data";
+import { useCompanyData } from "@/hooks/use-company-data";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 
 interface ContractGeneratorProps {
   onGenerate: (contractData: any) => void;
@@ -22,9 +24,12 @@ const ContractGenerator: React.FC<ContractGeneratorProps> = ({ onGenerate }) => 
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [signatureDate, setSignatureDate] = useState<Date | undefined>(new Date());
   const [notes, setNotes] = useState<string>('');
+  const [baseSalary, setBaseSalary] = useState<number>(8900);
+  const [cityOfBirth, setCityOfBirth] = useState<string>('Maputo');
   
-  // Use our hook to get only active employees - ensure activeOnly is true
+  // Use hooks to get employee and company data
   const { employees: activeEmployees } = useEmployeeData(true);
+  const { companies } = useCompanyData();
 
   const handleGenerate = () => {
     if (!selectedEmployee) {
@@ -38,13 +43,18 @@ const ContractGenerator: React.FC<ContractGeneratorProps> = ({ onGenerate }) => 
       return;
     }
     
-    // Generate contract PDF (in a real system)
-    // For now, we'll just create the data structure
+    // Find the company data if available
+    const company = companies.find(comp => comp.name === employee.company);
+    
+    // Generate contract data
     const contractData = {
       employeeId: employee.id,
       employeeName: employee.fullName,
       position: employee.position,
       company: employee.company,
+      // Include company address and NUIT if available
+      companyAddress: company ? company.address : 'Avenida 24 de Julho, Maputo',
+      companyNuit: company ? company.nuit : '123456789',
       companyTemplate: employee.company ? `${employee.company.replace(/ /g, '_')}_Contract.pdf` : 'Default_Contract.pdf',
       startDate: startDate ? format(startDate, 'dd/MM/yyyy') : '',
       signatureDate: signatureDate ? format(signatureDate, 'dd/MM/yyyy') : '',
@@ -58,7 +68,10 @@ const ContractGenerator: React.FC<ContractGeneratorProps> = ({ onGenerate }) => 
         address: employee.address,
         secondAddress: employee.secondAddress,
         biValidUntil: employee.biValidUntil,
+        // Include city of birth
+        cityOfBirth: cityOfBirth,
         // Include salary structure details
+        baseSalary: baseSalary,
         transportAllowance: employee.salaryStructure?.transportAllowance || 0,
         bonus: employee.salaryStructure?.bonus || 0,
         accommodationAllowance: employee.salaryStructure?.accommodationAllowance || 0,
@@ -117,6 +130,28 @@ const ContractGenerator: React.FC<ContractGeneratorProps> = ({ onGenerate }) => 
                   )}
                 </SelectContent>
               </Select>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Base Salary (MT)</Label>
+                <Input
+                  type="number"
+                  value={baseSalary}
+                  onChange={(e) => setBaseSalary(Number(e.target.value))}
+                  placeholder="Base Salary"
+                />
+              </div>
+              
+              <div>
+                <Label>City of Birth</Label>
+                <Input
+                  type="text"
+                  value={cityOfBirth}
+                  onChange={(e) => setCityOfBirth(e.target.value)}
+                  placeholder="City of Birth"
+                />
+              </div>
             </div>
             
             <div className="grid grid-cols-2 gap-4">
