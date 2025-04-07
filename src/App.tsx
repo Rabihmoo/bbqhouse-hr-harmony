@@ -7,6 +7,7 @@ import Leaves from "./pages/Leaves";
 import Attendance from "./pages/Attendance";
 import Payroll from "./pages/Payroll";
 import Contracts from "./pages/Contracts";
+import Companies from "./pages/Companies";
 import Checklists from "./pages/Checklists";
 import Administration from "./pages/Administration";
 import NotFound from "./pages/NotFound";
@@ -136,6 +137,7 @@ function App() {
               <Route path="/attendance" element={<Attendance onLogout={handleLogout} />} />
               <Route path="/payroll" element={<Payroll onLogout={handleLogout} />} />
               <Route path="/contracts" element={<Contracts onLogout={handleLogout} />} />
+              <Route path="/companies" element={<Companies onLogout={handleLogout} />} />
               <Route path="/checklists" element={<Checklists onLogout={handleLogout} />} />
               <Route path="/administration" element={<Administration onLogout={handleLogout} />} />
               <Route path="*" element={<NotFound />} />

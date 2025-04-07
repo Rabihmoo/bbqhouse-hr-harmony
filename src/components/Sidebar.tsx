@@ -1,7 +1,7 @@
 
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Bell, CalendarDays, ClipboardCheck, Clock, FileText, Home, Users, CreditCard, Settings, ChevronRight, ChevronLeft } from "lucide-react";
+import { Bell, Building, CalendarDays, ClipboardCheck, Clock, FileText, Home, Users, CreditCard, Settings, ChevronRight, ChevronLeft } from "lucide-react";
 import { useNotifications } from "@/hooks/use-notifications";
 import NotificationCenter from "@/components/notifications/NotificationCenter";
 import { useState, useEffect } from "react";
@@ -23,6 +23,11 @@ const navItems = [
     icon: Users,
     label: "Employees",
     path: "/employees"
+  },
+  {
+    icon: Building,
+    label: "Companies",
+    path: "/companies"
   },
   {
     icon: FileText,
