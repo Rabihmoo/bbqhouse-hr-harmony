@@ -1,6 +1,6 @@
 import { employees } from "@/lib/data";
 import { format } from "date-fns";
-import { pt } from "date-fns/locale/pt";
+import { pt } from "date-fns/locale";
 
 export interface EmployeeAttendanceRecord {
   date: string;
@@ -72,7 +72,12 @@ export const calculateWorkingHours = (clockIn: string, clockOut: string): { work
 export const formatDateToPortuguese = (date: Date): string => {
   try {
     const day = date.getDate();
-    const month = format(date, 'MMMM', { locale: pt });
+    const months = [
+      "janeiro", "fevereiro", "março", "abril",
+      "maio", "junho", "julho", "agosto",
+      "setembro", "outubro", "novembro", "dezembro"
+    ];
+    const month = months[date.getMonth()];
     const year = date.getFullYear();
     return `${day} de ${month} de ${year}`;
   } catch (error) {
@@ -86,7 +91,12 @@ export const processAttendanceData = (fileData: any): AttendanceReport => {
   // For now, we'll simulate the data processing
   
   const currentDate = new Date();
-  const month = format(currentDate, 'MMMM', { locale: pt });
+  const months = [
+    "janeiro", "fevereiro", "março", "abril",
+    "maio", "junho", "julho", "agosto",
+    "setembro", "outubro", "novembro", "dezembro"
+  ];
+  const month = months[currentDate.getMonth()];
   const year = currentDate.getFullYear().toString();
   
   try {
