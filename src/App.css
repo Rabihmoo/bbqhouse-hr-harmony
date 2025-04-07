@@ -104,3 +104,16 @@ h1, h2, h3, h4, h5, h6 {
 [role="dialog"] {
   text-align: left;
 }
+
+/* Fix for proper content positioning with sidebar */
+.content-wrapper {
+  transition: margin-left 0.3s ease;
+}
+
+.content-wrapper-expanded {
+  margin-left: 16rem;
+}
+
+.content-wrapper-collapsed {
+  margin-left: 4rem;
+}

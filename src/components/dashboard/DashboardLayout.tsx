@@ -30,6 +30,7 @@ const DashboardLayout = ({
   onLogout
 }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useMobileCheck();
@@ -47,6 +48,14 @@ const DashboardLayout = ({
     clearAllNotifications,
     unreadCount
   } = useNotifications();
+
+  // Check sidebar expanded state from localStorage
+  useEffect(() => {
+    const savedState = localStorage.getItem('sidebar-expanded');
+    if (savedState !== null) {
+      setSidebarExpanded(savedState === 'true');
+    }
+  }, []);
 
   // Combine notifications with employee notifications
   useEffect(() => {
@@ -141,15 +150,21 @@ const DashboardLayout = ({
     }
   };
 
+  // Handle sidebar expansion update
+  const handleSidebarExpansionChange = (expanded: boolean) => {
+    setSidebarExpanded(expanded);
+  };
+
   return (
     <div className="flex h-screen overflow-hidden w-full">
       <Sidebar 
         open={sidebarOpen} 
         setOpen={setSidebarOpen} 
         onNotificationClick={handleNotificationClick}
+        onExpandedChange={handleSidebarExpansionChange}
       />
       
-      <div className="flex-1 flex flex-col h-screen overflow-auto bg-background/80 ml-16 w-full">
+      <div className={`flex-1 flex flex-col h-screen overflow-auto bg-background/80 transition-all duration-300 ${sidebarExpanded ? "ml-48" : "ml-16"}`}>
         <DashboardHeader title={title} subtitle={subtitle} />
         
         <main className="flex-1 container py-6 px-4 md:px-6 w-full max-w-full">

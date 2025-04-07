@@ -1,3 +1,4 @@
+
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Bell, CalendarDays, ClipboardCheck, Clock, FileText, Home, Users, CreditCard, Settings, ChevronRight, ChevronLeft } from "lucide-react";
@@ -9,6 +10,7 @@ interface SidebarProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   onNotificationClick?: (notification: any) => void;
+  onExpandedChange?: (expanded: boolean) => void;
 }
 
 const navItems = [
@@ -57,7 +59,8 @@ const navItems = [
 const Sidebar = ({
   open,
   setOpen,
-  onNotificationClick
+  onNotificationClick,
+  onExpandedChange
 }: SidebarProps) => {
   const location = useLocation();
   const { notifications, markAsRead, clearAllNotifications, unreadCount } = useNotifications();
@@ -67,14 +70,25 @@ const Sidebar = ({
     const newExpandedState = !expanded;
     setExpanded(newExpandedState);
     localStorage.setItem('sidebar-expanded', newExpandedState.toString());
+    
+    // Notify parent component about the expansion state change
+    if (onExpandedChange) {
+      onExpandedChange(newExpandedState);
+    }
   };
 
   useEffect(() => {
     const savedState = localStorage.getItem('sidebar-expanded');
     if (savedState !== null) {
-      setExpanded(savedState === 'true');
+      const isExpanded = savedState === 'true';
+      setExpanded(isExpanded);
+      
+      // Notify parent component about the initial expansion state
+      if (onExpandedChange) {
+        onExpandedChange(isExpanded);
+      }
     }
-  }, []);
+  }, [onExpandedChange]);
 
   return <>
       {open && <div className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden" onClick={() => setOpen(false)}></div>}
