@@ -2,18 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { CalendarIcon, FileText } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { FileText } from "lucide-react";
 import { useEmployeeData } from "@/hooks/use-employee-data";
 import { useCompanyData } from "@/hooks/use-company-data";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
+import { format } from "date-fns";
+import EmployeeSelector from './EmployeeSelector';
+import ContractCustomFields from './ContractCustomFields';
+import ContractDateFields from './ContractDateFields';
+import ContractNotes from './ContractNotes';
 
 interface ContractGeneratorProps {
   onGenerate: (contractData: any) => void;
@@ -109,114 +106,30 @@ const ContractGenerator: React.FC<ContractGeneratorProps> = ({ onGenerate }) => 
           </div>
           
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="employee">Select Employee</Label>
-              <Select
-                value={selectedEmployee}
-                onValueChange={setSelectedEmployee}
-              >
-                <SelectTrigger id="employee">
-                  <SelectValue placeholder="Select an employee" />
-                </SelectTrigger>
-                <SelectContent>
-                  {activeEmployees.length > 0 ? (
-                    activeEmployees.map((employee) => (
-                      <SelectItem key={employee.id} value={employee.id}>
-                        {employee.fullName} - {employee.position}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <SelectItem value="none" disabled>No active employees found</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+            <EmployeeSelector 
+              selectedEmployee={selectedEmployee} 
+              setSelectedEmployee={setSelectedEmployee}
+              activeEmployees={activeEmployees}
+            />
             
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Base Salary (MT)</Label>
-                <Input
-                  type="number"
-                  value={baseSalary}
-                  onChange={(e) => setBaseSalary(Number(e.target.value))}
-                  placeholder="Base Salary"
-                />
-              </div>
-              
-              <div>
-                <Label>City of Birth</Label>
-                <Input
-                  type="text"
-                  value={cityOfBirth}
-                  onChange={(e) => setCityOfBirth(e.target.value)}
-                  placeholder="City of Birth"
-                />
-              </div>
-            </div>
+            <ContractCustomFields
+              baseSalary={baseSalary}
+              setBaseSalary={setBaseSalary}
+              cityOfBirth={cityOfBirth}
+              setCityOfBirth={setCityOfBirth}
+            />
             
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label>Start Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, "PPP") : "Select date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={startDate}
-                      onSelect={setStartDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div>
-                <Label>Signature Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !signatureDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {signatureDate ? format(signatureDate, "PPP") : "Select date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={signatureDate}
-                      onSelect={setSignatureDate}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
+            <ContractDateFields
+              startDate={startDate}
+              setStartDate={setStartDate}
+              signatureDate={signatureDate}
+              setSignatureDate={setSignatureDate}
+            />
             
-            <div>
-              <Label htmlFor="notes">Additional Notes</Label>
-              <Textarea
-                id="notes"
-                placeholder="Any special clauses or notes for this contract"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-              />
-            </div>
+            <ContractNotes 
+              notes={notes} 
+              setNotes={setNotes} 
+            />
             
             <Button 
               onClick={handleGenerate} 
