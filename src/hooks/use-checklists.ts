@@ -93,7 +93,8 @@ export const useChecklists = () => {
     // Read the file as an ArrayBuffer to preserve binary content
     const reader = new FileReader();
     reader.onload = (e) => {
-      const fileData = e.target?.result;
+      // Ensure the result is treated as ArrayBuffer
+      const fileData = e.target?.result as ArrayBuffer;
       
       // Add the new checklist to the appropriate company and category
       const newItem: ChecklistItem = {

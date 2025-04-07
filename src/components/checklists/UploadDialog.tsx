@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CategoryId, CompanyId } from '@/types/checklists';
-import { FileUpload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 
 interface UploadDialogProps {
   isOpen: boolean;
@@ -68,7 +68,7 @@ const UploadDialog = ({
                   onClick={() => fileInputRef.current?.click()}
                   className="w-full justify-start"
                 >
-                  <FileUpload className="mr-2 h-4 w-4" />
+                  <Upload className="mr-2 h-4 w-4" />
                   Choose file
                 </Button>
                 <span className="text-sm text-muted-foreground self-center truncate max-w-[150px]">
