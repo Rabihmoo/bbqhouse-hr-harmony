@@ -27,7 +27,7 @@ export const useEmployeeAnalytics = () => {
     });
   };
 
-  const getEmployeesByDepartment = (employees: any[]) => {
+  const getEmployeesByDepartment = (employees: any[] = []) => {
     const departments = ["Kitchen", "Sala", "Bar", "Cleaning", "Takeaway"];
     const result: { [key: string]: number } = {};
     

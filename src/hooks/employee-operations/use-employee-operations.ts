@@ -53,9 +53,9 @@ export const useEmployeeOperations = (
     handleEditEmployee,
     handleRowClick,
     handleAddLeaveRecord,
-    checkEmployeeAnniversaries,
-    checkMissingDocuments,
-    getEmployeesByDepartment,
+    checkEmployeeAnniversaries: () => checkEmployeeAnniversaries(employees),
+    checkMissingDocuments: () => checkMissingDocuments(employees),
+    getEmployeesByDepartment: () => getEmployeesByDepartment(employees),
     filterEmployeesByCompany,
   };
 };
