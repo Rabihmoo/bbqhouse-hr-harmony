@@ -8,15 +8,18 @@ export const useAttendanceUploader = (onFileUploaded?: (reportData?: any) => voi
   const [reportData, setReportData] = useState<AttendanceReport | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [fileName, setFileName] = useState<string>("");
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFileName(file.name);
       setIsProcessing(true);
       
       toast({
-        title: "Attendance data received",
-        description: "Your file is being processed. You'll be notified when it's complete.",
+        title: `Processing ${file.name}`,
+        description: "Your attendance data is being processed. You'll be notified when it's complete.",
       });
       
       // Clear the input
@@ -24,15 +27,15 @@ export const useAttendanceUploader = (onFileUploaded?: (reportData?: any) => voi
         fileInputRef.current.value = '';
       }
       
-      // Simulate processing time
+      // Process the file (simulate with timeout for demo)
       setTimeout(() => {
         try {
-          const data = processAttendanceData(e.target.files![0]);
+          const data = processAttendanceData(file);
           setReportData(data);
           
           toast({
             title: "Attendance data processed",
-            description: "Your attendance data has been successfully processed.",
+            description: `Successfully processed attendance records from ${file.name}.`,
           });
           
           setShowReportDialog(true);
@@ -40,14 +43,15 @@ export const useAttendanceUploader = (onFileUploaded?: (reportData?: any) => voi
           
           if (onFileUploaded) onFileUploaded(data);
         } catch (error) {
+          console.error("Error processing file:", error);
           toast({
             title: "Processing failed",
-            description: "There was an error processing your attendance data.",
+            description: "There was an error processing your attendance data file.",
             variant: "destructive"
           });
           setIsProcessing(false);
         }
-      }, 2000);
+      }, 1500);
     }
   };
 
@@ -64,6 +68,7 @@ export const useAttendanceUploader = (onFileUploaded?: (reportData?: any) => voi
     showReportDialog,
     setShowReportDialog,
     handleFileChange,
-    triggerFileUpload
+    triggerFileUpload,
+    fileName
   };
 };

@@ -14,9 +14,10 @@ const AttendanceUploadButton = ({ onClick, isProcessing }: AttendanceUploadButto
       variant="outline" 
       onClick={onClick}
       disabled={isProcessing}
+      className="flex items-center gap-2"
     >
-      <Upload className="h-4 w-4 mr-2" />
-      {isProcessing ? "Processing..." : "Upload Attendance Data"}
+      <Upload className="h-4 w-4" />
+      {isProcessing ? "Processing..." : "Upload ATT MACHINE.xlsx"}
     </Button>
   );
 };

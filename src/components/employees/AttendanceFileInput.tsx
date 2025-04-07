@@ -14,6 +14,8 @@ const AttendanceFileInput = ({ fileInputRef, onChange }: AttendanceFileInputProp
       onChange={onChange}
       accept=".csv,.xlsx,.xls"
       className="hidden"
+      aria-label="Upload attendance data file"
+      data-testid="attendance-file-input"
     />
   );
 };
