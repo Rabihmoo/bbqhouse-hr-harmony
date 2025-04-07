@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import { employees as initialEmployeesData } from "@/lib/data";
@@ -8,7 +7,7 @@ import PageHeader from "@/components/employees/PageHeader";
 import AttendanceUploader from "@/components/employees/AttendanceUploader";
 import DepartmentSummary from "@/components/employees/DepartmentSummary";
 import { useEmployeeOperations } from "@/hooks/employee-operations";
-import { useEmployeeNotifications } from "@/hooks/use-employee-notifications";
+import { useEmployeeNotifications } from "@/hooks/employee-notifications";
 import { useLeaveAllowances } from "@/hooks/use-leave-allowances";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Notification as TypedNotification } from "@/hooks/use-notifications";
@@ -22,7 +21,6 @@ interface Notification extends TypedNotification {}
 const LOCAL_STORAGE_KEY = 'restaurant-employees-data';
 
 const Employees = ({ onLogout }: EmployeesProps) => {
-  // Load initial data from localStorage if available, otherwise use the default data
   const [employees, setEmployees] = useState(() => {
     const savedEmployees = localStorage.getItem(LOCAL_STORAGE_KEY);
     return savedEmployees ? JSON.parse(savedEmployees) : initialEmployeesData;
@@ -31,7 +29,6 @@ const Employees = ({ onLogout }: EmployeesProps) => {
   const [activeTab, setActiveTab] = useState("active");
   const attendanceUploaderRef = useRef<HTMLDivElement>(null);
 
-  // Refresh data when local storage changes
   useEffect(() => {
     const handleStorageChange = () => {
       const savedEmployees = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -44,12 +41,10 @@ const Employees = ({ onLogout }: EmployeesProps) => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  // Save to localStorage whenever employees data changes
   useEffect(() => {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(employees));
   }, [employees]);
 
-  // Use the extracted hooks for employee operations
   const {
     showAddForm,
     setShowAddForm,
@@ -65,21 +60,16 @@ const Employees = ({ onLogout }: EmployeesProps) => {
     filterEmployeesByCompany,
   } = useEmployeeOperations(employees, setEmployees, LOCAL_STORAGE_KEY);
 
-  // Use the notifications hook
   const { notifications } = useEmployeeNotifications(employees);
 
-  // Use the leave allowances hook
   useLeaveAllowances(employees, setEmployees);
 
-  // Check for missing documents when the component mounts
   useEffect(() => {
-    checkMissingDocuments();
-    // Run the check every 24 hours
-    const interval = setInterval(checkMissingDocuments, 24 * 60 * 60 * 1000);
+    checkMissingDocuments(employees);
+    const interval = setInterval(() => checkMissingDocuments(employees), 24 * 60 * 60 * 1000);
     return () => clearInterval(interval);
   }, [employees]);
 
-  // Handle notification click to open the employee edit form
   const handleNotificationClick = (notification: any) => {
     if (notification.employeeId) {
       const employee = employees.find(emp => emp.id === notification.employeeId);
@@ -90,21 +80,16 @@ const Employees = ({ onLogout }: EmployeesProps) => {
   };
 
   const handleAttendanceReport = (reportData: any) => {
-    // In a production app, this would process the attendance report data
     console.log("Attendance report generated:", reportData);
   };
 
-  // Filter employees by status - corrected filtering
   const activeEmployees = employees.filter(e => e.status === 'Active' || e.status === 'On Leave');
   const inactiveEmployees = employees.filter(e => e.status === 'Inactive' || e.status === 'Terminated');
 
-  // Get the department counts for the summary component
-  const departmentCounts = getEmployeesByDepartment();
+  const departmentCounts = getEmployeesByDepartment(employees);
 
-  // Companies for filtering
   const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
   
-  // Apply company filter to the correct employee list based on active tab
   const filteredEmployees = selectedCompany 
     ? (activeTab === "active" ? activeEmployees : inactiveEmployees).filter(emp => emp.company === selectedCompany)
     : (activeTab === "active" ? activeEmployees : inactiveEmployees);
@@ -161,14 +146,12 @@ const Employees = ({ onLogout }: EmployeesProps) => {
         <AttendanceUploader onFileUploaded={handleAttendanceReport} />
       </div>
 
-      {/* Add Employee Form */}
       <EmployeeForm
         open={showAddForm}
         onClose={() => setShowAddForm(false)}
         onSubmit={handleAddEmployee}
       />
 
-      {/* Edit Employee Form */}
       {editingEmployee && (
         <EmployeeForm
           open={!!editingEmployee}
