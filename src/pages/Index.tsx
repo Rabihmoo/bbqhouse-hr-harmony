@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import StatsCards from "@/components/dashboard/StatsCards";
@@ -60,7 +61,7 @@ const Index = ({ onLogout }: IndexProps) => {
   return (
     <DashboardLayout 
       title="Dashboard" 
-      subtitle="Welcome to BBQHOUSE HR Management"
+      subtitle="Welcome to MYR HR Management"
       onLogout={onLogout}
     >
       <div className="space-y-8 w-full">
