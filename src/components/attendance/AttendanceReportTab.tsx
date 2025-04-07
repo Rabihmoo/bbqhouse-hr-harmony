@@ -1,7 +1,16 @@
 
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Download, FileSpreadsheet } from "lucide-react";
 import { AttendanceRecord } from '@/types/attendance';
+import { toast } from "sonner";
+import { 
+  exportToCsv, 
+  exportToExcel, 
+  getExportFileName 
+} from '@/utils/exportOperations';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface AttendanceReportTabProps {
   attendanceRecords: AttendanceRecord[];
@@ -14,10 +23,70 @@ export const AttendanceReportTab = ({
   activeCompany, 
   employees 
 }: AttendanceReportTabProps) => {
+  const handleExport = (type: 'csv' | 'excel') => {
+    if (attendanceRecords.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+
+    // Prepare summary data for export
+    const summaryData = employees
+      .filter(emp => emp.status === 'Active')
+      .filter(emp => {
+        if (activeCompany === 'all') return true;
+        return emp.company?.toLowerCase().includes(activeCompany);
+      })
+      .map(employee => {
+        const empRecords = attendanceRecords.filter(r => r.employeeId === employee.id);
+        const presentCount = empRecords.filter(r => r.status === 'present').length;
+        const absentCount = empRecords.filter(r => r.status === 'absent').length;
+        const lateCount = empRecords.filter(r => r.status === 'late').length;
+        const halfDayCount = empRecords.filter(r => r.status === 'half-day').length;
+        const totalHours = empRecords.reduce((sum, r) => sum + r.totalHours, 0);
+        
+        return {
+          'Employee': employee.fullName,
+          'Present Days': presentCount,
+          'Absent Days': absentCount,
+          'Late Days': lateCount,
+          'Half Days': halfDayCount,
+          'Total Hours': totalHours.toFixed(1)
+        };
+      });
+
+    const fileName = getExportFileName('Attendance_Summary');
+
+    if (type === 'csv') {
+      exportToCsv(summaryData, fileName);
+      toast.success("Attendance summary exported as CSV");
+    } else {
+      exportToExcel(summaryData, fileName);
+      toast.success("Attendance summary exported as Excel");
+    }
+  };
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row justify-between items-center">
         <CardTitle>Attendance Summary</CardTitle>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Export Report
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleExport('csv')}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleExport('excel')}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Export as Excel
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
       <CardContent>
         <div className="grid gap-6 md:grid-cols-4 mb-6">

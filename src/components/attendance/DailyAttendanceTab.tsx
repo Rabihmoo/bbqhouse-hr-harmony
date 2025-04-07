@@ -1,14 +1,22 @@
-
 import React from 'react';
 import { format, subDays, addDays } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, User } from "lucide-react";
+import { CalendarIcon, User, Download, FileSpreadsheet } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
 import { AttendanceRecord } from '@/types/attendance';
+import { toast } from "sonner";
+import { DateFilter } from './DateFilter';
+import { 
+  exportToCsv, 
+  exportToExcel, 
+  prepareAttendanceDataForExport, 
+  getExportFileName 
+} from '@/utils/exportOperations';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface DailyAttendanceTabProps {
   selectedDate: Date;
@@ -27,39 +35,59 @@ export const DailyAttendanceTab = ({
   setActiveTab,
   setNewAttendance
 }: DailyAttendanceTabProps) => {
+  const handleExport = (type: 'csv' | 'excel') => {
+    if (filteredDailyRecords.length === 0) {
+      toast.error("No data to export");
+      return;
+    }
+
+    const exportData = prepareAttendanceDataForExport(filteredDailyRecords);
+    const fileName = getExportFileName(`Attendance_${format(selectedDate, 'yyyy-MM-dd')}`);
+
+    if (type === 'csv') {
+      exportToCsv(exportData, fileName);
+      toast.success("Attendance data exported as CSV");
+    } else {
+      exportToExcel(exportData, fileName);
+      toast.success("Attendance data exported as Excel");
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
-        <CardTitle>Daily Attendance</CardTitle>
+        <div>
+          <CardTitle>Daily Attendance</CardTitle>
+          <CardDescription className="mt-1">
+            {format(selectedDate, "MMMM d, yyyy")}
+          </CardDescription>
+        </div>
         <div className="flex items-center gap-2">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
-                <CalendarIcon className="h-4 w-4" />
-                {format(selectedDate, "PPP")}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <Button 
-            variant="outline" 
-            onClick={() => setSelectedDate(subDays(selectedDate, 1))}
-          >
-            Previous
-          </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => setSelectedDate(addDays(selectedDate, 1))}
-          >
-            Next
-          </Button>
+          <DateFilter 
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+          />
+          
+          {filteredDailyRecords.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Download className="h-4 w-4" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleExport('csv')}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleExport('excel')}>
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Export as Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </CardHeader>
       
