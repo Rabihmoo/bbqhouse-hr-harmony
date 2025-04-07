@@ -1,7 +1,6 @@
-
 import { employees } from "@/lib/data";
 import { format } from "date-fns";
-import { pt } from "date-fns/locale";
+import { pt } from "date-fns/locale/pt";
 
 export interface EmployeeAttendanceRecord {
   date: string;
