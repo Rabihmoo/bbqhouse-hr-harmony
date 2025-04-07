@@ -1,4 +1,3 @@
-
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Bell, CalendarDays, ClipboardCheck, Clock, FileText, Home, Users, CreditCard, Settings, ChevronRight, ChevronLeft } from "lucide-react";
@@ -12,39 +11,48 @@ interface SidebarProps {
   onNotificationClick?: (notification: any) => void;
 }
 
-const navItems = [{
-  icon: Home,
-  label: "Dashboard",
-  path: "/"
-}, {
-  icon: Users,
-  label: "Employees",
-  path: "/employees"
-}, {
-  icon: FileText,
-  label: "Contracts",
-  path: "/contracts"
-}, {
-  icon: Clock,
-  label: "Attendance",
-  path: "/attendance"
-}, {
-  icon: CreditCard,
-  label: "Payroll",
-  path: "/payroll"
-}, {
-  icon: CalendarDays,
-  label: "Leaves",
-  path: "/leaves"
-}, {
-  icon: ClipboardCheck,
-  label: "Checklists",
-  path: "/checklists"
-}, {
-  icon: Settings,
-  label: "Administration",
-  path: "/administration"
-}];
+const navItems = [
+  {
+    icon: Home,
+    label: "Dashboard",
+    path: "/"
+  },
+  {
+    icon: Users,
+    label: "Employees",
+    path: "/employees"
+  },
+  {
+    icon: FileText,
+    label: "Contracts",
+    path: "/contracts"
+  },
+  {
+    icon: Clock,
+    label: "Attendance",
+    path: "/attendance"
+  },
+  {
+    icon: CreditCard,
+    label: "Payroll",
+    path: "/payroll"
+  },
+  {
+    icon: CalendarDays,
+    label: "Leaves",
+    path: "/leaves"
+  },
+  {
+    icon: ClipboardCheck,
+    label: "Checklists",
+    path: "/checklists"
+  },
+  {
+    icon: Settings,
+    label: "Administration",
+    path: "/administration"
+  }
+];
 
 const Sidebar = ({
   open,
@@ -55,12 +63,12 @@ const Sidebar = ({
   const { notifications, markAsRead, clearAllNotifications, unreadCount } = useNotifications();
   const [expanded, setExpanded] = useState(false);
   
-  // Function to toggle sidebar expansion state
   const toggleSidebar = () => {
-    setExpanded(!expanded);
+    const newExpandedState = !expanded;
+    setExpanded(newExpandedState);
+    localStorage.setItem('sidebar-expanded', newExpandedState.toString());
   };
 
-  // Load sidebar state from localStorage on mount
   useEffect(() => {
     const savedState = localStorage.getItem('sidebar-expanded');
     if (savedState !== null) {
@@ -68,16 +76,9 @@ const Sidebar = ({
     }
   }, []);
 
-  // Save sidebar state to localStorage when it changes
-  useEffect(() => {
-    localStorage.setItem('sidebar-expanded', expanded.toString());
-  }, [expanded]);
-
   return <>
-      {/* Backdrop for mobile */}
       {open && <div className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm md:hidden" onClick={() => setOpen(false)}></div>}
 
-      {/* Sidebar */}
       <div className={cn(
         "fixed top-0 left-0 z-50 h-full bg-white dark:bg-black border-r shadow-sm transition-all duration-300 md:translate-x-0 md:z-0",
         expanded ? "w-48" : "w-16",
@@ -89,7 +90,6 @@ const Sidebar = ({
             {expanded && <span className="ml-2 text-sm font-medium">MYR HR Management</span>}
           </div>
 
-          {/* Toggle button */}
           <button 
             onClick={toggleSidebar}
             className="absolute -right-3 top-12 bg-primary text-white rounded-full p-1 shadow-md hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
@@ -97,7 +97,6 @@ const Sidebar = ({
             {expanded ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
           </button>
 
-          {/* Notification Center */}
           <div className="p-2 border-b flex justify-center">
             <div className={cn("flex items-center justify-center", expanded ? "w-full" : "w-10 h-10")}>
               <NotificationCenter 
