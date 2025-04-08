@@ -116,53 +116,80 @@ const createEmployeeDeclarationSheet = (
     year
   );
   
-  // Format the data
-  const headerRows = [
-    ["DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS"],
-    [""],
-    [declarationText],
-    [""],
-    [""]
-  ];
+  // Format the data - improved for better layout
+  const rows = [];
   
-  // Table headers
-  const tableHeaderRow = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
+  // Title row
+  rows.push(["DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS"]);
+  
+  // Declaration text in a single cell (will be merged)
+  rows.push([declarationText]);
+  
+  // Table headers immediately after declaration with no empty rows
+  rows.push(["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"]);
   
   // Format attendance data
-  const dataRows = employeeReport.attendanceRecords.map(record => [
-    employeeReport.employeeName,
-    record.date,
-    record.clockIn,
-    record.clockOut,
-    record.workTime,
-    record.extraHours
-  ]);
+  employeeReport.attendanceRecords.forEach(record => {
+    // Calculate work time and extra hours based on clock values
+    let workTime = record.workTime;
+    let extraHours = record.extraHours;
+    
+    // Special handling for FOLGA
+    if (record.clockIn === 'FOLGA' || record.clockOut === 'FOLGA') {
+      workTime = '00:00';
+      extraHours = '00:00';
+    }
+    // Handle missing clock values
+    else if (!record.clockIn || !record.clockOut) {
+      if (!record.clockIn && !record.clockOut) {
+        workTime = '00:00';
+      } else {
+        workTime = '04:30';
+      }
+      extraHours = '00:00';
+    }
+    
+    rows.push([
+      employeeReport.employeeName,
+      record.date,
+      record.clockIn || '',
+      record.clockOut || '',
+      workTime,
+      extraHours
+    ]);
+  });
   
-  // Add totals
-  const totalRow = ["", "", "", "", formatTime(employeeReport.totalHours), ""];
+  // Calculate total working hours for summary
+  let totalMinutes = 0;
+  employeeReport.attendanceRecords.forEach(record => {
+    if (record.workTime) {
+      const [hours, minutes] = record.workTime.split(':').map(Number);
+      totalMinutes += (hours * 60) + minutes;
+    }
+  });
+  const totalWorkHours = formatTime(totalMinutes / 60);
   
-  // Add summary
-  const summaryRows = [
-    [""],
-    ["TOTAL WORKING HOURS", "", "", "", formatTime(employeeReport.totalHours), ""],
-    ["WORKING DAYS", "", "", "", employeeReport.workingDays.toString(), ""],
-    [""],
-    [generateSignatureText(getFormattedSignatureDate())],
-    [""],
-    ["Assinatura do Funcionário: ______________________________", "", "", "", `Data: ${getFormattedSignatureDate()}`, ""]
-  ];
+  // Add total row with SUM formula
+  const dataStartRow = 4; // Row index (1-based) where data starts
+  const dataEndRow = dataStartRow + employeeReport.attendanceRecords.length - 1;
+  const workTimeCol = 'E'; // Column E is Work Time
+  const sumFormula = `SUM(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow})`;
   
-  // Combine all rows
-  const allRows = [
-    ...headerRows,
-    tableHeaderRow,
-    ...dataRows,
-    totalRow,
-    ...summaryRows
-  ];
+  // Add empty row before totals
+  rows.push([]);
   
-  // Create worksheet
-  const ws = XLSX.utils.aoa_to_sheet(allRows);
+  // Add totals section
+  rows.push(["TOTAL WORKING HOURS", "", "", "", { f: sumFormula }, ""]);
+  rows.push(["WORKING DAYS", "", "", "", employeeReport.workingDays.toString(), ""]);
+  
+  // Add signature section with proper formatting
+  rows.push([]);
+  rows.push([generateSignatureText(getFormattedSignatureDate())]);
+  rows.push([]);
+  rows.push(["Assinatura do Funcionário: ______________________________", "", "", "", `Data: ${getFormattedSignatureDate()}`, ""]);
+  
+  // Create worksheet from rows
+  const ws = XLSX.utils.aoa_to_sheet(rows);
   
   // Set column widths
   ws['!cols'] = [
@@ -174,11 +201,38 @@ const createEmployeeDeclarationSheet = (
     { wch: 12 }  // EXTRA HOURS
   ];
   
-  // Set merge cells for header
+  // Set merge cells
   ws['!merges'] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, // Title row
-    { s: { r: 2, c: 0 }, e: { r: 2, c: 5 } }, // Declaration text
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, // Title row across all columns
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } }  // Declaration text across all columns
   ];
+  
+  // Add signature line merges
+  const signatureTextRow = rows.length - 3;
+  const signatureRow = rows.length - 1;
+  
+  // Add to existing merges
+  ws['!merges'].push(
+    { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } }, // Signature text
+    { s: { r: signatureRow, c: 0 }, e: { r: signatureRow, c: 3 } }          // Signature line
+  );
+  
+  // Apply borders to all cells
+  const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
+  for (let r = range.s.r; r <= range.e.r; r++) {
+    for (let c = range.s.c; c <= range.e.c; c++) {
+      const cell_address = XLSX.utils.encode_cell({ r, c });
+      if (!ws[cell_address]) continue;
+      
+      if (!ws[cell_address].s) ws[cell_address].s = {};
+      ws[cell_address].s.border = {
+        top: { style: 'thin' },
+        bottom: { style: 'thin' },
+        left: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    }
+  }
   
   return ws;
 };

@@ -9,18 +9,19 @@ export const formatTime = (hours: number): string => {
 
 // Calculate working hours and extra hours
 export const calculateWorkingHours = (clockIn: string, clockOut: string): { workTime: string, extraHours: string } => {
-  if (!clockIn || !clockOut) {
-    // Both missing - mark as day off
-    if (!clockIn && !clockOut) {
-      return { workTime: '00:00', extraHours: '00:00' };
-    }
-    // One is missing - standard 4:30 work time
-    return { workTime: '04:30', extraHours: '00:00' };
-  }
-  
   // Handle special case for FOLGA
   if (clockIn === 'FOLGA' || clockOut === 'FOLGA') {
     return { workTime: '00:00', extraHours: '00:00' };
+  }
+  
+  // Both missing - mark as day off
+  if (!clockIn && !clockOut) {
+    return { workTime: '00:00', extraHours: '00:00' };
+  }
+  
+  // One is missing - standard 4:30 work time
+  if (!clockIn || !clockOut) {
+    return { workTime: '04:30', extraHours: '00:00' };
   }
   
   // Handle special cases for missing data
