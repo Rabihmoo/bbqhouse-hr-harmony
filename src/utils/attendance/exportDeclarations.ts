@@ -1,3 +1,4 @@
+
 import * as XLSX from "xlsx";
 import { AttendanceReport, EmployeeReport } from "./types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "./declarationGenerator";
@@ -161,7 +162,6 @@ export const createEmployeeDeclarationSheet = (
     ]);
   });
   
-  // Calculate data row range for formulas
   const dataEndRow = dataStartRow + employeeReport.attendanceRecords.length - 1;
   const workTimeCol = 'E'; // Column E is Work Time
   const extraHoursCol = 'F'; // Column F is Extra Hours
@@ -170,7 +170,6 @@ export const createEmployeeDeclarationSheet = (
   rows.push(["", "", "", "", "", ""]);
   
   // Add formulas for totals
-  // Add total work hours with SUM formula
   rows.push([
     "TOTAL WORKING HOURS", 
     "", 
@@ -180,7 +179,7 @@ export const createEmployeeDeclarationSheet = (
     { f: `SUM(${extraHoursCol}${dataStartRow}:${extraHoursCol}${dataEndRow})`, z: '[h]:mm' }
   ]);
   
-  // Add working days with COUNTIF formula - count rows where work time > 0
+  // Add working days with COUNTIF formula
   rows.push([
     "WORKING DAYS", 
     "", 
@@ -190,7 +189,7 @@ export const createEmployeeDeclarationSheet = (
     ""
   ]);
   
-  // Add empty row for spacing
+  // Add empty rows for spacing
   rows.push(["", "", "", "", "", ""]);
   rows.push(["", "", "", "", "", ""]);
   
@@ -226,16 +225,12 @@ export const createEmployeeDeclarationSheet = (
   // Define row indices
   const titleRow = 0;
   const headerRow = 2;
-  const spacingAfterDataRow = dataEndRow + 1;
   const totalsRow = dataEndRow + 2;
   const workingDaysRow = dataEndRow + 3;
-  const spacingRow1 = dataEndRow + 4;
-  const spacingRow2 = dataEndRow + 5;
   const signatureTextRow = dataEndRow + 6;
-  const spacingRow3 = dataEndRow + 7;
   const signatureLineRow = dataEndRow + 8;
   
-  // Fix 1: Properly merge declaration title and text across columns A to F
+  // Define merged cells
   ws['!merges'] = [
     // Declaration text across all columns (A1:F1)
     { s: { r: titleRow, c: 0 }, e: { r: titleRow, c: 5 } },
@@ -253,7 +248,7 @@ export const createEmployeeDeclarationSheet = (
     { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } },
   ];
   
-  // Fix 1: Enable text wrapping and set proper height for declaration cell
+  // Set text wrapping and proper height for declaration cell
   const declarationCell = XLSX.utils.encode_cell({ r: titleRow, c: 0 });
   if (!ws[declarationCell].s) ws[declarationCell].s = {};
   ws[declarationCell].s.alignment = { 
@@ -262,12 +257,12 @@ export const createEmployeeDeclarationSheet = (
     horizontal: 'left' 
   };
   
-  // Set row heights for proper text display
+  // Set row heights
   if (!ws['!rows']) ws['!rows'] = [];
-  ws['!rows'][titleRow] = { hpt: 180 }; // Set height to 180px for declaration text row
-  ws['!rows'][signatureTextRow] = { hpt: 120 }; // Set height to 120px for signature text row
+  ws['!rows'][titleRow] = { hpt: 200 }; // Set height to 200px for declaration text
+  ws['!rows'][signatureTextRow] = { hpt: 120 }; // Set height to 120px for signature text
   
-  // Fix 3: Properly format signature line cell
+  // Apply text wrapping for signature cell
   const signatureCell = XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 });
   if (!ws[signatureCell].s) ws[signatureCell].s = {};
   ws[signatureCell].s.alignment = { 
@@ -276,7 +271,7 @@ export const createEmployeeDeclarationSheet = (
     horizontal: 'left'
   };
   
-  // Fix 4: Apply borders and styling to all cells
+  // Apply borders and styling to all cells
   const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
   for (let r = range.s.r; r <= range.e.r; r++) {
     for (let c = range.s.c; c <= range.e.c; c++) {
@@ -308,7 +303,7 @@ export const createEmployeeDeclarationSheet = (
     }
   }
   
-  // Fix 2: Apply proper time format to work time and extra hours columns
+  // Apply time format to work time and extra hours columns
   for (let r = dataStartRow; r <= dataEndRow; r++) {
     // Format Work Time column (E)
     const workTimeCell = XLSX.utils.encode_cell({ r: r, c: 4 }); // Column E (index 4)
@@ -327,7 +322,7 @@ export const createEmployeeDeclarationSheet = (
     }
   }
   
-  // Fix 2: Ensure formula cells use proper time format
+  // Make sure formula cells use proper time format
   const totalHoursCell = XLSX.utils.encode_cell({ r: totalsRow, c: 4 });
   if (ws[totalHoursCell]) {
     ws[totalHoursCell].z = '[h]:mm';
