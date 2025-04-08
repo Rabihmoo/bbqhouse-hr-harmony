@@ -7,14 +7,15 @@ import { companies } from "@/lib/data";
 interface CompanySelectorProps {
   value: string;
   onValueChange: (value: string) => void;
+  className?: string;
 }
 
-const CompanySelector = ({ value, onValueChange }: CompanySelectorProps) => {
+const CompanySelector = ({ value, onValueChange, className }: CompanySelectorProps) => {
   // Ensure the value is never undefined or null when passed to Select
   const safeValue = value || "";
   
   return (
-    <div>
+    <div className={className}>
       <Label htmlFor="company" className="mb-1">
         Company*
       </Label>

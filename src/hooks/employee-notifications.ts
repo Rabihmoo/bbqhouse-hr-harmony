@@ -9,20 +9,20 @@ import { Notification } from '@/types/notification';
 export const useEmployeeNotifications = (employees: any[]) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
-  const { generateAnniversaryNotifications } = useAnniversaryNotifications();
-  const { generateDocumentNotifications } = useDocumentNotifications();
-  const { generateLeaveNotifications } = useLeaveNotifications();
-  const { generateMissingInfoNotifications } = useMissingInfoNotifications();
+  const anniversaryNotifications = useAnniversaryNotifications();
+  const documentNotifications = useDocumentNotifications();
+  const leaveNotifications = useLeaveNotifications();
+  const missingInfoNotifications = useMissingInfoNotifications();
   
   useEffect(() => {
     const exportNotifications = getExportNotifications();
     
     // Combine all notifications
     const allNotifications = [
-      ...generateAnniversaryNotifications(employees),
-      ...generateDocumentNotifications(employees),
-      ...generateLeaveNotifications(employees),
-      ...generateMissingInfoNotifications(employees),
+      ...anniversaryNotifications.generateAnniversaryNotifications(employees),
+      ...documentNotifications.generateDocumentNotifications(employees),
+      ...leaveNotifications.generateLeaveNotifications(employees),
+      ...missingInfoNotifications.generateMissingInfoNotifications(employees),
       ...exportNotifications
     ];
     
@@ -34,10 +34,10 @@ export const useEmployeeNotifications = (employees: any[]) => {
     setNotifications(allNotifications);
   }, [
     employees,
-    generateAnniversaryNotifications,
-    generateDocumentNotifications,
-    generateLeaveNotifications,
-    generateMissingInfoNotifications
+    anniversaryNotifications,
+    documentNotifications,
+    leaveNotifications,
+    missingInfoNotifications
   ]);
   
   return { notifications };
