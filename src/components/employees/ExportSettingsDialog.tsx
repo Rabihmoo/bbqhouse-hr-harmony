@@ -26,13 +26,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  MultiSelect,
-  MultiSelectContent,
-  MultiSelectItem,
-  MultiSelectTrigger,
-  MultiSelectValue
-} from "@/components/ui/multi-select";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { FileDown, Mail } from "lucide-react";
 import { ExportOptions } from "@/hooks/use-attendance-uploader";
 
@@ -68,6 +62,17 @@ export function ExportSettingsDialog({
   const employeeOptions = reportData.employeeReports.map(emp => ({
     value: emp.employeeId,
     label: emp.employeeName
+  }));
+
+  // Convert arrays to proper options format for MultiSelect
+  const departmentOptions = departments.map(dept => ({
+    value: dept,
+    label: dept
+  }));
+
+  const branchOptions = branches.map(branch => ({
+    value: branch,
+    label: branch
   }));
 
   const handleExport = () => {
@@ -149,33 +154,23 @@ export function ExportSettingsDialog({
                   <div className="space-y-2">
                     <Label>Department</Label>
                     <MultiSelect
-                      values={selectedDepartments}
-                      onValuesChange={setSelectedDepartments}
+                      options={departmentOptions}
+                      selected={selectedDepartments}
+                      onChange={setSelectedDepartments}
                       placeholder="All Departments"
-                    >
-                      <MultiSelectTrigger />
-                      <MultiSelectContent>
-                        {departments.map((dept) => (
-                          <MultiSelectItem key={dept} value={dept}>{dept}</MultiSelectItem>
-                        ))}
-                      </MultiSelectContent>
-                    </MultiSelect>
+                      className="w-full"
+                    />
                   </div>
 
                   <div className="space-y-2">
                     <Label>Branch</Label>
                     <MultiSelect
-                      values={selectedBranches}
-                      onValuesChange={setSelectedBranches}
+                      options={branchOptions}
+                      selected={selectedBranches}
+                      onChange={setSelectedBranches}
                       placeholder="All Branches"
-                    >
-                      <MultiSelectTrigger />
-                      <MultiSelectContent>
-                        {branches.map((branch) => (
-                          <MultiSelectItem key={branch} value={branch}>{branch}</MultiSelectItem>
-                        ))}
-                      </MultiSelectContent>
-                    </MultiSelect>
+                      className="w-full"
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -197,17 +192,12 @@ export function ExportSettingsDialog({
                   <div className="space-y-2">
                     <Label>Specific Employees</Label>
                     <MultiSelect
-                      values={selectedEmployees}
-                      onValuesChange={setSelectedEmployees}
+                      options={employeeOptions}
+                      selected={selectedEmployees}
+                      onChange={setSelectedEmployees}
                       placeholder="All Employees"
-                    >
-                      <MultiSelectTrigger />
-                      <MultiSelectContent>
-                        {employeeOptions.map((emp) => (
-                          <MultiSelectItem key={emp.value} value={emp.value}>{emp.label}</MultiSelectItem>
-                        ))}
-                      </MultiSelectContent>
-                    </MultiSelect>
+                      className="w-full"
+                    />
                   </div>
                 </div>
               </AccordionContent>

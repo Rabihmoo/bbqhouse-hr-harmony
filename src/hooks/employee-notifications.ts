@@ -4,39 +4,40 @@ import { useAnniversaryNotifications } from './employee-notifications/use-annive
 import { useDocumentNotifications } from './employee-notifications/use-document-notifications';
 import { useLeaveNotifications } from './employee-notifications/use-leave-notifications';
 import { useMissingInfoNotifications } from './employee-notifications/use-missing-info-notifications';
-import { Notification } from './use-notifications';
+import { Notification } from '@/types/notification';
 
 export const useEmployeeNotifications = (employees: any[]) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   
-  const anniversaryNotifications = useAnniversaryNotifications(employees);
-  const documentNotifications = useDocumentNotifications(employees);
-  const leaveNotifications = useLeaveNotifications(employees);
-  const missingInfoNotifications = useMissingInfoNotifications(employees);
+  const { generateAnniversaryNotifications } = useAnniversaryNotifications();
+  const { generateDocumentNotifications } = useDocumentNotifications();
+  const { generateLeaveNotifications } = useLeaveNotifications();
+  const { generateMissingInfoNotifications } = useMissingInfoNotifications();
   
   useEffect(() => {
     const exportNotifications = getExportNotifications();
     
     // Combine all notifications
     const allNotifications = [
-      ...anniversaryNotifications,
-      ...documentNotifications,
-      ...leaveNotifications,
-      ...missingInfoNotifications,
+      ...generateAnniversaryNotifications(employees),
+      ...generateDocumentNotifications(employees),
+      ...generateLeaveNotifications(employees),
+      ...generateMissingInfoNotifications(employees),
       ...exportNotifications
     ];
     
-    // Sort by date (newest first)
+    // Sort by timestamp (newest first)
     allNotifications.sort((a, b) => 
-      new Date(b.date).getTime() - new Date(a.date).getTime()
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     
     setNotifications(allNotifications);
   }, [
-    anniversaryNotifications, 
-    documentNotifications, 
-    leaveNotifications, 
-    missingInfoNotifications
+    employees,
+    generateAnniversaryNotifications,
+    generateDocumentNotifications,
+    generateLeaveNotifications,
+    generateMissingInfoNotifications
   ]);
   
   return { notifications };
@@ -60,12 +61,14 @@ const getExportNotifications = (): Notification[] => {
     recentExports.forEach((record: any) => {
       exportNotifications.push({
         id: `export-${record.id}`,
+        type: 'info',
         title: `Declaration Exported`,
         message: `Declaration for ${record.employeeName} - ${record.month} ${record.year} has been exported`,
-        date: record.exportDate,
+        employeeId: record.employeeId,
+        timestamp: record.exportDate,
+        time: new Date(record.exportDate).toLocaleString(),
         read: false,
-        type: 'info',
-        employeeId: record.employeeId
+        data: { employeeId: record.employeeId }
       });
     });
   } catch (error) {

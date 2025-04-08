@@ -1,6 +1,6 @@
 
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CompanySelector } from "../employees/form/CompanySelector";
+import CompanySelector from "../employees/form/CompanySelector";
 
 export interface AttendanceTabsProps {
   activeTab: string;
@@ -25,9 +25,8 @@ export function AttendanceTabs({
       </TabsList>
       
       <CompanySelector 
-        label=""
         value={activeCompany || ''}
-        onChange={(value) => setActiveCompany(value || null)}
+        onValueChange={(value) => setActiveCompany(value || null)}
         className="min-w-[200px]"
       />
     </div>
