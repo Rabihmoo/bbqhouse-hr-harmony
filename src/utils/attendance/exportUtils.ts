@@ -115,27 +115,25 @@ const createEmployeeDeclarationSheet = (
     year
   );
   
-  // Format the data - improved for better layout
+  // Format the data with improved layout
   const rows = [];
   
-  // Title row
+  // Title row and declaration text combined in a single row
   rows.push(["DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS"]);
   
   // Declaration text in a single cell (will be merged)
   rows.push([declarationText]);
   
-  // Table headers immediately after declaration with no empty rows
+  // Table headers immediately after declaration
   rows.push(["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"]);
   
-  // Track rows with valid work time for the counting formula
-  let validWorkRows = [];
   const dataStartRow = 4; // Row index (1-based) where data starts
   
   // Format attendance data
-  employeeReport.attendanceRecords.forEach((record, index) => {
+  employeeReport.attendanceRecords.forEach((record) => {
     // Calculate work time and extra hours based on clock values
-    let workTime = record.workTime;
-    let extraHours = record.extraHours;
+    let workTime = record.workTime || '00:00';
+    let extraHours = record.extraHours || '00:00';
     
     // Special handling for FOLGA
     if (record.clockIn === 'FOLGA' || record.clockOut === 'FOLGA') {
@@ -160,11 +158,6 @@ const createEmployeeDeclarationSheet = (
       workTime,
       extraHours
     ]);
-    
-    // Track rows that have work time > 0 for the count formula
-    if (workTime !== '00:00') {
-      validWorkRows.push(dataStartRow + index);
-    }
   });
   
   // Calculate data row range for formulas
@@ -183,25 +176,24 @@ const createEmployeeDeclarationSheet = (
   ]);
   
   // Add working days with COUNTIF formula - count rows where work time > 0
-  const workingDaysFormula = validWorkRows.length > 0 
-    ? `COUNTIF(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow},"<>00:00")` 
-    : "0";
-  
   rows.push([
     "WORKING DAYS", 
     "", 
     "", 
     "", 
-    { f: workingDaysFormula },
+    { f: `COUNTIF(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow},"<>00:00")` },
     ""
   ]);
   
   // Add signature section
   rows.push([]); // Empty row for spacing
-  rows.push([generateSignatureText(getFormattedSignatureDate())]); // Signature text
-  rows.push([]); // Empty row for spacing
+  
+  // Add signature confirmation text - merged across all columns
+  rows.push([generateSignatureText(getFormattedSignatureDate())]);
+  
+  // Add signature line
   rows.push([
-    "Assinatura do Funcionário: ______________________________", 
+    `Assinatura do Funcionário: ______________________________`, 
     "", 
     "", 
     "", 
@@ -223,21 +215,30 @@ const createEmployeeDeclarationSheet = (
   ];
   
   // Define merge cells
+  const declarationRow = dataStartRow - 3; // Adjusting for 1-based indexing in Excel
+  const signatureTextRow = dataEndRow + 3;
+  const signatureLineRow = dataEndRow + 5;
+  
   ws['!merges'] = [
-    // Title row across all columns (row 0)
+    // Title row across all columns (A1)
     { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
     
-    // Declaration text across all columns (row 1)
+    // Declaration text across all columns as a single cell (A2:F2)
     { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
     
-    // Signature text across all columns
-    { s: { r: dataEndRow + 4, c: 0 }, e: { r: dataEndRow + 4, c: 5 } },
+    // Signature text across all columns (after data)
+    { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } },
     
-    // Signature line
-    { s: { r: dataEndRow + 6, c: 0 }, e: { r: dataEndRow + 6, c: 3 } },
+    // Signature line (left portion)
+    { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } },
   ];
   
-  // Apply borders to all cells
+  // Enable text wrapping for the declaration cell
+  const declarationCell = XLSX.utils.encode_cell({ r: 1, c: 0 });
+  if (!ws[declarationCell].s) ws[declarationCell].s = {};
+  ws[declarationCell].s.alignment = { wrapText: true, vertical: 'top' };
+  
+  // Apply borders and styling to all cells
   const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
   for (let r = range.s.r; r <= range.e.r; r++) {
     for (let c = range.s.c; c <= range.e.c; c++) {
@@ -256,20 +257,29 @@ const createEmployeeDeclarationSheet = (
         right: { style: 'thin' }
       };
       
-      // Add bold style to header row
-      if (r === 2) {
+      // Add bold style to header row and title
+      if (r === 0 || r === 2) {
         if (!ws[cell_address].s) ws[cell_address].s = {};
         ws[cell_address].s.font = { bold: true };
-        ws[cell_address].s.fill = { fgColor: { rgb: "EEEEEE" } };
+        if (r === 2) {
+          ws[cell_address].s.fill = { fgColor: { rgb: "EEEEEE" } };
+        }
       }
       
       // Add bold style to totals rows
-      if (r === dataEndRow + 2 || r === dataEndRow + 3) {
+      if (r === dataEndRow + 1 || r === dataEndRow + 2) {
         if (!ws[cell_address].s) ws[cell_address].s = {};
         ws[cell_address].s.font = { bold: true };
       }
     }
   }
+  
+  // Set row height for declaration cell to fit the text
+  if (!ws['!rows']) ws['!rows'] = [];
+  ws['!rows'][1] = { hpt: 120 }; // Set height for declaration text row
+  
+  // Add AutoFilter for the header row
+  ws['!autofilter'] = { ref: `A3:F3` };
   
   return ws;
 };
