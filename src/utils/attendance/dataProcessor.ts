@@ -4,10 +4,8 @@ import { employees } from "@/lib/data";
 import { calculateWorkingHours, formatTime } from "./timeCalculations";
 import { AttendanceReport, EmployeeAttendanceRecord, EmployeeReport } from "./types";
 import * as XLSX from "xlsx";
-import { exportToExcel } from "@/utils/exportOperations";
-import { getFormattedSignatureDate } from "./declarationGenerator";
 
-export const processAttendanceData = (file: File): Promise<AttendanceReport> => {
+export const processAttendanceData = (file: File, autoExport: boolean = false): Promise<AttendanceReport> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     
@@ -120,8 +118,10 @@ export const processAttendanceData = (file: File): Promise<AttendanceReport> => 
           
           employeeReports.push(report);
           
-          // Generate Excel for each employee and automatically download it
-          generateEmployeeDeclarationExcel(report, month.toUpperCase(), year);
+          // If auto export is enabled, generate Excel for each employee
+          if (autoExport) {
+            generateEmployeeDeclarationExcel(report, month.toUpperCase(), year);
+          }
         });
         
         const report: AttendanceReport = {
@@ -147,8 +147,8 @@ export const processAttendanceData = (file: File): Promise<AttendanceReport> => 
   });
 };
 
-// Function to generate Excel file for each employee's declaration
-const generateEmployeeDeclarationExcel = (employeeReport: EmployeeReport, month: string, year: string) => {
+// Function to generate Excel file for each employee's declaration (for backward compatibility)
+export const generateEmployeeDeclarationExcel = (employeeReport: EmployeeReport, month: string, year: string) => {
   // Create a workbook and worksheet
   const workbook = XLSX.utils.book_new();
   const wsName = "Declaration";
@@ -196,7 +196,7 @@ const generateEmployeeDeclarationExcel = (employeeReport: EmployeeReport, month:
     [""],
     ["Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima."],
     [""],
-    ["Assinatura do Funcionário: ______________________________", "", "", "", `Data: ${getFormattedSignatureDate()}`, ""]
+    ["Assinatura do Funcionário: ______________________________", "", "", "", `Data: ${format(new Date(), 'd')} DE ${month}`, ""]
   ];
   
   // Combine all the data
@@ -247,7 +247,7 @@ const generateEmployeeDeclarationExcel = (employeeReport: EmployeeReport, month:
 };
 
 // Register export in localStorage for tracking
-const registerExport = (employeeId: string, filename: string, fileType: string) => {
+export const registerExport = (employeeId: string, filename: string, fileType: string) => {
   try {
     // Get existing export records
     const exportRecordsStr = localStorage.getItem('bbq-export-records') || '[]';

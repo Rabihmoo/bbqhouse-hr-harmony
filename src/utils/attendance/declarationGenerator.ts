@@ -9,9 +9,7 @@ export const generateDeclarationText = (
   month: string,
   year: string
 ): string => {
-  return `DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS
-
-Eu, ${name}, portador(a) do documento de identificação ${biNumber} e funcionário(a) da empresa ${company},
+  return `Eu, ${name}, portador(a) do documento de identificação ${biNumber} e funcionário(a) da empresa ${company},
 venho por meio deste documento declarar o meu consentimento e aceitação para
 realizar horas extras de trabalho de acordo com as condições e termos
 estabelecidos pela legislação vigente e pela política interna da empresa.
@@ -25,9 +23,7 @@ mês de ${month} de ${year}:`;
 
 // Function to generate signature text
 export const generateSignatureText = (date: string): string => {
-  return `Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.
-
-Assinatura do Funcionário: ______________________________         Data: ${date}`;
+  return `Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.`;
 };
 
 // Function to format the current date in Portuguese for signatures

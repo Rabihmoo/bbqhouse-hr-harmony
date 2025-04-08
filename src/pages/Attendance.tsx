@@ -8,6 +8,7 @@ import { DailyAttendanceTab } from '@/components/attendance/DailyAttendanceTab';
 import { AttendanceReportTab } from '@/components/attendance/AttendanceReportTab';
 import { AddAttendanceTab } from '@/components/attendance/AddAttendanceTab';
 import { AttendanceTabs } from '@/components/attendance/AttendanceTabs';
+import { MonthlyHistoryTab } from '@/components/attendance/MonthlyHistoryTab';
 import { useAttendanceState } from '@/hooks/use-attendance-state';
 
 interface AttendanceProps {
@@ -81,6 +82,10 @@ const Attendance = ({ onLogout }: AttendanceProps) => {
               activeCompany={activeCompany}
               handleSubmitAttendance={handleSubmitAttendance}
             />
+          </TabsContent>
+          
+          <TabsContent value="history" className="mt-0 space-y-6">
+            <MonthlyHistoryTab activeCompany={activeCompany} />
           </TabsContent>
         </Tabs>
       </div>
