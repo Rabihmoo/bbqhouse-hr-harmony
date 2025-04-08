@@ -1,8 +1,8 @@
 
-import { formatTime } from "@/utils/attendance/timeCalculations";
+import { formatTime, formatDateInPortuguese } from "@/utils/attendance/timeCalculations";
 import { Table, TableBody, TableCell, TableHeader, TableHead, TableRow } from "@/components/ui/table";
+import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "@/utils/attendance/declarationGenerator";
 import { format } from "date-fns";
-import { generateDeclarationText, generateSignatureText } from "@/utils/attendance/declarationGenerator";
 
 interface DeclarationTextProps {
   employeeName: string;
@@ -33,53 +33,60 @@ export function DeclarationText({
   extraHours,
   workingDays
 }: DeclarationTextProps) {
+  const formattedTotalHours = formatTime(totalHours);
+  const formattedSignatureDate = getFormattedSignatureDate();
+  
   return (
     <div className="border rounded-lg p-6 space-y-6 print:border-none print:p-0">
-      <div className="text-center mb-4 space-y-4">
-        <div className="text-left whitespace-pre-line">
+      <div className="text-center mb-6">
+        <h2 className="text-xl font-bold mb-4">DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS</h2>
+        <div className="text-left whitespace-pre-line mb-8">
           {generateDeclarationText(employeeName, biNumber, companyName, month, year)}
         </div>
       </div>
       
-      <Table>
+      <Table className="border-collapse">
         <TableHeader>
-          <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Clock In</TableHead>
-            <TableHead>Clock Out</TableHead>
-            <TableHead>Work Time</TableHead>
-            <TableHead>Extra Hours</TableHead>
+          <TableRow className="border border-gray-300">
+            <TableHead className="border border-gray-300 text-center font-bold bg-gray-50">Name</TableHead>
+            <TableHead className="border border-gray-300 text-center font-bold bg-gray-50">Date</TableHead>
+            <TableHead className="border border-gray-300 text-center font-bold bg-gray-50">Clock In</TableHead>
+            <TableHead className="border border-gray-300 text-center font-bold bg-gray-50">Clock Out</TableHead>
+            <TableHead className="border border-gray-300 text-center font-bold bg-gray-50">Work Time</TableHead>
+            <TableHead className="border border-gray-300 text-center font-bold bg-gray-50">EXTRA HOURS</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {attendanceRecords.map((record, idx) => (
-            <TableRow key={idx}>
-              <TableCell>{employeeName}</TableCell>
-              <TableCell>{record.date}</TableCell>
-              <TableCell>{record.clockIn}</TableCell>
-              <TableCell>{record.clockOut}</TableCell>
-              <TableCell>{record.workTime}</TableCell>
-              <TableCell>{record.extraHours}</TableCell>
+            <TableRow key={idx} className="border border-gray-300">
+              <TableCell className="border border-gray-300 text-center">{employeeName}</TableCell>
+              <TableCell className="border border-gray-300 text-center">{record.date}</TableCell>
+              <TableCell className="border border-gray-300 text-center">{record.clockIn}</TableCell>
+              <TableCell className="border border-gray-300 text-center">{record.clockOut}</TableCell>
+              <TableCell className="border border-gray-300 text-center">{record.workTime}</TableCell>
+              <TableCell className="border border-gray-300 text-center">{record.extraHours}</TableCell>
             </TableRow>
           ))}
+          <TableRow className="border border-gray-300">
+            <TableCell colSpan={4} className="border border-gray-300"></TableCell>
+            <TableCell className="border border-gray-300 text-center">{formattedTotalHours}</TableCell>
+            <TableCell className="border border-gray-300"></TableCell>
+          </TableRow>
         </TableBody>
-        <tfoot className="border-t bg-muted/50 font-medium [&>tr]:last:border-b-0">
-          <TableRow>
-            <TableCell colSpan={4} className="text-right font-bold">WORKING HOURS:</TableCell>
-            <TableCell className="font-bold">{formatTime(totalHours)}</TableCell>
-            <TableCell className="font-bold">{formatTime(extraHours)}</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell colSpan={4} className="text-right font-bold">WORKING DAYS:</TableCell>
-            <TableCell colSpan={2} className="font-bold">{workingDays}</TableCell>
-          </TableRow>
-        </tfoot>
       </Table>
       
+      <div className="mt-6">
+        <div className="grid grid-cols-2 gap-4 text-center border-collapse">
+          <div className="border border-gray-300 py-2 text-right font-bold pr-4">TOTAL WORKING HOURS</div>
+          <div className="border border-gray-300 py-2 text-center font-bold">{formattedTotalHours}</div>
+          <div className="border border-gray-300 py-2 text-right font-bold pr-4">WORKING DAYS</div>
+          <div className="border border-gray-300 py-2 text-center font-bold">{workingDays}</div>
+        </div>
+      </div>
+      
       <div className="pt-8 pb-8">
-        <div className="text-left whitespace-pre-line">
-          {generateSignatureText()}
+        <div className="text-left whitespace-pre-line mb-8">
+          {generateSignatureText(formattedSignatureDate)}
         </div>
       </div>
     </div>

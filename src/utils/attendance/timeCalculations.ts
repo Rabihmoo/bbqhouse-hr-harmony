@@ -50,3 +50,20 @@ export const calculateWorkingHours = (clockIn: string, clockOut: string): { work
     return { workTime: '00:00', extraHours: '00:00' };
   }
 };
+
+// Format month in Portuguese
+export const formatMonthInPortuguese = (monthIndex: number): string => {
+  const months = [
+    'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL',
+    'MAIO', 'JUNHO', 'JULHO', 'AGOSTO',
+    'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'
+  ];
+  return months[monthIndex];
+};
+
+// Format date in Portuguese with uppercase month
+export const formatDateInPortuguese = (date: Date): string => {
+  const day = date.getDate();
+  const monthIndex = date.getMonth();
+  return `${day} DE ${formatMonthInPortuguese(monthIndex)}`;
+};

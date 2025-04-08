@@ -1,9 +1,11 @@
 
 import { format } from "date-fns";
 import { employees } from "@/lib/data";
-import { calculateWorkingHours } from "./timeCalculations";
+import { calculateWorkingHours, formatTime } from "./timeCalculations";
 import { AttendanceReport, EmployeeAttendanceRecord, EmployeeReport } from "./types";
 import * as XLSX from "xlsx";
+import { exportToExcel } from "@/utils/exportOperations";
+import { getFormattedSignatureDate } from "./declarationGenerator";
 
 export const processAttendanceData = (file: File): Promise<AttendanceReport> => {
   return new Promise((resolve, reject) => {
@@ -81,7 +83,7 @@ export const processAttendanceData = (file: File): Promise<AttendanceReport> => 
           const employeeData = employeeRecords.get(employeeId)!;
           
           employeeData.records.push({
-            date: format(new Date(date), 'MM/dd/yyyy'),
+            date: format(new Date(date), 'M/d/yyyy'),  // Changed to match example format
             clockIn,
             clockOut,
             workTime,
@@ -104,7 +106,7 @@ export const processAttendanceData = (file: File): Promise<AttendanceReport> => 
             e.fullName === data.name || e.id === id || e.fullName.toLowerCase().includes(data.name.toLowerCase())
           );
           
-          employeeReports.push({
+          const report = {
             employeeId: id,
             employeeName: data.name,
             biNumber: employeeInfo?.biNumber || "000000000",
@@ -114,7 +116,12 @@ export const processAttendanceData = (file: File): Promise<AttendanceReport> => 
             totalHours: Math.round(data.totalHours * 10) / 10,
             extraHours: Math.round(data.extraHours * 10) / 10,
             attendanceRecords: data.records
-          });
+          };
+          
+          employeeReports.push(report);
+          
+          // Generate Excel for each employee and automatically download it
+          generateEmployeeDeclarationExcel(report, month.toUpperCase(), year);
         });
         
         const report: AttendanceReport = {
@@ -138,4 +145,127 @@ export const processAttendanceData = (file: File): Promise<AttendanceReport> => 
     
     reader.readAsArrayBuffer(file);
   });
+};
+
+// Function to generate Excel file for each employee's declaration
+const generateEmployeeDeclarationExcel = (employeeReport: EmployeeReport, month: string, year: string) => {
+  // Create a workbook and worksheet
+  const workbook = XLSX.utils.book_new();
+  const wsName = "Declaration";
+  
+  // Create the declaration header
+  const declarationText = [
+    ["DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS"],
+    [""],
+    [`Eu, ${employeeReport.employeeName}, portador(a) do documento de identificação ${employeeReport.biNumber} e funcionário(a) da empresa ${employeeReport.company},`],
+    ["venho por meio deste documento declarar o meu consentimento e aceitação para"],
+    ["realizar horas extras de trabalho de acordo com as condições e termos"],
+    ["estabelecidos pela legislação vigente e pela política interna da empresa."],
+    ["Entendo que a necessidade de laborar horas extras pode surgir devido a"],
+    ["circunstâncias excepcionais e/ou necessidades operacionais da empresa. Estou"],
+    ["ciente de que serei compensado(a) adequadamente pelas horas extras"],
+    ["trabalhadas de acordo com as regras e regulamentos aplicáveis."],
+    [`A tabela a seguir detalha as horas extras a serem trabalhadas durante o`],
+    [`mês de ${month} de ${year}:`],
+    [""],
+    [""],
+    [""]
+  ];
+  
+  // Create table headers
+  const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
+  
+  // Prepare the data rows
+  const dataRows = employeeReport.attendanceRecords.map(record => [
+    employeeReport.employeeName,
+    record.date,
+    record.clockIn,
+    record.clockOut,
+    record.workTime,
+    record.extraHours
+  ]);
+  
+  // Add a row for the totals
+  const totalRow = ["", "", "", "", formatTime(employeeReport.totalHours), ""];
+  
+  // Add summary rows
+  const summaryRows = [
+    [""],
+    ["TOTAL WORKING HOURS", "", "", "", formatTime(employeeReport.totalHours), ""],
+    ["WORKING DAYS", "", "", "", employeeReport.workingDays.toString(), ""],
+    [""],
+    ["Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima."],
+    [""],
+    ["Assinatura do Funcionário: ______________________________", "", "", "", `Data: ${getFormattedSignatureDate()}`, ""]
+  ];
+  
+  // Combine all the data
+  const allData = [
+    ...declarationText,
+    headers,
+    ...dataRows,
+    totalRow,
+    ...summaryRows
+  ];
+  
+  // Create the worksheet
+  const ws = XLSX.utils.aoa_to_sheet(allData);
+  
+  // Set column widths
+  const wscols = [
+    { wch: 20 },  // Name
+    { wch: 12 },  // Date
+    { wch: 10 },  // Clock In
+    { wch: 10 },  // Clock Out
+    { wch: 10 },  // Work Time
+    { wch: 15 }   // EXTRA HOURS
+  ];
+  
+  ws['!cols'] = wscols;
+  
+  // Add the worksheet to the workbook
+  XLSX.utils.book_append_sheet(workbook, ws, wsName);
+  
+  // Generate file name
+  const fileName = `${employeeReport.employeeName.replace(/,/g, '_').replace(/ /g, '_')}_Declaration_${month}_${year}`;
+  
+  // Generate the Excel file
+  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  
+  // Save the file
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${fileName}.xlsx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Register the export in attendance records
+  registerExport(employeeReport.employeeId, fileName, 'xlsx');
+};
+
+// Register export in localStorage for tracking
+const registerExport = (employeeId: string, filename: string, fileType: string) => {
+  try {
+    // Get existing export records
+    const exportRecordsStr = localStorage.getItem('bbq-export-records') || '[]';
+    const exportRecords = JSON.parse(exportRecordsStr);
+    
+    // Add new record
+    exportRecords.push({
+      id: `export-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      employeeId: employeeId,
+      filename,
+      fileType,
+      user: 'current-user' // In a real app, get this from auth context
+    });
+    
+    // Save back to storage
+    localStorage.setItem('bbq-export-records', JSON.stringify(exportRecords));
+  } catch (error) {
+    console.error('Error registering export:', error);
+  }
 };

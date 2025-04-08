@@ -1,3 +1,6 @@
 
-// Re-export from employee-notifications directory
-export { useEmployeeNotifications } from "./employee-notifications/use-employee-notifications";
+// This file serves as a bridge to maintain compatibility after refactoring
+import { useEmployeeNotifications } from './employee-notifications';
+
+export { useEmployeeNotifications };
+export default useEmployeeNotifications;

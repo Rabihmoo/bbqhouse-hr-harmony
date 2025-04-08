@@ -24,8 +24,24 @@ mês de ${month} de ${year}:`;
 };
 
 // Function to generate signature text
-export const generateSignatureText = (): string => {
+export const generateSignatureText = (date: string): string => {
   return `Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.
 
-Assinatura do Funcionário: ______________________________         ${format(new Date(), 'dd/MM/yyyy')}`;
+Assinatura do Funcionário: ______________________________         Data: ${date}`;
+};
+
+// Function to format the current date in Portuguese for signatures
+export const getFormattedSignatureDate = (): string => {
+  const currentDate = new Date();
+  const day = currentDate.getDate();
+  
+  const months = [
+    'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL',
+    'MAIO', 'JUNHO', 'JULHO', 'AGOSTO',
+    'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'
+  ];
+  
+  const month = months[currentDate.getMonth()];
+  
+  return `${day} DE ${month}`;
 };
