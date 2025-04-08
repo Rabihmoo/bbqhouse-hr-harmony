@@ -1,3 +1,4 @@
+
 import * as XLSX from "xlsx";
 import { AttendanceReport, EmployeeReport } from "./types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "./declarationGenerator";
@@ -106,7 +107,8 @@ const createEmployeeDeclarationSheet = (
   year: string,
   includeSignature: boolean
 ): XLSX.WorkSheet => {
-  // Create the declaration header text
+  // Create the full declaration title and text
+  const declarationTitle = "DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS";
   const declarationText = generateDeclarationText(
     employeeReport.employeeName,
     employeeReport.biNumber,
@@ -115,19 +117,19 @@ const createEmployeeDeclarationSheet = (
     year
   );
   
+  // Combine title and text for the merged cell
+  const fullDeclarationText = `${declarationTitle}\n\n${declarationText}`;
+  
   // Format the data with improved layout
   const rows = [];
   
-  // Title row and declaration text combined in a single row
-  rows.push(["DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS"]);
-  
-  // Declaration text in a single cell (will be merged)
-  rows.push([declarationText]);
+  // Declaration text in a single row (will be merged)
+  rows.push([fullDeclarationText]);
   
   // Table headers immediately after declaration
   rows.push(["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"]);
   
-  const dataStartRow = 4; // Row index (1-based) where data starts
+  const dataStartRow = 3; // Row index (1-based) where data starts
   
   // Format attendance data
   employeeReport.attendanceRecords.forEach((record) => {
@@ -181,15 +183,15 @@ const createEmployeeDeclarationSheet = (
     "", 
     "", 
     "", 
-    { f: `COUNTIF(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow},"<>00:00")` },
+    { f: `COUNTIF(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow},">0:00")` },
     ""
   ]);
   
-  // Add signature section
-  rows.push([]); // Empty row for spacing
+  // Add empty row for spacing
+  rows.push(["", "", "", "", "", ""]);
   
   // Add signature confirmation text - merged across all columns
-  rows.push([generateSignatureText(getFormattedSignatureDate())]);
+  rows.push([generateSignatureText()]);
   
   // Add signature line
   rows.push([
@@ -215,16 +217,16 @@ const createEmployeeDeclarationSheet = (
   ];
   
   // Define merge cells
-  const declarationRow = dataStartRow - 3; // Adjusting for 1-based indexing in Excel
-  const signatureTextRow = dataEndRow + 3;
+  const titleRow = 0;
+  const totalsRow = dataEndRow + 1;
+  const workingDaysRow = dataEndRow + 2;
+  const spacingRow = dataEndRow + 3;
+  const signatureTextRow = dataEndRow + 4;
   const signatureLineRow = dataEndRow + 5;
   
   ws['!merges'] = [
-    // Title row across all columns (A1)
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
-    
-    // Declaration text across all columns as a single cell (A2:F2)
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
+    // Declaration text across all columns (A1:F1)
+    { s: { r: titleRow, c: 0 }, e: { r: titleRow, c: 5 } },
     
     // Signature text across all columns (after data)
     { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } },
@@ -233,10 +235,14 @@ const createEmployeeDeclarationSheet = (
     { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } },
   ];
   
-  // Enable text wrapping for the declaration cell
-  const declarationCell = XLSX.utils.encode_cell({ r: 1, c: 0 });
+  // Enable text wrapping for the declaration cell and set height
+  const declarationCell = XLSX.utils.encode_cell({ r: titleRow, c: 0 });
   if (!ws[declarationCell].s) ws[declarationCell].s = {};
   ws[declarationCell].s.alignment = { wrapText: true, vertical: 'top' };
+  
+  // Set row height for declaration cell to fit the text
+  if (!ws['!rows']) ws['!rows'] = [];
+  ws['!rows'][titleRow] = { hpt: 150 }; // Set height for declaration text row
   
   // Apply borders and styling to all cells
   const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
@@ -257,29 +263,30 @@ const createEmployeeDeclarationSheet = (
         right: { style: 'thin' }
       };
       
-      // Add bold style to header row and title
-      if (r === 0 || r === 2) {
+      // Add bold style to title, header row, and totals
+      if (r === 1 || r === totalsRow || r === workingDaysRow) {
         if (!ws[cell_address].s) ws[cell_address].s = {};
         ws[cell_address].s.font = { bold: true };
-        if (r === 2) {
-          ws[cell_address].s.fill = { fgColor: { rgb: "EEEEEE" } };
-        }
       }
       
-      // Add bold style to totals rows
-      if (r === dataEndRow + 1 || r === dataEndRow + 2) {
+      // Add background fill to header row
+      if (r === 1) {
+        ws[cell_address].s.fill = { fgColor: { rgb: "EEEEEE" } };
+      }
+      
+      // Add text wrapping for signature text
+      if (r === signatureTextRow) {
         if (!ws[cell_address].s) ws[cell_address].s = {};
-        ws[cell_address].s.font = { bold: true };
+        ws[cell_address].s.alignment = { wrapText: true, vertical: 'top' };
       }
     }
   }
   
-  // Set row height for declaration cell to fit the text
-  if (!ws['!rows']) ws['!rows'] = [];
-  ws['!rows'][1] = { hpt: 120 }; // Set height for declaration text row
+  // Set specific row heights
+  ws['!rows'][signatureTextRow] = { hpt: 60 }; // Set height for signature text row
   
   // Add AutoFilter for the header row
-  ws['!autofilter'] = { ref: `A3:F3` };
+  ws['!autofilter'] = { ref: `A2:F2` };
   
   return ws;
 };
