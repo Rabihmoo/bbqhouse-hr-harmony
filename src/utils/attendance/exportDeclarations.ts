@@ -1,11 +1,10 @@
-
 import * as XLSX from "xlsx";
 import { AttendanceReport, EmployeeReport } from "./types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "./declarationGenerator";
 import { formatTime } from "./timeCalculations";
 import { ExportOptions } from "@/hooks/use-attendance-uploader";
 import { sendEmailVia } from "./emailUtils";
-import { createWorkbookSheet, downloadExcelFile } from "./excelUtils";
+import { createWorkbookSheet, downloadExcelFile, workbookToBlob, applyWorksheetStyling } from "./excelUtils";
 
 // Function to export declarations for all employees
 export const exportEmployeeDeclarations = async (
@@ -126,7 +125,7 @@ export const createEmployeeDeclarationSheet = (
   // Table headers immediately after declaration
   rows.push(["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"]);
   
-  const dataStartRow = 3; // Row index (1-based) where data starts
+  const dataStartRow = 3; // Row index (1-based) where data starts (Row 3 is the first data row after headers)
   
   // Format attendance data
   employeeReport.attendanceRecords.forEach((record) => {
@@ -170,7 +169,7 @@ export const createEmployeeDeclarationSheet = (
     "", 
     "", 
     "", 
-    { f: `SUM(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow})` },
+    { f: `SUM(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow})`, z: '[h]:mm' },
     ""
   ]);
   
@@ -188,7 +187,7 @@ export const createEmployeeDeclarationSheet = (
   rows.push(["", "", "", "", "", ""]);
   
   // Add signature confirmation text - merged across all columns
-  rows.push([generateSignatureText()]); // Fix: Add the argument here
+  rows.push([generateSignatureText()]);
   
   // Add signature line
   rows.push([
@@ -239,7 +238,10 @@ export const createEmployeeDeclarationSheet = (
   
   // Set row height for declaration cell to fit the text
   if (!ws['!rows']) ws['!rows'] = [];
-  ws['!rows'][titleRow] = { hpt: 150 }; // Set height for declaration text row
+  ws['!rows'][titleRow] = { hpt: 180 }; // Set height to 180px for declaration text row
+  
+  // Set row height for signature text row
+  ws['!rows'][signatureTextRow] = { hpt: 120 }; // Set height to 120px for signature text row
   
   // Apply borders and styling to all cells
   const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
@@ -279,8 +281,21 @@ export const createEmployeeDeclarationSheet = (
     }
   }
   
-  // Set specific row heights
-  ws['!rows'][signatureTextRow] = { hpt: 60 }; // Set height for signature text row
+  // Apply number format to work time column
+  for (let r = dataStartRow; r <= dataEndRow; r++) {
+    const cell_address = XLSX.utils.encode_cell({ r: r, c: 4 }); // Column E (index 4)
+    if (ws[cell_address]) {
+      if (!ws[cell_address].z) {
+        ws[cell_address].z = '[h]:mm';
+      }
+    }
+  }
+  
+  // Set formula cell to use time format
+  const totalHoursCell = XLSX.utils.encode_cell({ r: totalsRow, c: 4 });
+  if (ws[totalHoursCell]) {
+    ws[totalHoursCell].z = '[h]:mm';
+  }
   
   // Add AutoFilter for the header row
   ws['!autofilter'] = { ref: `A2:F2` };
