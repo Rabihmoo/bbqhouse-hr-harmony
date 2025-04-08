@@ -1,4 +1,3 @@
-
 import * as XLSX from "xlsx";
 import { AttendanceReport, EmployeeReport } from "./types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "./declarationGenerator";
@@ -128,8 +127,12 @@ const createEmployeeDeclarationSheet = (
   // Table headers immediately after declaration with no empty rows
   rows.push(["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"]);
   
+  // Track rows with valid work time for the counting formula
+  let validWorkRows = [];
+  const dataStartRow = 4; // Row index (1-based) where data starts
+  
   // Format attendance data
-  employeeReport.attendanceRecords.forEach(record => {
+  employeeReport.attendanceRecords.forEach((record, index) => {
     // Calculate work time and extra hours based on clock values
     let workTime = record.workTime;
     let extraHours = record.extraHours;
@@ -157,43 +160,61 @@ const createEmployeeDeclarationSheet = (
       workTime,
       extraHours
     ]);
-  });
-  
-  // Calculate total working hours for summary
-  let totalMinutes = 0;
-  employeeReport.attendanceRecords.forEach(record => {
-    if (record.workTime) {
-      const [hours, minutes] = record.workTime.split(':').map(Number);
-      totalMinutes += (hours * 60) + minutes;
+    
+    // Track rows that have work time > 0 for the count formula
+    if (workTime !== '00:00') {
+      validWorkRows.push(dataStartRow + index);
     }
   });
-  const totalWorkHours = formatTime(totalMinutes / 60);
   
-  // Add total row with SUM formula
-  const dataStartRow = 4; // Row index (1-based) where data starts
+  // Calculate data row range for formulas
   const dataEndRow = dataStartRow + employeeReport.attendanceRecords.length - 1;
   const workTimeCol = 'E'; // Column E is Work Time
-  const sumFormula = `SUM(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow})`;
   
-  // Add empty row before totals
-  rows.push([]);
+  // Add formulas for totals
+  // Add total work hours with SUM formula
+  rows.push([
+    "TOTAL WORKING HOURS", 
+    "", 
+    "", 
+    "", 
+    { f: `SUM(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow})` },
+    ""
+  ]);
   
-  // Add totals section
-  rows.push(["TOTAL WORKING HOURS", "", "", "", { f: sumFormula }, ""]);
-  rows.push(["WORKING DAYS", "", "", "", employeeReport.workingDays.toString(), ""]);
+  // Add working days with COUNTIF formula - count rows where work time > 0
+  const workingDaysFormula = validWorkRows.length > 0 
+    ? `COUNTIF(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow},"<>00:00")` 
+    : "0";
   
-  // Add signature section with proper formatting
-  rows.push([]);
-  rows.push([generateSignatureText(getFormattedSignatureDate())]);
-  rows.push([]);
-  rows.push(["Assinatura do Funcionário: ______________________________", "", "", "", `Data: ${getFormattedSignatureDate()}`, ""]);
+  rows.push([
+    "WORKING DAYS", 
+    "", 
+    "", 
+    "", 
+    { f: workingDaysFormula },
+    ""
+  ]);
+  
+  // Add signature section
+  rows.push([]); // Empty row for spacing
+  rows.push([generateSignatureText(getFormattedSignatureDate())]); // Signature text
+  rows.push([]); // Empty row for spacing
+  rows.push([
+    "Assinatura do Funcionário: ______________________________", 
+    "", 
+    "", 
+    "", 
+    `Data: ${getFormattedSignatureDate()}`, 
+    ""
+  ]);
   
   // Create worksheet from rows
   const ws = XLSX.utils.aoa_to_sheet(rows);
   
-  // Set column widths
+  // Set column widths for better readability
   ws['!cols'] = [
-    { wch: 20 }, // Name
+    { wch: 25 }, // Name
     { wch: 12 }, // Date
     { wch: 10 }, // Clock In
     { wch: 10 }, // Clock Out
@@ -201,29 +222,32 @@ const createEmployeeDeclarationSheet = (
     { wch: 12 }  // EXTRA HOURS
   ];
   
-  // Set merge cells
+  // Define merge cells
   ws['!merges'] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, // Title row across all columns
-    { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } }  // Declaration text across all columns
+    // Title row across all columns (row 0)
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+    
+    // Declaration text across all columns (row 1)
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
+    
+    // Signature text across all columns
+    { s: { r: dataEndRow + 4, c: 0 }, e: { r: dataEndRow + 4, c: 5 } },
+    
+    // Signature line
+    { s: { r: dataEndRow + 6, c: 0 }, e: { r: dataEndRow + 6, c: 3 } },
   ];
-  
-  // Add signature line merges
-  const signatureTextRow = rows.length - 3;
-  const signatureRow = rows.length - 1;
-  
-  // Add to existing merges
-  ws['!merges'].push(
-    { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } }, // Signature text
-    { s: { r: signatureRow, c: 0 }, e: { r: signatureRow, c: 3 } }          // Signature line
-  );
   
   // Apply borders to all cells
   const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
   for (let r = range.s.r; r <= range.e.r; r++) {
     for (let c = range.s.c; c <= range.e.c; c++) {
       const cell_address = XLSX.utils.encode_cell({ r, c });
-      if (!ws[cell_address]) continue;
+      if (!ws[cell_address]) {
+        // Create empty cell if it doesn't exist
+        ws[cell_address] = { t: 's', v: '' };
+      }
       
+      // Add border style to all cells
       if (!ws[cell_address].s) ws[cell_address].s = {};
       ws[cell_address].s.border = {
         top: { style: 'thin' },
@@ -231,6 +255,19 @@ const createEmployeeDeclarationSheet = (
         left: { style: 'thin' },
         right: { style: 'thin' }
       };
+      
+      // Add bold style to header row
+      if (r === 2) {
+        if (!ws[cell_address].s) ws[cell_address].s = {};
+        ws[cell_address].s.font = { bold: true };
+        ws[cell_address].s.fill = { fgColor: { rgb: "EEEEEE" } };
+      }
+      
+      // Add bold style to totals rows
+      if (r === dataEndRow + 2 || r === dataEndRow + 3) {
+        if (!ws[cell_address].s) ws[cell_address].s = {};
+        ws[cell_address].s.font = { bold: true };
+      }
     }
   }
   

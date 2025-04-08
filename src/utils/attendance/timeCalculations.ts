@@ -14,7 +14,7 @@ export const calculateWorkingHours = (clockIn: string, clockOut: string): { work
     return { workTime: '00:00', extraHours: '00:00' };
   }
   
-  // Both missing - mark as day off
+  // Both missing - mark as day off (00:00 hours)
   if (!clockIn && !clockOut) {
     return { workTime: '00:00', extraHours: '00:00' };
   }
