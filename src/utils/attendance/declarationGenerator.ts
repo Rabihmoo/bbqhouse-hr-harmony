@@ -22,7 +22,7 @@ mês de ${month} de ${year}:`;
 };
 
 // Function to generate signature text
-export const generateSignatureText = (date: string): string => {
+export const generateSignatureText = (date?: string): string => {
   return `Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.`;
 };
 
