@@ -1,3 +1,4 @@
+
 import * as XLSX from "xlsx";
 import { AttendanceReport, EmployeeReport } from "./types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "./declarationGenerator";
@@ -122,10 +123,13 @@ export const createEmployeeDeclarationSheet = (
   // Declaration text in a single row (will be merged)
   rows.push([fullDeclarationText]);
   
-  // Table headers immediately after declaration
+  // Empty row for spacing
+  rows.push(["", "", "", "", "", ""]);
+  
+  // Table headers
   rows.push(["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"]);
   
-  const dataStartRow = 3; // Row index (1-based) where data starts (Row 3 is the first data row after headers)
+  const dataStartRow = 4; // Row index (1-based) where data starts (Row 4 is the first data row after headers)
   
   // Format attendance data
   employeeReport.attendanceRecords.forEach((record) => {
@@ -161,6 +165,10 @@ export const createEmployeeDeclarationSheet = (
   // Calculate data row range for formulas
   const dataEndRow = dataStartRow + employeeReport.attendanceRecords.length - 1;
   const workTimeCol = 'E'; // Column E is Work Time
+  const extraHoursCol = 'F'; // Column F is Extra Hours
+  
+  // Add empty row for spacing
+  rows.push(["", "", "", "", "", ""]);
   
   // Add formulas for totals
   // Add total work hours with SUM formula
@@ -170,7 +178,7 @@ export const createEmployeeDeclarationSheet = (
     "", 
     "", 
     { f: `SUM(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow})`, z: '[h]:mm' },
-    ""
+    { f: `SUM(${extraHoursCol}${dataStartRow}:${extraHoursCol}${dataEndRow})`, z: '[h]:mm' }
   ]);
   
   // Add working days with COUNTIF formula - count rows where work time > 0
@@ -185,9 +193,13 @@ export const createEmployeeDeclarationSheet = (
   
   // Add empty row for spacing
   rows.push(["", "", "", "", "", ""]);
+  rows.push(["", "", "", "", "", ""]);
   
   // Add signature confirmation text - merged across all columns
   rows.push([generateSignatureText()]);
+  
+  // Add empty row for spacing
+  rows.push(["", "", "", "", "", ""]);
   
   // Add signature line
   rows.push([
@@ -214,33 +226,41 @@ export const createEmployeeDeclarationSheet = (
   
   // Define merge cells
   const titleRow = 0;
-  const totalsRow = dataEndRow + 1;
-  const workingDaysRow = dataEndRow + 2;
-  const spacingRow = dataEndRow + 3;
-  const signatureTextRow = dataEndRow + 4;
-  const signatureLineRow = dataEndRow + 5;
+  const headerRow = 2;
+  const spacingAfterDataRow = dataEndRow + 1;
+  const totalsRow = dataEndRow + 2;
+  const workingDaysRow = dataEndRow + 3;
+  const spacingRow1 = dataEndRow + 4;
+  const spacingRow2 = dataEndRow + 5;
+  const signatureTextRow = dataEndRow + 6;
+  const spacingRow3 = dataEndRow + 7;
+  const signatureLineRow = dataEndRow + 8;
   
   ws['!merges'] = [
     // Declaration text across all columns (A1:F1)
     { s: { r: titleRow, c: 0 }, e: { r: titleRow, c: 5 } },
     
-    // Signature text across all columns (after data)
+    // Signature text across all columns
     { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } },
     
     // Signature line (left portion)
     { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } },
+    
+    // TOTAL WORKING HOURS label
+    { s: { r: totalsRow, c: 0 }, e: { r: totalsRow, c: 3 } },
+    
+    // WORKING DAYS label
+    { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } },
   ];
   
-  // Enable text wrapping for the declaration cell and set height
+  // Enable text wrapping and set height for the declaration cell
   const declarationCell = XLSX.utils.encode_cell({ r: titleRow, c: 0 });
   if (!ws[declarationCell].s) ws[declarationCell].s = {};
   ws[declarationCell].s.alignment = { wrapText: true, vertical: 'top' };
   
-  // Set row height for declaration cell to fit the text
+  // Set row heights
   if (!ws['!rows']) ws['!rows'] = [];
-  ws['!rows'][titleRow] = { hpt: 180 }; // Set height to 180px for declaration text row
-  
-  // Set row height for signature text row
+  ws['!rows'][titleRow] = { hpt: 200 }; // Set height to 200px for declaration text row
   ws['!rows'][signatureTextRow] = { hpt: 120 }; // Set height to 120px for signature text row
   
   // Apply borders and styling to all cells
@@ -263,13 +283,13 @@ export const createEmployeeDeclarationSheet = (
       };
       
       // Add bold style to title, header row, and totals
-      if (r === 1 || r === totalsRow || r === workingDaysRow) {
+      if (r === headerRow || r === totalsRow || r === workingDaysRow) {
         if (!ws[cell_address].s) ws[cell_address].s = {};
         ws[cell_address].s.font = { bold: true };
       }
       
       // Add background fill to header row
-      if (r === 1) {
+      if (r === headerRow) {
         ws[cell_address].s.fill = { fgColor: { rgb: "EEEEEE" } };
       }
       
@@ -283,22 +303,36 @@ export const createEmployeeDeclarationSheet = (
   
   // Apply number format to work time column
   for (let r = dataStartRow; r <= dataEndRow; r++) {
-    const cell_address = XLSX.utils.encode_cell({ r: r, c: 4 }); // Column E (index 4)
-    if (ws[cell_address]) {
-      if (!ws[cell_address].z) {
-        ws[cell_address].z = '[h]:mm';
+    // Format Work Time column (E)
+    const workTimeCell = XLSX.utils.encode_cell({ r: r, c: 4 }); // Column E (index 4)
+    if (ws[workTimeCell]) {
+      if (!ws[workTimeCell].z) {
+        ws[workTimeCell].z = '[h]:mm';
+      }
+    }
+    
+    // Format Extra Hours column (F)
+    const extraHoursCell = XLSX.utils.encode_cell({ r: r, c: 5 }); // Column F (index 5)
+    if (ws[extraHoursCell]) {
+      if (!ws[extraHoursCell].z) {
+        ws[extraHoursCell].z = '[h]:mm';
       }
     }
   }
   
-  // Set formula cell to use time format
+  // Set formula cells to use time format
   const totalHoursCell = XLSX.utils.encode_cell({ r: totalsRow, c: 4 });
   if (ws[totalHoursCell]) {
     ws[totalHoursCell].z = '[h]:mm';
   }
   
+  const totalExtraHoursCell = XLSX.utils.encode_cell({ r: totalsRow, c: 5 });
+  if (ws[totalExtraHoursCell]) {
+    ws[totalExtraHoursCell].z = '[h]:mm';
+  }
+  
   // Add AutoFilter for the header row
-  ws['!autofilter'] = { ref: `A2:F2` };
+  ws['!autofilter'] = { ref: `A${headerRow+1}:F${headerRow+1}` };
   
   return ws;
 };
