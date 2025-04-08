@@ -1,4 +1,3 @@
-
 import * as XLSX from "xlsx";
 import { AttendanceReport, EmployeeReport } from "./types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "./declarationGenerator";
@@ -224,7 +223,7 @@ export const createEmployeeDeclarationSheet = (
     { wch: 12 }  // EXTRA HOURS
   ];
   
-  // Define merge cells
+  // Define row indices
   const titleRow = 0;
   const headerRow = 2;
   const spacingAfterDataRow = dataEndRow + 1;
@@ -236,6 +235,7 @@ export const createEmployeeDeclarationSheet = (
   const spacingRow3 = dataEndRow + 7;
   const signatureLineRow = dataEndRow + 8;
   
+  // Fix 1: Properly merge declaration title and text across columns A to F
   ws['!merges'] = [
     // Declaration text across all columns (A1:F1)
     { s: { r: titleRow, c: 0 }, e: { r: titleRow, c: 5 } },
@@ -253,17 +253,30 @@ export const createEmployeeDeclarationSheet = (
     { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } },
   ];
   
-  // Enable text wrapping and set height for the declaration cell
+  // Fix 1: Enable text wrapping and set proper height for declaration cell
   const declarationCell = XLSX.utils.encode_cell({ r: titleRow, c: 0 });
   if (!ws[declarationCell].s) ws[declarationCell].s = {};
-  ws[declarationCell].s.alignment = { wrapText: true, vertical: 'top' };
+  ws[declarationCell].s.alignment = { 
+    wrapText: true, 
+    vertical: 'top', 
+    horizontal: 'left' 
+  };
   
-  // Set row heights
+  // Set row heights for proper text display
   if (!ws['!rows']) ws['!rows'] = [];
-  ws['!rows'][titleRow] = { hpt: 200 }; // Set height to 200px for declaration text row
+  ws['!rows'][titleRow] = { hpt: 180 }; // Set height to 180px for declaration text row
   ws['!rows'][signatureTextRow] = { hpt: 120 }; // Set height to 120px for signature text row
   
-  // Apply borders and styling to all cells
+  // Fix 3: Properly format signature line cell
+  const signatureCell = XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 });
+  if (!ws[signatureCell].s) ws[signatureCell].s = {};
+  ws[signatureCell].s.alignment = { 
+    wrapText: true, 
+    vertical: 'top',
+    horizontal: 'left'
+  };
+  
+  // Fix 4: Apply borders and styling to all cells
   const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
   for (let r = range.s.r; r <= range.e.r; r++) {
     for (let c = range.s.c; c <= range.e.c; c++) {
@@ -292,16 +305,10 @@ export const createEmployeeDeclarationSheet = (
       if (r === headerRow) {
         ws[cell_address].s.fill = { fgColor: { rgb: "EEEEEE" } };
       }
-      
-      // Add text wrapping for signature text
-      if (r === signatureTextRow) {
-        if (!ws[cell_address].s) ws[cell_address].s = {};
-        ws[cell_address].s.alignment = { wrapText: true, vertical: 'top' };
-      }
     }
   }
   
-  // Apply number format to work time column
+  // Fix 2: Apply proper time format to work time and extra hours columns
   for (let r = dataStartRow; r <= dataEndRow; r++) {
     // Format Work Time column (E)
     const workTimeCell = XLSX.utils.encode_cell({ r: r, c: 4 }); // Column E (index 4)
@@ -320,7 +327,7 @@ export const createEmployeeDeclarationSheet = (
     }
   }
   
-  // Set formula cells to use time format
+  // Fix 2: Ensure formula cells use proper time format
   const totalHoursCell = XLSX.utils.encode_cell({ r: totalsRow, c: 4 });
   if (ws[totalHoursCell]) {
     ws[totalHoursCell].z = '[h]:mm';
