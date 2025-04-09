@@ -13,7 +13,8 @@ export const addTitle = (doc: jsPDF): void => {
  * Adds the declaration text to the PDF document
  */
 export const addDeclarationText = (doc: jsPDF, declarationText: string): void => {
-  doc.setFontSize(10);
+  // Reduce font size from 10 to 9 for the declaration text
+  doc.setFontSize(9);
   
   // Center the declaration text as a whole block
   doc.text(declarationText, 105, 30, { 
