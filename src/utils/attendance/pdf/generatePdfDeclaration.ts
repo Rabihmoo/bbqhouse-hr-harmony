@@ -1,6 +1,7 @@
+
 import { jsPDF } from "jspdf";
 import { EmployeeReport } from "@/types";
-import { getFormattedSignatureDate } from "@/utils/declarationGenerators";
+import { getFormattedSignatureDate } from "@/utils/attendance/declarationGenerator";
 
 export const renderTableHeaders = (doc: jsPDF, startY: number): number => {
   const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
