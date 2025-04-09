@@ -25,8 +25,8 @@ export const generatePdfForEmployee = async (
     // Prepare Excel workbook
     const workbook = prepareWorkbookFromEmployeeReport(employeeReport, month, year);
     
-    // Generate PDF using the consolidated function
-    const doc = generateEmployeeDeclarationPdf(employeeReport, workbook);
+    // Generate PDF
+    const doc = generateEmployeeDeclarationPdf(employeeReport);
     
     // Convert to Blob
     const pdfBlob = doc.output('blob');

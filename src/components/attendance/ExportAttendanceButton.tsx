@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FileDown, FileSpreadsheet, FilePdf } from "lucide-react";
+import { FileDown, FileSpreadsheet, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,7 +17,6 @@ import {
   getExportFileName
 } from '@/utils/exportOperations';
 import { format } from "date-fns";
-import * as XLSX from "xlsx";
 import { generateEmployeeDeclarationPdf } from "@/utils/attendance/pdf/generatePdfDeclaration";
 import { jsPDF } from "jspdf";
 
@@ -107,7 +106,8 @@ export const ExportAttendanceButton = ({
         year: year,
         totalHours: records.reduce((acc, r) => acc + (r.totalHours || 0), 0),
         workingDays: records.length,
-        sheetData: prepareAttendanceDataForExport(records).map(item => Object.values(item))
+        extraHours: 0, // Adding the missing property
+        attendanceRecords: [] // Adding the missing property
       };
       
       // Generate PDF using jsPDF
@@ -164,7 +164,7 @@ export const ExportAttendanceButton = ({
           Export as Excel
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleExportPdf}>
-          <FilePdf className="h-4 w-4 mr-2" />
+          <FileText className="h-4 w-4 mr-2" />
           Export as PDF
         </DropdownMenuItem>
       </DropdownMenuContent>

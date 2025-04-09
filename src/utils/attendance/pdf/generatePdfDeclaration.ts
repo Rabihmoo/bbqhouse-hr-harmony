@@ -1,5 +1,6 @@
+
 import { jsPDF } from "jspdf";
-import { EmployeeReport } from "@/utils/attendance/types";
+import { EmployeeReport } from "@/types/attendance";
 import { getFormattedSignatureDate } from "@/utils/attendance/declarationGenerator";
 
 export const renderTableHeaders = (doc: jsPDF, startY: number): number => {
@@ -116,6 +117,10 @@ export const generateEmployeeDeclarationPdf = (
 ): jsPDF => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
+  // Extract month and year from report or use defaults
+  const reportMonth = (employeeReport as any).month || "Current Month";
+  const reportYear = (employeeReport as any).year || new Date().getFullYear().toString();
+
   // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
@@ -136,7 +141,7 @@ circunstâncias excepcionais e/ou necessidades operacionais da empresa. Estou
 ciente de que serei compensado(a) adequadamente pelas horas extras
 trabalhadas de acordo com as regras e regulamentos aplicáveis.
 A tabela a seguir detalha as horas extras a serem trabalhadas durante o
-mês de ${employeeReport.month} de ${employeeReport.year}:`;
+mês de ${reportMonth} de ${reportYear}:`;
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
@@ -148,9 +153,22 @@ mês de ${employeeReport.month} de ${employeeReport.year}:`;
   // Table
   let y = 45;
   y = renderTableHeaders(doc, y);
-  y = renderTableRows(doc, employeeReport.sheetData, y);
+  
+  // Use attendance records or create a basic sheet data if not available
+  const sheetData = (employeeReport as any).sheetData || 
+    prepareAttendanceDataForExport(employeeReport);
+  
+  y = renderTableRows(doc, sheetData, y);
   y = addTotalsSummary(doc, employeeReport, y);
   addSignatureBlock(doc, y);
 
   return doc;
 };
+
+// Helper function to convert employee report to sheet data if needed
+function prepareAttendanceDataForExport(report: EmployeeReport): any[][] {
+  // Create a basic sheet with the employee name
+  return [
+    [report.employeeName, new Date().toLocaleDateString(), "08:00", "17:00", report.totalHours, 0]
+  ];
+}

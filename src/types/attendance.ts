@@ -29,9 +29,12 @@ export interface EmployeeReport {
   biNumber: string;
   department: string;
   company: string;
-  month: string;
-  year: string;
   totalHours: number;
   workingDays: number;
-  sheetData: any[][];
+  extraHours: number;
+  attendanceRecords: any[];
+  // Optional fields that might be passed from other functions
+  month?: string;
+  year?: string;
+  sheetData?: any[][];
 }
