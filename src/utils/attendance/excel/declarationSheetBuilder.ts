@@ -77,11 +77,11 @@ const applyDeclarationSheetFormatting = (
   
   // Define row heights for declaration and signature text
   const rowHeights: { [key: number]: number } = {
-    0: 240 // Title + declaration text row - increased to 240 as requested
+    0: 200 // Title + declaration text row - reduced from 240 to save space
   };
   
   // Set the signature text row height
-  rowHeights[signatureTextRow] = 50; // Signature text row
+  rowHeights[signatureTextRow] = 40; // Signature text row - reduced from 50 to save space
   
   setRowHeights(ws, rowHeights);
   

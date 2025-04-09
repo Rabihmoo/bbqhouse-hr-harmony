@@ -45,16 +45,18 @@ export const generatePdfForEmployee = async (
     const declarationText = extractDeclarationText(sheetData);
     addDeclarationText(doc, declarationText);
     
+    // Adjusted starting Y position for table to start higher on the page
+    let y = 50; // Reduced from 70
+    
     // Add table with attendance data
-    let y = 70; // Starting Y position for table
     y = renderTableHeaders(doc, y);
     y = renderTableRows(doc, sheetData, y);
     
     // Add totals summary
     y = addTotalsSummary(doc, employeeReport, y);
     
-    // Add signature section
-    addSignatureSection(doc, y + 10);
+    // Add signature section with less spacing
+    addSignatureSection(doc, y + 5); // Reduced from +10
     
     // Convert to Blob
     const pdfBlob = doc.output('blob');
