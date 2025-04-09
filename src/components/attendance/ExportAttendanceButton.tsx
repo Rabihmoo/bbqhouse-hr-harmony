@@ -1,26 +1,16 @@
-
 import React from 'react';
 import { FileDown, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { AttendanceRecord } from '@/types/attendance';
-import { 
-  exportToCsv, 
-  exportToExcel, 
-  prepareAttendanceDataForExport, 
-  getExportFileName 
-} from '@/utils/exportOperations';
 import { format } from "date-fns";
-
 import { generateEmployeeDeclarationPdf } from "@/utils/attendance/pdf/generatePdfDeclaration";
-import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
 
 interface ExportAttendanceButtonProps {
   filteredDailyRecords: AttendanceRecord[];
@@ -31,82 +21,52 @@ export const ExportAttendanceButton = ({
   filteredDailyRecords,
   selectedDate
 }: ExportAttendanceButtonProps) => {
-  if (filteredDailyRecords.length === 0) {
-    return null;
-  }
+  if (filteredDailyRecords.length === 0) return null;
 
-  const handleExport = (type: 'csv' | 'excel') => {
-    if (filteredDailyRecords.length === 0) {
-      toast.error("No data to export");
-      return;
-    }
+  const handleExportPDF = () => {
+    const groupedByEmployee: { [id: string]: AttendanceRecord[] } = {};
 
-    const exportData = prepareAttendanceDataForExport(filteredDailyRecords);
-    const fileName = getExportFileName(`Attendance_${format(selectedDate, 'yyyy-MM-dd')}`);
-
-    const employeeGroups: {[key: string]: AttendanceRecord[]} = {};
     filteredDailyRecords.forEach(record => {
-      if (!employeeGroups[record.employeeId]) {
-        employeeGroups[record.employeeId] = [];
+      if (!groupedByEmployee[record.employeeId]) {
+        groupedByEmployee[record.employeeId] = [];
       }
-      employeeGroups[record.employeeId].push(record);
+      groupedByEmployee[record.employeeId].push(record);
     });
 
-    if (type === 'csv') {
-      exportToCsv(exportData, fileName);
-      Object.entries(employeeGroups).forEach(([employeeId, records]) => {
-        const employeeName = records[0].employeeName.replace(/\s+/g, '_');
-        const individualFileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
-        exportToCsv(prepareAttendanceDataForExport(records), individualFileName, employeeId);
-      });
-      toast.success("Attendance data exported as CSV");
-    } else {
-      exportToExcel(exportData, fileName);
-      Object.entries(employeeGroups).forEach(([employeeId, records]) => {
-        const employeeName = records[0].employeeName.replace(/\s+/g, '_');
-        const individualFileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
-        exportToExcel(prepareAttendanceDataForExport(records), individualFileName, employeeId);
-      });
-      toast.success("Attendance data exported as Excel");
-    }
-  };
+    Object.entries(groupedByEmployee).forEach(([employeeId, records]) => {
+      const sheetData = records.map(r => [
+        r.employeeName,
+        r.date,
+        r.clockIn || "NAO ENTRADA",
+        r.clockOut || "NAO SAIDA",
+        r.totalHours,
+        r.extraHours
+      ]);
 
-  const handleExportPdf = () => {
-    const employeeGroups: {[key: string]: AttendanceRecord[]} = {};
-    filteredDailyRecords.forEach(record => {
-      if (!employeeGroups[record.employeeId]) {
-        employeeGroups[record.employeeId] = [];
-      }
-      employeeGroups[record.employeeId].push(record);
-    });
-
-    Object.entries(employeeGroups).forEach(([employeeId, records]) => {
-      const employeeName = records[0].employeeName.replace(/\s+/g, '_');
-      const fileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
-
-      // Create a complete EmployeeReport with all required properties
-      const employeeReport = {
-        employeeId: records[0].employeeId,
+      const report = {
+        employeeId,
         employeeName: records[0].employeeName,
-        biNumber: "N/A", // Placeholder if not available
-        department: "N/A", // Placeholder if not available
-        company: "N/A", // Placeholder if not available
-        totalHours: records.reduce((acc, r) => acc + (r.totalHours || 0), 0),
-        workingDays: records.length,
-        extraHours: 0, // Default value
-        attendanceRecords: [] // Empty array as default
+        company: records[0].company || "SUA EMPRESA",
+        month: format(selectedDate, "MMMM").toUpperCase(),
+        year: format(selectedDate, "yyyy"),
+        totalHours: records.reduce((sum, r) => sum + (r.totalHours || 0), 0),
+        workingDays: records.filter(r => r.totalHours && r.totalHours > 0).length,
+        sheetData
       };
 
-      const workbook = XLSX.utils.book_new();
-      const sheet = XLSX.utils.json_to_sheet(prepareAttendanceDataForExport(records));
-      XLSX.utils.book_append_sheet(workbook, sheet, "Sheet1");
-
-      const pdfDoc = generateEmployeeDeclarationPdf(employeeReport, workbook);
-      const pdfBlob = pdfDoc.output("blob");
-      saveAs(pdfBlob, `${fileName}.pdf`);
+      const pdf = generateEmployeeDeclarationPdf(report);
+      const blob = pdf.output("blob");
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${report.employeeName.replace(/\s+/g, "_")}_${report.month}_${report.year}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     });
 
-    toast.success("Attendance exported as PDF");
+    toast.success("PDF(s) exported and downloaded");
   };
 
   return (
@@ -118,15 +78,7 @@ export const ExportAttendanceButton = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleExport('csv')}>
-          <FileSpreadsheet className="h-4 w-4 mr-2" />
-          Export as CSV
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleExport('excel')}>
-          <FileSpreadsheet className="h-4 w-4 mr-2" />
-          Export as Excel
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleExportPdf}>
+        <DropdownMenuItem onClick={handleExportPDF}>
           <FileSpreadsheet className="h-4 w-4 mr-2" />
           Export as PDF
         </DropdownMenuItem>
