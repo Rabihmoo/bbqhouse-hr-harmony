@@ -1,4 +1,3 @@
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -36,13 +35,11 @@ export function IndividualReportContent({
   };
 
   const handleExportIndividual = () => {
-    // Get the selected employee report
     const selectedEmployeeReport = reportData.employeeReports.find(
       report => report.employeeId === selectedEmployee
     );
     
     if (selectedEmployeeReport) {
-      // Generate and download the PDF for this employee
       generateAndDownloadPdf(selectedEmployeeReport, month, year);
     } else {
       toast({
@@ -53,7 +50,6 @@ export function IndividualReportContent({
     }
   };
 
-  // Get the selected employee report
   const selectedEmployeeReport = reportData.employeeReports.find(
     report => report.employeeId === selectedEmployee
   );
