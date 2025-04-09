@@ -55,7 +55,7 @@ export const generatePdfForEmployee = async (
     // Add totals summary directly after the table rows
     y = addTotalsSummary(doc, employeeReport, y);
     
-    // Add signature section with the new merged cell format
+    // Add signature section with proper spacing
     addSignatureSection(doc, y + 5);
     
     // Convert to Blob
