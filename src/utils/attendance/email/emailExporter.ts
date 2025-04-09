@@ -2,6 +2,9 @@
 import { AttendanceReport, EmployeeReport } from "../types";
 import { sendEmailVia } from "../emailUtils";
 import { formatTime } from "../timeCalculations";
+import { generatePdfForEmployee } from "../pdf/pdfGenerator";
+import * as XLSX from "xlsx";
+import { toast } from "sonner";
 
 /**
  * Send declarations via email
@@ -12,35 +15,58 @@ export const sendDeclarationsViaEmail = async (
   filteredEmployees: EmployeeReport[],
   format: 'excel' | 'pdf' | 'both'
 ): Promise<void> => {
-  // Calculate summary stats
-  const totalEmployees = filteredEmployees.length;
-  const totalHours = filteredEmployees.reduce((sum, emp) => sum + emp.totalHours, 0);
-  const totalWorkingDays = filteredEmployees.reduce((sum, emp) => sum + emp.workingDays, 0);
-  
-  // Create email body
-  const emailData = {
-    to: email,
-    subject: `Employee Declarations - ${reportData.month} ${reportData.year}`,
-    body: `
-      Please find attached the employee declarations for ${reportData.month} ${reportData.year}.
-      
-      Summary:
-      - Total Employees: ${totalEmployees}
-      - Total Working Hours: ${formatTime(totalHours)}
-      - Total Working Days: ${totalWorkingDays}
-      
-      Format: ${format === 'both' ? 'Excel and PDF' : format.toUpperCase()}
-      
-      This is an automated email from the HR Management System.
-    `,
-    attachments: [`Employee_Declarations_${reportData.month}_${reportData.year}.xlsx`],
-    metadata: {
-      reportMonth: reportData.month,
-      reportYear: reportData.year,
-      employeeCount: totalEmployees
+  try {
+    // Calculate summary stats
+    const totalEmployees = filteredEmployees.length;
+    const totalHours = filteredEmployees.reduce((sum, emp) => sum + emp.totalHours, 0);
+    const totalWorkingDays = filteredEmployees.reduce((sum, emp) => sum + emp.workingDays, 0);
+    
+    // Prepare the attachments (Excel file is created in exportDeclarations.ts)
+    const attachments = [`Employee_Declarations_${reportData.month}_${reportData.year}.xlsx`];
+    
+    if (format === 'pdf' || format === 'both') {
+      for (const employee of filteredEmployees) {
+        attachments.push(`${employee.employeeName.replace(/\s+/g, "_")}_Declaration_${reportData.month}_${reportData.year}.xlsx`);
+      }
     }
-  };
-  
-  // Send email using notification service
-  await sendEmailVia('employee', emailData);
+    
+    // Create email body with employee-specific subjects
+    const employeeNames = filteredEmployees.map(emp => emp.employeeName).join(", ");
+    const subject = filteredEmployees.length === 1 
+      ? `Declaração de Horas Extras - ${filteredEmployees[0].employeeName}`
+      : `Declarações de Horas Extras - ${reportData.month} ${reportData.year}`;
+    
+    const emailData = {
+      to: email,
+      subject: subject,
+      body: `
+        Por favor, confira anexo as declarações de horas extras para ${reportData.month} ${reportData.year}.
+        
+        Resumo:
+        - Total de Funcionários: ${totalEmployees}
+        - Total de Horas Trabalhadas: ${formatTime(totalHours)}
+        - Total de Dias Trabalhados: ${totalWorkingDays}
+        
+        Funcionários: ${employeeNames}
+        
+        Formato: ${format === 'both' ? 'Excel e PDF' : format.toUpperCase()}
+        
+        Esta é uma mensagem automática do Sistema de Gestão de RH.
+      `,
+      attachments: attachments,
+      metadata: {
+        reportMonth: reportData.month,
+        reportYear: reportData.year,
+        employeeCount: totalEmployees
+      }
+    };
+    
+    // Send email using notification service
+    await sendEmailVia('employee', emailData);
+    toast.success(`Email sent to ${email}`);
+  } catch (error) {
+    console.error("Failed to send email:", error);
+    toast.error("Email sending failed");
+    throw new Error("Email sending failed");
+  }
 };

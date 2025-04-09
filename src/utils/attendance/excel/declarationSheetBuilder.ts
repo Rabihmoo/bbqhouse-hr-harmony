@@ -37,7 +37,8 @@ export const createEmployeeDeclarationSheet = (
     totalsRow,
     workingDaysRow,
     signatureTextRow,
-    signatureLineRow
+    signatureLineRow,
+    folgaRows
   } = createSheetStructure(employeeReport, month, year, fullDeclarationText);
   
   // Create worksheet from rows
@@ -51,7 +52,8 @@ export const createEmployeeDeclarationSheet = (
     totalsRow,
     workingDaysRow,
     signatureTextRow,
-    signatureLineRow
+    signatureLineRow,
+    folgaRows
   );
   
   return ws;
@@ -67,14 +69,18 @@ const applyDeclarationSheetFormatting = (
   totalsRow: number,
   workingDaysRow: number,
   signatureTextRow: number,
-  signatureLineRow: number
+  signatureLineRow: number,
+  folgaRows: number[]
 ): void => {
   // Set column widths for better readability
   setColumnWidths(ws, [25, 12, 10, 10, 10, 12]);
   
   // Define row heights for declaration and signature text
-  const rowHeights: { [rowIndex: number]: number } = {};
-  rowHeights[0] = 240; // Title + declaration text row - increased to 240 as requested
+  const rowHeights: { [key: number]: number } = {
+    0: 240 // Title + declaration text row - increased to 240 as requested
+  };
+  
+  // Set the signature text row height
   rowHeights[signatureTextRow] = 50; // Signature text row
   
   setRowHeights(ws, rowHeights);
@@ -99,6 +105,12 @@ const applyDeclarationSheetFormatting = (
     // WORKING DAYS label
     { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } },
   ];
+  
+  // Add merges for FOLGA rows (merge columns C and D)
+  folgaRows.forEach(row => {
+    merges.push({ s: { r: row, c: 2 }, e: { r: row, c: 3 } });
+  });
+  
   setMergedCells(ws, merges);
   
   // Apply text wrapping and alignment for declaration cell - added center alignment

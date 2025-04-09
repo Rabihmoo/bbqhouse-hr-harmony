@@ -18,10 +18,31 @@ export const formatAttendanceRecords = (
     let workTime = record.workTime || '00:00';
     let extraHours = record.extraHours || '00:00';
     
+    // Check if this is a FOLGA record
+    const isFolga = record.clockIn === 'FOLGA' || record.clockOut === 'FOLGA';
+    
     // Special handling for FOLGA
-    if (record.clockIn === 'FOLGA' || record.clockOut === 'FOLGA') {
+    if (isFolga) {
       workTime = '00:00';
       extraHours = '00:00';
+      
+      // For FOLGA rows, we'll create a special merged cell format in C and D
+      formattedRecords.push([
+        employeeReport.employeeName,
+        record.date,
+        {
+          v: 'FOLGA',
+          t: 's',
+          s: {
+            alignment: { horizontal: 'center', vertical: 'center' }
+          }
+        },
+        { v: '', t: 's' }, // Empty cell for Clock Out (will be merged with Clock In)
+        // Convert work time to proper time format
+        { v: convertTimeStringToExcelTime(workTime), t: 'n', z: '[h]:mm' },
+        // Convert extra hours to proper time format
+        { v: convertTimeStringToExcelTime(extraHours), t: 'n', z: '[h]:mm' }
+      ]);
     }
     // Handle missing clock values
     else if (!record.clockIn || !record.clockOut) {
@@ -31,18 +52,31 @@ export const formatAttendanceRecords = (
         workTime = '04:30';
       }
       extraHours = '00:00';
+      
+      formattedRecords.push([
+        employeeReport.employeeName,
+        record.date,
+        record.clockIn || '',
+        record.clockOut || '',
+        // Convert work time to proper time format
+        { v: convertTimeStringToExcelTime(workTime), t: 'n', z: '[h]:mm' },
+        // Convert extra hours to proper time format
+        { v: convertTimeStringToExcelTime(extraHours), t: 'n', z: '[h]:mm' }
+      ]);
     }
-    
-    formattedRecords.push([
-      employeeReport.employeeName,
-      record.date,
-      record.clockIn || '',
-      record.clockOut || '',
-      // Convert work time to proper time format using Excel's internal time representation
-      { v: convertTimeStringToExcelTime(workTime), t: 'n', z: '[h]:mm' },
-      // Convert extra hours to proper time format
-      { v: convertTimeStringToExcelTime(extraHours), t: 'n', z: '[h]:mm' }
-    ]);
+    else {
+      // Regular record with both clock in and out
+      formattedRecords.push([
+        employeeReport.employeeName,
+        record.date,
+        record.clockIn,
+        record.clockOut,
+        // Convert work time to proper time format
+        { v: convertTimeStringToExcelTime(workTime), t: 'n', z: '[h]:mm' },
+        // Convert extra hours to proper time format
+        { v: convertTimeStringToExcelTime(extraHours), t: 'n', z: '[h]:mm' }
+      ]);
+    }
   });
   
   return formattedRecords;
@@ -63,7 +97,8 @@ export const createSheetStructure = (
   totalsRow: number,
   workingDaysRow: number,
   signatureTextRow: number,
-  signatureLineRow: number
+  signatureLineRow: number,
+  folgaRows: number[]
 } => {
   const rows: any[][] = [];
   
@@ -79,8 +114,19 @@ export const createSheetStructure = (
   // Data starts at row 3 (0-indexed) or row 4 (1-indexed)
   const dataStartRow = 3;
   
+  // Track rows that have FOLGA to merge cells later
+  const folgaRows: number[] = [];
+  
   // Add attendance records
   const attendanceRows = formatAttendanceRecords(employeeReport);
+  
+  // Track which rows have FOLGA for cell merging
+  attendanceRows.forEach((row, index) => {
+    if (row[2] && typeof row[2] === 'object' && row[2].v === 'FOLGA') {
+      folgaRows.push(dataStartRow + index);
+    }
+  });
+  
   rows.push(...attendanceRows);
   
   const dataEndRow = dataStartRow + attendanceRows.length - 1;
@@ -140,6 +186,7 @@ export const createSheetStructure = (
     totalsRow,
     workingDaysRow,
     signatureTextRow,
-    signatureLineRow
+    signatureLineRow,
+    folgaRows
   };
 };

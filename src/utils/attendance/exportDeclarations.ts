@@ -3,98 +3,106 @@ import * as XLSX from "xlsx";
 import { AttendanceReport } from "./types";
 import { ExportOptions } from "@/hooks/use-attendance-uploader";
 import { createEmployeeDeclarationSheet } from "./excel/declarationSheetBuilder";
-import { generatePdfForEmployee } from "./pdf/pdfGenerator";
+import { generatePdfForEmployee, generateAndDownloadPdf } from "./pdf/pdfGenerator";
 import { registerEmployeeExport } from "./storage/exportStorage";
 import { sendDeclarationsViaEmail } from "./email/emailExporter";
 import { downloadExcelFile } from "./excelUtils";
+import { toast } from "sonner";
 
 // Function to export declarations for all employees
 export const exportEmployeeDeclarations = async (
   reportData: AttendanceReport, 
   options: ExportOptions
 ): Promise<void> => {
-  // Apply filters to employee reports
-  let filteredReports = reportData.employeeReports;
+  try {
+    // Apply filters to employee reports
+    let filteredReports = reportData.employeeReports;
 
-  // Filter by department if specified
-  if (options.filters.department) {
-    const departments = options.filters.department.split(",");
-    filteredReports = filteredReports.filter(emp => 
-      departments.includes(emp.department)
-    );
-  }
+    // Filter by department if specified
+    if (options.filters.department) {
+      const departments = options.filters.department.split(",");
+      filteredReports = filteredReports.filter(emp => 
+        departments.includes(emp.department)
+      );
+    }
 
-  // Filter by branch if specified
-  if (options.filters.branch) {
-    const branches = options.filters.branch.split(",");
-    filteredReports = filteredReports.filter(emp => 
-      branches.includes(emp.company) || !branches.length
-    );
-  }
+    // Filter by branch if specified
+    if (options.filters.branch) {
+      const branches = options.filters.branch.split(",");
+      filteredReports = filteredReports.filter(emp => 
+        branches.includes(emp.company) || !branches.length
+      );
+    }
 
-  // Filter by status (active only or all)
-  if (options.filters.status === 'active') {
-    // This would need to be adapted to your actual data structure
-    // For now we'll include all employees since we don't have status info
-  }
+    // Filter by status (active only or all)
+    if (options.filters.status === 'active') {
+      // This would need to be adapted to your actual data structure
+      // For now we'll include all employees since we don't have status info
+    }
 
-  // Filter by specific employees if specified
-  if (options.filters.employees && options.filters.employees.length > 0) {
-    filteredReports = filteredReports.filter(emp => 
-      options.filters.employees?.includes(emp.employeeId)
-    );
-  }
+    // Filter by specific employees if specified
+    if (options.filters.employees && options.filters.employees.length > 0) {
+      filteredReports = filteredReports.filter(emp => 
+        options.filters.employees?.includes(emp.employeeId)
+      );
+    }
 
-  // Create a workbook for multiple sheets (one per employee)
-  const workbook = XLSX.utils.book_new();
-  
-  // Process each employee
-  for (const employeeReport of filteredReports) {
-    // Create the declaration sheet for this employee
-    const sheet = createEmployeeDeclarationSheet(
-      employeeReport,
-      reportData.month.toUpperCase(),
-      reportData.year,
-      options.includeSignature
-    );
+    // Create a workbook for multiple sheets (one per employee)
+    const workbook = XLSX.utils.book_new();
     
-    // Add the sheet to the workbook
-    const sheetName = employeeReport.employeeName.substring(0, 30).replace(/[*?:[\]\/\\]/g, "");
-    XLSX.utils.book_append_sheet(workbook, sheet, sheetName);
-    
-    // If PDF export is required, generate a separate PDF for this employee
-    if (options.format === 'pdf' || options.format === 'both') {
-      await generatePdfForEmployee(employeeReport, reportData.month, reportData.year);
+    // Process each employee
+    for (const employeeReport of filteredReports) {
+      // Create the declaration sheet for this employee
+      const sheet = createEmployeeDeclarationSheet(
+        employeeReport,
+        reportData.month.toUpperCase(),
+        reportData.year,
+        options.includeSignature
+      );
+      
+      // Add the sheet to the workbook
+      const sheetName = employeeReport.employeeName.substring(0, 30).replace(/[*?:[\]\/\\]/g, "");
+      XLSX.utils.book_append_sheet(workbook, sheet, sheetName);
+      
+      // If PDF export is required, generate a separate PDF for this employee
+      if (options.format === 'pdf' || options.format === 'both') {
+        await generateAndDownloadPdf(employeeReport, reportData.month, reportData.year);
+      }
+      
+      // Register the export in the employee record
+      registerEmployeeExport(
+        employeeReport, 
+        reportData.month, 
+        reportData.year, 
+        options.format
+      );
     }
     
-    // Register the export in the employee record
-    registerEmployeeExport(
-      employeeReport, 
-      reportData.month, 
-      reportData.year, 
-      options.format
-    );
-  }
-  
-  // Generate Excel file for all employees
-  if (options.format === 'excel' || options.format === 'both') {
-    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-    const blob = new Blob([excelBuffer], { 
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-    });
+    // Generate Excel file for all employees
+    if (options.format === 'excel' || options.format === 'both') {
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+      });
+      
+      // Create download link for Excel
+      downloadExcelFile(blob, `Employee_Declarations_${reportData.month}_${reportData.year}.xlsx`);
+    }
     
-    // Create download link for Excel
-    downloadExcelFile(blob, `Employee_Declarations_${reportData.month}_${reportData.year}.xlsx`);
-  }
-  
-  // If email delivery is enabled, send email with attachments
-  if (options.sendEmail && options.emailAddress) {
-    await sendDeclarationsViaEmail(
-      options.emailAddress,
-      reportData,
-      filteredReports,
-      options.format
-    );
+    // If email delivery is enabled, send email with attachments
+    if (options.sendEmail && options.emailAddress) {
+      await sendDeclarationsViaEmail(
+        options.emailAddress,
+        reportData,
+        filteredReports,
+        options.format
+      );
+    }
+    
+    toast.success("Export completed successfully!");
+  } catch (error) {
+    console.error("Export failed:", error);
+    toast.error("Failed to export declarations");
   }
 };
 
