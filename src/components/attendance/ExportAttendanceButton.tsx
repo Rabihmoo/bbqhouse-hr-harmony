@@ -29,38 +29,15 @@ export const ExportAttendanceButton = ({
   if (filteredDailyRecords.length === 0) return null;
 
   const handleExport = (type: 'csv' | 'excel') => {
-    if (filteredDailyRecords.length === 0) {
-      toast.error("No data to export");
-      return;
-    }
-
     const exportData = prepareAttendanceDataForExport(filteredDailyRecords);
     const fileName = getExportFileName(`Attendance_${format(selectedDate, 'yyyy-MM-dd')}`);
 
-    const employeeGroups: { [key: string]: AttendanceRecord[] } = {};
-    filteredDailyRecords.forEach(record => {
-      if (!employeeGroups[record.employeeId]) {
-        employeeGroups[record.employeeId] = [];
-      }
-      employeeGroups[record.employeeId].push(record);
-    });
-
     if (type === 'csv') {
       exportToCsv(exportData, fileName);
-      Object.entries(employeeGroups).forEach(([employeeId, records]) => {
-        const employeeName = records[0].employeeName.replace(/\s+/g, '_');
-        const individualFileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
-        exportToCsv(prepareAttendanceDataForExport(records), individualFileName, employeeId);
-      });
-      toast.success("Attendance data exported as CSV");
+      toast.success("CSV exported");
     } else {
       exportToExcel(exportData, fileName);
-      Object.entries(employeeGroups).forEach(([employeeId, records]) => {
-        const employeeName = records[0].employeeName.replace(/\s+/g, '_');
-        const individualFileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
-        exportToExcel(prepareAttendanceDataForExport(records), individualFileName, employeeId);
-      });
-      toast.success("Attendance data exported as Excel");
+      toast.success("Excel exported");
     }
   };
 
