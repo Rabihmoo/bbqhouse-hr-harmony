@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import { EmployeeReport } from "../types";
-import { getFormattedSignatureDate } from "../utils/declarationGenerators";
+import { getFormattedSignatureDate } from "../declarationGenerator";
 
 /**
  * Renders attendance table headers

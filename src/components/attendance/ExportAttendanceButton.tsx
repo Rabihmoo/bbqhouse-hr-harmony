@@ -84,10 +84,17 @@ export const ExportAttendanceButton = ({
       const employeeName = records[0].employeeName.replace(/\s+/g, '_');
       const fileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
 
+      // Create a complete EmployeeReport with all required properties
       const employeeReport = {
+        employeeId: records[0].employeeId,
         employeeName: records[0].employeeName,
+        biNumber: "N/A", // Placeholder if not available
+        department: "N/A", // Placeholder if not available
+        company: "N/A", // Placeholder if not available
         totalHours: records.reduce((acc, r) => acc + (r.totalHours || 0), 0),
-        workingDays: records.length
+        workingDays: records.length,
+        extraHours: 0, // Default value
+        attendanceRecords: [] // Empty array as default
       };
 
       const workbook = XLSX.utils.book_new();
