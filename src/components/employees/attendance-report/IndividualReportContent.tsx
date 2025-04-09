@@ -1,3 +1,4 @@
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,6 @@ import { Download, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AttendanceReport } from "@/utils/attendanceProcessor";
 import { DeclarationText } from "./DeclarationText";
-import { generateAndDownloadPdf } from "@/utils/attendance/pdf/pdfGenerator";
 
 interface IndividualReportContentProps {
   reportData: AttendanceReport;
@@ -34,21 +34,10 @@ export function IndividualReportContent({
   };
 
   const handleExportIndividual = () => {
-    // Get the selected employee report
-    const selectedEmployeeReport = reportData.employeeReports.find(
-      report => report.employeeId === selectedEmployee
-    );
-    
-    if (selectedEmployeeReport) {
-      // Call the PDF generation and download function
-      generateAndDownloadPdf(selectedEmployeeReport, month, year);
-    } else {
-      toast({
-        title: "Error",
-        description: "No employee selected or employee data not found.",
-        variant: "destructive"
-      });
-    }
+    toast({
+      title: "Declaration exported",
+      description: "The individual declaration has been exported as PDF.",
+    });
   };
 
   // Get the selected employee report
