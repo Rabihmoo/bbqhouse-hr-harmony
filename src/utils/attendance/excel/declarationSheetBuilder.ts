@@ -73,10 +73,11 @@ const applyDeclarationSheetFormatting = (
   setColumnWidths(ws, [25, 12, 10, 10, 10, 12]);
   
   // Define row heights for declaration and signature text
-  setRowHeights(ws, {
-    0: 180, // Title + declaration text row
-    signatureTextRow: 50 // Signature text row
-  });
+  const rowHeights: { [rowIndex: number]: number } = {};
+  rowHeights[0] = 180; // Title + declaration text row
+  rowHeights[signatureTextRow] = 50; // Signature text row
+  
+  setRowHeights(ws, rowHeights);
   
   // Define merged cells
   const merges = [
