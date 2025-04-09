@@ -5,7 +5,7 @@ import { jsPDF } from "jspdf";
  * Sets up the title section of the PDF declaration
  */
 export const renderPdfTitle = (doc: jsPDF): void => {
-  doc.setFontSize(16);
+  doc.setFontSize(14); // Slightly smaller font size for better fit
   doc.setFont("helvetica", "bold");
   doc.text("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS", 105, 20, { 
     align: "center" 
@@ -17,16 +17,21 @@ export const renderPdfTitle = (doc: jsPDF): void => {
  * Returns the height of the rendered text
  */
 export const renderDeclarationText = (doc: jsPDF, declarationText: string): number => {
-  doc.setFontSize(11);
+  doc.setFontSize(10); // Smaller font size for the declaration text
   doc.setFont("helvetica", "normal");
-  doc.text(declarationText, 20, 35, { 
-    maxWidth: 170,
+  
+  // Apply proper text alignment and line spacing
+  const textLines = doc.splitTextToSize(declarationText, 160); // Narrower text for better appearance
+  
+  // Center the text block horizontally
+  const startX = (doc.internal.pageSize.width - 160) / 2;
+  
+  doc.text(textLines, startX, 35, { 
     align: "justify",
-    lineHeightFactor: 1.3
+    lineHeightFactor: 1.2 // Slightly reduced line height
   });
   
-  const textLines = doc.splitTextToSize(declarationText, 170);
-  const textHeight = textLines.length * 5.5; // 5.5mm per line
+  const textHeight = textLines.length * 4.8; // Adjusted for smaller font size
   return textHeight;
 };
 
@@ -57,6 +62,7 @@ export const renderTableHeaders = (doc: jsPDF, startY: number): number => {
  * Renders the signature section at the bottom of the PDF
  */
 export const renderSignatureSection = (doc: jsPDF, y: number): void => {
+  doc.setFontSize(10); // Consistent font size
   doc.setFont("helvetica", "normal");
   doc.text("Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.", 20, y, { 
     maxWidth: 170,

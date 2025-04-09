@@ -1,6 +1,4 @@
-
 import { jsPDF } from "jspdf";
-import { AttendanceRecord } from "../types";
 
 /**
  * Renders a row in the attendance table

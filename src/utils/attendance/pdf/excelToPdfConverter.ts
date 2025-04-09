@@ -49,13 +49,13 @@ export const convertEmployeeReportToPdf = async (
   // Extract data from first sheet
   const sheetData = jsonData[0].data;
   
-  // Render the title
+  // Render the title (centered)
   renderPdfTitle(doc);
   
   // Extract declaration text (without the title)
   const declarationText = sheetData[0][0].replace("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS\n\n", "");
   
-  // Render declaration text and get the height
+  // Render declaration text with proper alignment and get the height
   const textHeight = renderDeclarationText(doc, declarationText);
   
   // Create table with proper positioning after the text
