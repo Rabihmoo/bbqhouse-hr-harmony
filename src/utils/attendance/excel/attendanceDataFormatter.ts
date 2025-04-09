@@ -1,4 +1,3 @@
-
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
 import { convertTimeStringToExcelTime } from "./timeConversionUtils";
@@ -34,10 +33,27 @@ export const formatAttendanceRecords = (
           v: 'FOLGA',
           t: 's',
           s: {
-            alignment: { horizontal: 'center', vertical: 'center' }
+            alignment: { horizontal: 'center', vertical: 'center' },
+            border: {
+              top: { style: 'thin' },
+              bottom: { style: 'thin' },
+              left: { style: 'thin' },
+              right: { style: 'thin' }
+            }
           }
         },
-        { v: '', t: 's' }, // Empty cell for Clock Out (will be merged with Clock In)
+        { 
+          v: '', 
+          t: 's',
+          s: {
+            border: {
+              top: { style: 'thin' },
+              bottom: { style: 'thin' },
+              left: { style: 'thin' },
+              right: { style: 'thin' }
+            }
+          }
+        }, // Empty cell for Clock Out (will be merged with Clock In)
         // Convert work time to proper time format
         { v: convertTimeStringToExcelTime(workTime), t: 'n', z: '[h]:mm' },
         // Convert extra hours to proper time format

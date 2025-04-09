@@ -16,6 +16,36 @@ export const downloadExcelFile = (blob: Blob, filename: string): void => {
   toast.success(`${filename} downloaded`);
 };
 
+// Helper function to download PDF file
+export const downloadPdfFile = (blob: Blob, filename: string): void => {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+  
+  toast.success(`${filename} downloaded`);
+};
+
+// Convert Excel workbook to JSON
+export const ExcelToJSON = (workbook: XLSX.WorkBook): any[] => {
+  const result: any[] = [];
+  
+  workbook.SheetNames.forEach(sheetName => {
+    const ws = workbook.Sheets[sheetName];
+    const json = XLSX.utils.sheet_to_json(ws, { header: 1 });
+    result.push({
+      sheetName: sheetName,
+      data: json
+    });
+  });
+  
+  return result;
+};
+
 // Create a new workbook with a sheet
 export const createWorkbookSheet = (
   data: any[][],

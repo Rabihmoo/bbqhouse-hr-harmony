@@ -72,7 +72,8 @@ export const applyFormattingToAllCells = (
   options: {
     headerRow?: number,
     boldRows?: number[],
-    applyBorders?: boolean
+    applyBorders?: boolean,
+    applyWrapText?: boolean
   }
 ): void => {
   const range = XLSX.utils.decode_range(ws['!ref'] || "A1");
@@ -91,6 +92,13 @@ export const applyFormattingToAllCells = (
         applyCellBorders(ws, cellAddress);
       }
       
+      // Apply wrap text if needed
+      if (options.applyWrapText) {
+        if (!ws[cellAddress].s) ws[cellAddress].s = {};
+        if (!ws[cellAddress].s.alignment) ws[cellAddress].s.alignment = {};
+        ws[cellAddress].s.alignment.wrapText = true;
+      }
+      
       // Apply header formatting
       if (options.headerRow !== undefined && r === options.headerRow) {
         applyCellFont(ws, cellAddress, { bold: true });
@@ -99,7 +107,8 @@ export const applyFormattingToAllCells = (
         // Center align headers
         applyCellTextFormatting(ws, cellAddress, { 
           horizontal: 'center',
-          vertical: 'center'
+          vertical: 'center',
+          wrapText: true
         });
       }
       
@@ -112,7 +121,8 @@ export const applyFormattingToAllCells = (
       if (r > (options.headerRow || 0) && c >= 1 && c <= 5) {
         applyCellTextFormatting(ws, cellAddress, { 
           horizontal: 'center',
-          vertical: 'center'
+          vertical: 'center',
+          wrapText: true
         });
       }
     }

@@ -113,25 +113,26 @@ const applyDeclarationSheetFormatting = (
   
   setMergedCells(ws, merges);
   
-  // Apply text wrapping and alignment for declaration cell - added center alignment
+  // Apply text wrapping and alignment for declaration cell
   applyCellTextFormatting(ws, 'A1', { 
     wrapText: true, 
     vertical: 'center', 
     horizontal: 'center' 
   });
   
-  // Apply text wrapping and alignment for signature text cell - added center alignment
+  // Apply text wrapping and alignment for signature text cell
   applyCellTextFormatting(ws, XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }), { 
     wrapText: true, 
     vertical: 'center',
     horizontal: 'center'
   });
   
-  // Apply formatting to all cells (borders, bold headers, etc.)
+  // Apply formatting to all cells (borders, bold headers, wrap text for all cells)
   applyFormattingToAllCells(ws, {
     headerRow: 2, // Header is at row 3 (0-indexed)
     boldRows: [totalsRow, workingDaysRow],
-    applyBorders: true
+    applyBorders: true,
+    applyWrapText: true  // Apply wrap text to all cells
   });
   
   // Make sure formula cells use proper time format for SUM results
