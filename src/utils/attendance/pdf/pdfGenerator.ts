@@ -48,11 +48,16 @@ export const generatePdfForEmployee = async (
     doc.setFontSize(14);
     doc.text("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS", 105, 15, { align: "center" });
     
-    // Set declaration text
+    // Set declaration text - centered with paragraph formatting
     doc.setFontSize(10);
-    doc.text(sheetData[0][0].replace("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS\n\n", ""), 10, 30, { 
-      maxWidth: 190, 
-      align: "left"
+    
+    // Extract the declaration text but with better formatting
+    const declarationText = sheetData[0][0].replace("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS\n\n", "");
+    
+    // Center the declaration text as a whole block
+    doc.text(declarationText, 105, 30, { 
+      maxWidth: 160, 
+      align: "center"
     });
     
     // Create table
