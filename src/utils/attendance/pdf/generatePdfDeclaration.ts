@@ -1,44 +1,75 @@
-
 import { jsPDF } from "jspdf";
-import { EmployeeReport } from "@/types/attendance";
+import { EmployeeReport } from "@/utils/attendance/types";
 import { getFormattedSignatureDate } from "@/utils/attendance/declarationGenerator";
 
-export const renderTableHeaders = (doc: jsPDF, startY: number): number => {
+export const generateEmployeeDeclarationPdf = (
+  employeeReport: EmployeeReport,
+  month: string,
+  year: string
+): jsPDF => {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+
+  // Title
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text(
+    "DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS",
+    105,
+    12,
+    { align: "center" }
+  );
+
+  // Declaration paragraph
+  const declarationText = `Eu, ${employeeReport.employeeName}, portador(a) do documento de identificação ${employeeReport.biNumber} e funcionário(a) da empresa ${employeeReport.companyName}, venho por meio deste documento declarar o meu consentimento e aceitação para realizar horas extras de trabalho de acordo com as condições e termos estabelecidos pela legislação vigente e pela política interna da empresa. Entendo que a necessidade de laborar horas extras pode surgir devido a circunstâncias excepcionais e/ou necessidades operacionais da empresa. Estou ciente de que serei compensado(a) adequadamente pelas horas extras trabalhadas de acordo com as regras e regulamentos aplicáveis. A tabela a seguir detalha as horas extras a serem trabalhadas durante o mês de ${month} de ${year}:`;
+
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+  doc.text(declarationText, 10, 20, { maxWidth: 190, align: "justify" });
+
+  // Table headers
   const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
   const columnWidths = [45, 25, 25, 25, 30, 30];
   let x = 10;
-  doc.setFont("helvetica", "bold");
+  let y = 65;
+
   doc.setFontSize(9);
-  doc.setFillColor(238, 238, 238);
+  doc.setFont("helvetica", "bold");
   headers.forEach((header, i) => {
-    doc.rect(x, startY, columnWidths[i], 8, "FD");
-    doc.text(header, x + columnWidths[i] / 2, startY + 5, { align: "center" });
+    doc.rect(x, y, columnWidths[i], 8, "FD");
+    doc.text(header, x + columnWidths[i] / 2, y + 5, { align: "center" });
     x += columnWidths[i];
   });
-  return startY + 8;
-};
 
-export const renderTableRows = (doc: jsPDF, sheetData: any[][], startY: number): number => {
-  const columnWidths = [45, 25, 25, 25, 30, 30];
-  doc.setFont("helvetica", "normal");
+  // Table data rows
+  y += 8;
   doc.setFontSize(8);
-  let y = startY;
+  doc.setFont("helvetica", "normal");
 
-  const dataRows = sheetData.filter(row => row[0] !== "");
+  employeeReport.dailyData.forEach((row) => {
+    x = 10;
+    const isFolga = row.clockIn === "FOLGA";
 
-  dataRows.forEach(row => {
-    let x = 10;
-    const isFolga = row[2] === "FOLGA";
+    const rowData = [
+      employeeReport.employeeName,
+      row.date,
+      row.clockIn,
+      row.clockOut,
+      row.totalHours,
+      row.extraHours
+    ];
 
-    row.forEach((cell, i) => {
-      let text = cell?.toString() || "";
-
-      if ((i === 4 || i === 5) && typeof cell === "number") {
-        const mins = Math.round(cell * 24 * 60);
-        const h = Math.floor(mins / 60);
-        const m = mins % 60;
-        text = `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
-      }
+    rowData.forEach((cell, i) => {
+      const cellText =
+        typeof cell === "number"
+          ? (() => {
+              const mins = Math.round(cell * 24 * 60);
+              const h = Math.floor(mins / 60);
+              const m = mins % 60;
+              return `${h.toString().padStart(2, "0")}:${m
+                .toString()
+                .padStart(2, "0")}`;
+            })()
+          : String(cell);
 
       if (isFolga && i === 2) {
         doc.rect(x, y, columnWidths[2] + columnWidths[3], 6);
@@ -52,123 +83,42 @@ export const renderTableRows = (doc: jsPDF, sheetData: any[][], startY: number):
       if (isFolga && i === 3) return;
 
       doc.rect(x, y, columnWidths[i], 6);
-      doc.text(text, x + columnWidths[i] / 2, y + 4, { align: "center" });
+      doc.text(cellText, x + columnWidths[i] / 2, y + 4, { align: "center" });
       x += columnWidths[i];
     });
 
     y += 6;
   });
 
-  return y;
-};
-
-export const addTotalsSummary = (doc: jsPDF, report: EmployeeReport, startY: number): number => {
-  let y = startY + 2;
+  // Totals
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.text("TOTAL WORKING HOURS", 10, y + 6);
+  const totalHours = Math.floor(employeeReport.totalHours);
+  const totalMinutes = Math.round((employeeReport.totalHours - totalHours) * 60);
+  const formattedTotalTime = `${totalHours}:${totalMinutes.toString().padStart(2, "0")}`;
+  doc.rect(130, y + 3, 30, 7);
+  doc.text(formattedTotalTime, 145, y + 7, { align: "center" });
 
-  const h = Math.floor(report.totalHours);
-  const m = Math.round((report.totalHours - h) * 60);
-  const total = `${h}:${m.toString().padStart(2, "0")}`;
+  doc.text("WORKING DAYS", 10, y + 14);
+  doc.rect(130, y + 11, 30, 7);
+  doc.text(`${employeeReport.workingDays}`, 145, y + 15, { align: "center" });
 
-  doc.text("TOTAL WORKING HOURS", 10, y + 4);
-  doc.rect(130, y, 30, 7);
-  doc.text(total, 145, y + 4, { align: "center" });
-
-  y += 8;
-  doc.text("WORKING DAYS", 10, y + 4);
-  doc.rect(130, y, 30, 7);
-  doc.text(`${report.workingDays}`, 145, y + 4, { align: "center" });
-
-  return y + 8;
-};
-
-export const addSignatureBlock = (doc: jsPDF, startY: number): void => {
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 10;
-  const boxWidth = pageWidth - 2 * margin;
-  const confirmText =
+  // Confirmation block
+  const confirmationText =
     "Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.";
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
-  doc.setDrawColor(0);
-  doc.setLineWidth(0.2);
+  doc.rect(10, y + 20, 190, 14);
+  doc.text(confirmationText, 12, y + 29, { maxWidth: 186, align: "justify" });
 
-  doc.rect(margin, startY, boxWidth, 14);
-  doc.text(confirmText, margin + 2, startY + 9, {
-    maxWidth: boxWidth - 4,
-    align: "justify"
-  });
-
-  const y = startY + 22;
+  // Signature lines
   doc.setFontSize(9);
-  doc.rect(10, y, 90, 8);
-  doc.text("Assinatura do Funcionário: ______________________________", 12, y + 5);
-  doc.rect(115, y, 60, 8);
-  doc.text(`Data: ${getFormattedSignatureDate()}`, 117, y + 5);
-};
+  doc.rect(10, y + 38, 90, 8);
+  doc.text("Assinatura do Funcionário: ______________________________", 12, y + 43);
 
-/**
- * Generates the final employee PDF
- */
-export const generateEmployeeDeclarationPdf = (
-  employeeReport: EmployeeReport
-): jsPDF => {
-  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-
-  // Extract month and year from report or use defaults
-  const reportMonth = (employeeReport as any).month || "Current Month";
-  const reportYear = (employeeReport as any).year || new Date().getFullYear().toString();
-
-  // Header
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
-  doc.text(
-    "DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS",
-    105,
-    12,
-    { align: "center" }
-  );
-
-  // Declaration Text
-  const declarationText = `Eu, ${employeeReport.employeeName}, portador(a) do documento de identificação ${employeeReport.employeeId} e funcionário(a) da empresa ${employeeReport.company},
-venho por meio deste documento declarar o meu consentimento e aceitação para
-realizar horas extras de trabalho de acordo com as condições e termos
-estabelecidos pela legislação vigente e pela política interna da empresa.
-Entendo que a necessidade de laborar horas extras pode surgir devido a
-circunstâncias excepcionais e/ou necessidades operacionais da empresa. Estou
-ciente de que serei compensado(a) adequadamente pelas horas extras
-trabalhadas de acordo com as regras e regulamentos aplicáveis.
-A tabela a seguir detalha as horas extras a serem trabalhadas durante o
-mês de ${reportMonth} de ${reportYear}:`;
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(8);
-  doc.text(declarationText, 105, 25, {
-    maxWidth: 180,
-    align: "center"
-  });
-
-  // Table
-  let y = 45;
-  y = renderTableHeaders(doc, y);
-  
-  // Use attendance records or create a basic sheet data if not available
-  const sheetData = (employeeReport as any).sheetData || 
-    prepareAttendanceDataForExport(employeeReport);
-  
-  y = renderTableRows(doc, sheetData, y);
-  y = addTotalsSummary(doc, employeeReport, y);
-  addSignatureBlock(doc, y);
+  doc.rect(115, y + 38, 60, 8);
+  doc.text(`Data: ${getFormattedSignatureDate()}`, 117, y + 43);
 
   return doc;
 };
-
-// Helper function to convert employee report to sheet data if needed
-function prepareAttendanceDataForExport(report: EmployeeReport): any[][] {
-  // Create a basic sheet with the employee name
-  return [
-    [report.employeeName, new Date().toLocaleDateString(), "08:00", "17:00", report.totalHours, 0]
-  ];
-}
