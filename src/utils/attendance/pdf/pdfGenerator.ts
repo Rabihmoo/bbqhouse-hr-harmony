@@ -6,18 +6,11 @@ import { downloadPdfFile } from "../excelUtils";
 import { 
   createPdfDocument, 
   addTitle, 
-  addDeclarationText,
-  addSignatureSection 
+  addDeclarationText
 } from "./pdfLayout";
-import {
-  renderTableHeaders,
-  renderTableRows,
-  addTotalsSummary
-} from "./pdfTableRenderer";
+import { generateEmployeeDeclarationPdf } from "./generatePdfDeclaration";
 import {
   prepareWorkbookFromEmployeeReport,
-  convertWorkbookToData,
-  extractDeclarationText
 } from "./excelToPdfConverter";
 
 /**
@@ -32,31 +25,8 @@ export const generatePdfForEmployee = async (
     // Prepare Excel workbook
     const workbook = prepareWorkbookFromEmployeeReport(employeeReport, month, year);
     
-    // Convert workbook to data array
-    const sheetData = convertWorkbookToData(workbook);
-    
-    // Create PDF document
-    const doc = createPdfDocument();
-    
-    // Add title
-    addTitle(doc);
-    
-    // Extract and add declaration text
-    const declarationText = extractDeclarationText(sheetData);
-    addDeclarationText(doc, declarationText);
-    
-    // Adjusted starting Y position for table to start higher on the page
-    let y = 50; // Reduced from 70
-    
-    // Add table with attendance data
-    y = renderTableHeaders(doc, y);
-    y = renderTableRows(doc, sheetData, y);
-    
-    // Add totals summary directly after the table rows
-    y = addTotalsSummary(doc, employeeReport, y);
-    
-    // Add signature section with proper spacing
-    addSignatureSection(doc, y + 5);
+    // Generate PDF using the consolidated function
+    const doc = generateEmployeeDeclarationPdf(employeeReport, workbook);
     
     // Convert to Blob
     const pdfBlob = doc.output('blob');

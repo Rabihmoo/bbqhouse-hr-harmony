@@ -1,6 +1,7 @@
+
 import { jsPDF } from "jspdf";
 import { EmployeeReport } from "../types";
-import { getFormattedSignatureDate } from "../utils/declarationGenerators";
+import { getFormattedSignatureDate } from "../declarationGenerator";
 
 /**
  * Renders attendance table headers
@@ -8,6 +9,7 @@ import { getFormattedSignatureDate } from "../utils/declarationGenerators";
 export const renderTableHeaders = (doc: jsPDF, startY: number): number => {
   const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
   const columnWidths = [45, 25, 25, 25, 30, 30];
+  const totalWidth = columnWidths.reduce((sum, w) => sum + w, 0);
 
   doc.setFillColor(238, 238, 238);
   doc.setDrawColor(0);
@@ -57,8 +59,8 @@ export const renderTableRows = (doc: jsPDF, sheetData: any[][], startY: number):
       if (isFolga && cellIndex === 2) {
         doc.setDrawColor(0);
         doc.setLineWidth(0.2);
-        doc.rect(x, y, columnWidths[2] + columnWidths[3], 6);
-        doc.text("FOLGA", x + (columnWidths[2] + columnWidths[3]) / 2, y + 3.8, {
+        doc.rect(x, y, columnWidths[2] + columnWidths[3], 5); // Reduced row height
+        doc.text("FOLGA", x + (columnWidths[2] + columnWidths[3]) / 2, y + 3, {
           align: "center",
           baseline: "middle"
         });
@@ -68,14 +70,14 @@ export const renderTableRows = (doc: jsPDF, sheetData: any[][], startY: number):
 
       if (isFolga && cellIndex === 3) return;
 
-      doc.rect(x, y, columnWidths[cellIndex], 6);
-      doc.text(cellText, x + columnWidths[cellIndex] / 2, y + 4, {
+      doc.rect(x, y, columnWidths[cellIndex], 5); // Reduced row height
+      doc.text(cellText, x + columnWidths[cellIndex] / 2, y + 3, {
         align: "center"
       });
       x += columnWidths[cellIndex];
     });
 
-    y += 6;
+    y += 5; // Reduced row height
   });
 
   return y;
@@ -85,7 +87,7 @@ export const renderTableRows = (doc: jsPDF, sheetData: any[][], startY: number):
  * Adds total hours and working days summary directly after the table
  */
 export const addTotalsSummary = (doc: jsPDF, employeeReport: EmployeeReport, startY: number): number => {
-  let y = startY + 3;
+  let y = startY + 2; // Reduced spacing
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
 
@@ -108,32 +110,45 @@ export const addTotalsSummary = (doc: jsPDF, employeeReport: EmployeeReport, sta
 };
 
 /**
- * Adds the final declaration text and signature block
+ * Adds the signature section with confirmation text and signature lines
  */
 export const addSignatureBlock = (doc: jsPDF, startY: number) => {
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const boxMargin = 10;
-  const boxWidth = pageWidth - 2 * boxMargin;
-  let y = startY + 6;
-
+  const columnWidths = [45, 25, 25, 25, 30, 30];
+  const totalWidth = columnWidths.reduce((sum, w) => sum + w, 0);
+  
+  let y = startY + 4; // Add some space after totals
+  
+  // Confirmation text in merged cell with proper wrapping
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setDrawColor(0);
   doc.setLineWidth(0.2);
-
-  const confirmationText =
-    "Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.";
-
-  doc.rect(boxMargin, y, boxWidth, 14);
-  doc.text(confirmationText, boxMargin + 2, y + 9, {
-    maxWidth: boxWidth - 4,
-    align: "justify"
+  
+  // Create rectangle for confirmation text (merged cell across all columns)
+  doc.rect(10, y, totalWidth, 10);
+  
+  const confirmationText = "Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.";
+  
+  // Add centered text with wrapping
+  doc.text(confirmationText, 10 + totalWidth/2, y + 5, {
+    align: "center",
+    maxWidth: totalWidth - 4
   });
-
-  y += 22;
-  doc.setFontSize(9);
-  doc.rect(10, y, 90, 8);
-  doc.text("Assinatura do Funcionário: ______________________________", 12, y + 5);
-  doc.rect(115, y, 60, 8);
-  doc.text(`Data: ${getFormattedSignatureDate()}`, 117, y + 5);
+  
+  y += 12; // Move down for signature line
+  
+  // Signature line (merged A-C)
+  const signatureWidth = columnWidths[0] + columnWidths[1] + columnWidths[2];
+  doc.rect(10, y, signatureWidth, 8);
+  doc.text("Assinatura do Funcionário: _______________________________", 10 + signatureWidth/2, y + 4, { 
+    align: "center" 
+  });
+  
+  // Date line (merged E-F)
+  const dateX = 10 + signatureWidth + columnWidths[3];
+  const dateWidth = columnWidths[4] + columnWidths[5];
+  doc.rect(dateX, y, dateWidth, 8);
+  doc.text(`Data: ${getFormattedSignatureDate()}`, dateX + dateWidth/2, y + 4, { 
+    align: "center" 
+  });
 };
