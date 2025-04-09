@@ -91,9 +91,23 @@ export const generatePdfForEmployee = async (
         const isFolga = row[2] === "FOLGA";
         
         row.forEach((cell, cellIndex) => {
+          // Format time values properly
+          let cellText = cell.toString();
+          
+          // Handle numeric time values
+          if (cellIndex === 4 || cellIndex === 5) { // Work Time or Extra Hours column
+            if (typeof cell === 'number') {
+              // Convert Excel time value to HH:MM format
+              const totalMinutes = Math.round(cell * 24 * 60); // Convert to minutes
+              const hours = Math.floor(totalMinutes / 60);
+              const minutes = totalMinutes % 60;
+              cellText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            }
+          }
+          
           // Handle merging for FOLGA
           if (isFolga && cellIndex === 2) {
-            // Draw the merged FOLGA cell
+            // Draw the merged FOLGA cell with proper border and centered text
             doc.rect(x, y, columnWidths[2] + columnWidths[3], 8);
             doc.text("FOLGA", x + (columnWidths[2] + columnWidths[3]) / 2, y + 5, { align: "center" });
             x += columnWidths[2] + columnWidths[3];
@@ -107,7 +121,7 @@ export const generatePdfForEmployee = async (
           
           // Draw normal cell
           doc.rect(x, y, columnWidths[cellIndex], 8);
-          doc.text(cell.toString(), x + columnWidths[cellIndex] / 2, y + 5, { align: "center" });
+          doc.text(cellText, x + columnWidths[cellIndex] / 2, y + 5, { align: "center" });
           x += columnWidths[cellIndex];
         });
         
@@ -121,11 +135,14 @@ export const generatePdfForEmployee = async (
     doc.setFont("helvetica", "bold");
     doc.text("TOTAL WORKING HOURS", 10, y + 5);
     
-    // Calculate total work time
-    const totalWorkTime = employeeReport.totalHours.toString();
+    // Format total work time correctly
+    const totalHours = Math.floor(employeeReport.totalHours);
+    const totalMinutes = Math.round((employeeReport.totalHours - totalHours) * 60);
+    const formattedTotalTime = `${totalHours}:${totalMinutes.toString().padStart(2, '0')}`;
+    
     x = 130;
     doc.rect(x, y, 30, 8);
-    doc.text(totalWorkTime, x + 15, y + 5, { align: "center" });
+    doc.text(formattedTotalTime, x + 15, y + 5, { align: "center" });
     
     // Add working days
     y += 10;

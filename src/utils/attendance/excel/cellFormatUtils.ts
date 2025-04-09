@@ -77,3 +77,27 @@ export const applyCellFill = (
     fgColor: { rgb: color } 
   };
 };
+
+/**
+ * Specifically formats FOLGA cells with proper alignment and border
+ */
+export const applyFolgaCellFormatting = (
+  ws: XLSX.WorkSheet,
+  cellAddress: string
+): void => {
+  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+  if (!ws[cellAddress].s) ws[cellAddress].s = {};
+  
+  // Ensure strong border is applied
+  applyCellBorders(ws, cellAddress, 'thin');
+  
+  // Center text both horizontally and vertically
+  applyCellTextFormatting(ws, cellAddress, {
+    wrapText: true,
+    horizontal: 'center',
+    vertical: 'center'
+  });
+  
+  // Make text bold for emphasis
+  applyCellFont(ws, cellAddress, { bold: true });
+};

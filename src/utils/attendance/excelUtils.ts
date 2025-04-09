@@ -18,7 +18,10 @@ export const downloadExcelFile = (blob: Blob, filename: string): void => {
 
 // Helper function to download PDF file
 export const downloadPdfFile = (blob: Blob, filename: string): void => {
-  const url = URL.createObjectURL(blob);
+  // Ensure blob has the correct MIME type for PDF
+  const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+  
+  const url = URL.createObjectURL(pdfBlob);
   const link = document.createElement('a');
   link.href = url;
   link.download = filename;
