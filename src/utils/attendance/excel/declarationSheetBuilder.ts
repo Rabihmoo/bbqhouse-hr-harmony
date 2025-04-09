@@ -65,8 +65,10 @@ export const createEmployeeDeclarationSheet = (
       record.date,
       record.clockIn || '',
       record.clockOut || '',
-      workTime,
-      extraHours
+      // Convert work time to proper time format using Excel's internal time representation
+      { v: convertTimeStringToExcelTime(workTime), t: 'n', z: '[h]:mm' },
+      // Convert extra hours to proper time format
+      { v: convertTimeStringToExcelTime(extraHours), t: 'n', z: '[h]:mm' }
     ]);
   });
   
@@ -77,14 +79,14 @@ export const createEmployeeDeclarationSheet = (
   // Add empty row for spacing
   rows.push(["", "", "", "", "", ""]);
   
-  // Add formulas for totals
+  // Add formulas for totals with proper time formatting
   rows.push([
     "TOTAL WORKING HOURS", 
     "", 
     "", 
     "", 
-    { f: `SUM(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow})`, z: '[h]:mm' },
-    { f: `SUM(${extraHoursCol}${dataStartRow}:${extraHoursCol}${dataEndRow})`, z: '[h]:mm' }
+    { f: `SUM(${workTimeCol}${dataStartRow}:${workTimeCol}${dataEndRow})`, t: 'n', z: '[h]:mm' },
+    { f: `SUM(${extraHoursCol}${dataStartRow}:${extraHoursCol}${dataEndRow})`, t: 'n', z: '[h]:mm' }
   ]);
   
   // Add working days with COUNTIF formula
@@ -127,6 +129,25 @@ export const createEmployeeDeclarationSheet = (
 };
 
 /**
+ * Convert time string (HH:MM) to Excel time value
+ * Excel time is a decimal number between 0 and 1, where 0 is 00:00 and 1 is 24:00
+ */
+const convertTimeStringToExcelTime = (timeString: string): number => {
+  if (!timeString || timeString === '00:00') {
+    return 0;
+  }
+  
+  try {
+    const [hours, minutes] = timeString.split(':').map(Number);
+    // Excel time is represented as a fraction of a 24-hour day
+    return (hours + minutes / 60) / 24;
+  } catch (error) {
+    console.error("Error converting time string to Excel time:", error);
+    return 0;
+  }
+};
+
+/**
  * Applies all necessary formatting to the worksheet
  */
 const applyWorksheetFormatting = (
@@ -152,16 +173,19 @@ const applyWorksheetFormatting = (
   const signatureTextRow = dataEndRow + 6;
   const signatureLineRow = dataEndRow + 8;
   
-  // Define merged cells
+  // Define merged cells - FIX: properly merge cells as requested
   ws['!merges'] = [
-    // Declaration text across all columns (A1:F1)
+    // Declaration text across all columns (A1:F1) - FIXED
     { s: { r: titleRow, c: 0 }, e: { r: titleRow, c: 5 } },
     
-    // Signature text across all columns
+    // Signature text across all columns - FIXED
     { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } },
     
-    // Signature line (left portion)
+    // Signature line (left portion) - FIXED
     { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } },
+    
+    // Date cell (right portion) - FIXED
+    { s: { r: signatureLineRow, c: 4 }, e: { r: signatureLineRow, c: 5 } },
     
     // TOTAL WORKING HOURS label
     { s: { r: totalsRow, c: 0 }, e: { r: totalsRow, c: 3 } },
@@ -170,8 +194,14 @@ const applyWorksheetFormatting = (
     { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } },
   ];
   
-  // Set text wrapping and proper height for declaration cell
+  // Set row heights - FIXED
+  if (!ws['!rows']) ws['!rows'] = [];
+  ws['!rows'][titleRow] = { hpt: 180 }; // Set height to 180px for declaration text as requested
+  ws['!rows'][signatureTextRow] = { hpt: 50 }; // Set height to 50px for signature text as requested
+  
+  // Set text wrapping and proper height for declaration cell - FIXED
   const declarationCell = XLSX.utils.encode_cell({ r: titleRow, c: 0 });
+  if (!ws[declarationCell]) ws[declarationCell] = { t: 's', v: '' };
   if (!ws[declarationCell].s) ws[declarationCell].s = {};
   ws[declarationCell].s.alignment = { 
     wrapText: true, 
@@ -179,13 +209,9 @@ const applyWorksheetFormatting = (
     horizontal: 'left' 
   };
   
-  // Set row heights
-  if (!ws['!rows']) ws['!rows'] = [];
-  ws['!rows'][titleRow] = { hpt: 200 }; // Set height to 200px for declaration text
-  ws['!rows'][signatureTextRow] = { hpt: 120 }; // Set height to 120px for signature text
-  
-  // Apply text wrapping for signature cell
+  // Apply text wrapping for signature cell - FIXED
   const signatureCell = XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 });
+  if (!ws[signatureCell]) ws[signatureCell] = { t: 's', v: '' };
   if (!ws[signatureCell].s) ws[signatureCell].s = {};
   ws[signatureCell].s.alignment = { 
     wrapText: true, 
@@ -222,29 +248,19 @@ const applyWorksheetFormatting = (
       if (r === headerRow) {
         ws[cell_address].s.fill = { fgColor: { rgb: "EEEEEE" } };
       }
-    }
-  }
-  
-  // Apply time format to work time and extra hours columns
-  for (let r = dataStartRow; r <= dataEndRow; r++) {
-    // Format Work Time column (E)
-    const workTimeCell = XLSX.utils.encode_cell({ r: r, c: 4 }); // Column E (index 4)
-    if (ws[workTimeCell]) {
-      if (!ws[workTimeCell].z) {
-        ws[workTimeCell].z = '[h]:mm';
-      }
-    }
-    
-    // Format Extra Hours column (F)
-    const extraHoursCell = XLSX.utils.encode_cell({ r: r, c: 5 }); // Column F (index 5)
-    if (ws[extraHoursCell]) {
-      if (!ws[extraHoursCell].z) {
-        ws[extraHoursCell].z = '[h]:mm';
+      
+      // Ensure proper number formatting for work time and extra hours columns
+      if (r >= dataStartRow && r <= dataEndRow) {
+        if (c === 4 || c === 5) { // Work Time (E) or Extra Hours (F) columns
+          if (!ws[cell_address].z) {
+            ws[cell_address].z = '[h]:mm';
+          }
+        }
       }
     }
   }
   
-  // Make sure formula cells use proper time format
+  // Make sure formula cells use proper time format for SUM results
   const totalHoursCell = XLSX.utils.encode_cell({ r: totalsRow, c: 4 });
   if (ws[totalHoursCell]) {
     ws[totalHoursCell].z = '[h]:mm';
