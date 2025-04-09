@@ -6,6 +6,7 @@ import { Download, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AttendanceReport } from "@/utils/attendanceProcessor";
 import { DeclarationText } from "./DeclarationText";
+import { generateAndDownloadPdf } from "@/utils/attendance/pdf/pdfGenerator";
 
 interface IndividualReportContentProps {
   reportData: AttendanceReport;
@@ -27,6 +28,7 @@ export function IndividualReportContent({
   const { toast } = useToast();
 
   const handlePrintDeclaration = () => {
+    window.print();
     toast({
       title: "Printing declaration",
       description: "The individual declaration is being sent to the printer.",
@@ -34,10 +36,21 @@ export function IndividualReportContent({
   };
 
   const handleExportIndividual = () => {
-    toast({
-      title: "Declaration exported",
-      description: "The individual declaration has been exported as PDF.",
-    });
+    // Get the selected employee report
+    const selectedEmployeeReport = reportData.employeeReports.find(
+      report => report.employeeId === selectedEmployee
+    );
+    
+    if (selectedEmployeeReport) {
+      // Generate and download the PDF for this employee
+      generateAndDownloadPdf(selectedEmployeeReport, month, year);
+    } else {
+      toast({
+        title: "Export failed",
+        description: "Could not find the selected employee data.",
+        variant: "destructive"
+      });
+    }
   };
 
   // Get the selected employee report

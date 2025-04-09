@@ -44,19 +44,31 @@ export const generatePdfForEmployee = async (
     // Extract data from first sheet
     const sheetData = jsonData[0].data;
     
-    // Set title
-    doc.setFontSize(14);
-    doc.text("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS", 105, 15, { align: "center" });
-    
-    // Set declaration text
-    doc.setFontSize(10);
-    doc.text(sheetData[0][0].replace("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS\n\n", ""), 10, 30, { 
-      maxWidth: 190, 
-      align: "left"
+    // Set title with better positioning and styling
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS", 105, 20, { 
+      align: "center" 
     });
     
-    // Create table
-    const startY = 70;
+    // Extract declaration text (without the title)
+    const declarationText = sheetData[0][0].replace("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS\n\n", "");
+    
+    // Set declaration text with proper formatting
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(declarationText, 20, 35, { 
+      maxWidth: 170,
+      align: "justify",
+      lineHeightFactor: 1.3
+    });
+    
+    // Determine the height of the text based on content
+    const textLines = doc.splitTextToSize(declarationText, 170);
+    const textHeight = textLines.length * 5.5; // 5.5mm per line
+    
+    // Create table with proper positioning after the text
+    const startY = 35 + textHeight + 10; // 10mm margin after text
     const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
     const columnWidths = [45, 25, 25, 25, 30, 30];
     
@@ -64,11 +76,10 @@ export const generatePdfForEmployee = async (
     doc.setFillColor(238, 238, 238);
     doc.setDrawColor(0);
     doc.setTextColor(0);
-    // Replace setFontStyle with setFont
     doc.setFont("helvetica", "bold");
     
     let y = startY;
-    let x = 10;
+    let x = 20;
     headers.forEach((header, i) => {
       doc.rect(x, y, columnWidths[i], 10, "FD");
       doc.text(header, x + columnWidths[i] / 2, y + 6, { align: "center" });
@@ -76,7 +87,6 @@ export const generatePdfForEmployee = async (
     });
     
     // Data rows
-    // Replace setFontStyle with setFont
     doc.setFont("helvetica", "normal");
     y += 10;
     
@@ -84,8 +94,8 @@ export const generatePdfForEmployee = async (
     const dataRows = sheetData.slice(2).filter(row => row.length > 0 && row[0] !== "");
     
     dataRows.forEach((row, rowIndex) => {
-      if (rowIndex < 20) {  // Limit rows to fit on one page
-        x = 10;
+      if (rowIndex < 25) { // Limit rows to fit on one page
+        x = 20;
         
         // Check for FOLGA special case
         const isFolga = row[2] === "FOLGA";
@@ -109,7 +119,9 @@ export const generatePdfForEmployee = async (
           if (isFolga && cellIndex === 2) {
             // Draw the merged FOLGA cell with proper border and centered text
             doc.rect(x, y, columnWidths[2] + columnWidths[3], 8);
+            doc.setFont("helvetica", "bold");
             doc.text("FOLGA", x + (columnWidths[2] + columnWidths[3]) / 2, y + 5, { align: "center" });
+            doc.setFont("helvetica", "normal");
             x += columnWidths[2] + columnWidths[3];
             return;
           }
@@ -129,41 +141,42 @@ export const generatePdfForEmployee = async (
       }
     });
     
-    // Add totals
-    y += 5;
-    // Replace setFontStyle with setFont
+    // Add totals with better spacing
+    y += 10;
     doc.setFont("helvetica", "bold");
-    doc.text("TOTAL WORKING HOURS", 10, y + 5);
+    doc.text("TOTAL WORKING HOURS", 20, y + 5);
     
     // Format total work time correctly
     const totalHours = Math.floor(employeeReport.totalHours);
     const totalMinutes = Math.round((employeeReport.totalHours - totalHours) * 60);
     const formattedTotalTime = `${totalHours}:${totalMinutes.toString().padStart(2, '0')}`;
     
-    x = 130;
+    x = 140;
     doc.rect(x, y, 30, 8);
     doc.text(formattedTotalTime, x + 15, y + 5, { align: "center" });
     
     // Add working days
-    y += 10;
-    doc.text("WORKING DAYS", 10, y + 5);
+    y += 12;
+    doc.text("WORKING DAYS", 20, y + 5);
     
     // Calculate working days
     const workingDays = employeeReport.workingDays.toString();
-    x = 130;
+    x = 140;
     doc.rect(x, y, 30, 8);
     doc.text(workingDays, x + 15, y + 5, { align: "center" });
     
-    // Add signature text
+    // Add signature text with better spacing
     y += 20;
-    // Replace setFontStyle with setFont
     doc.setFont("helvetica", "normal");
-    doc.text("Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.", 10, y, { maxWidth: 190 });
+    doc.text("Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.", 20, y, { 
+      maxWidth: 170,
+      align: "justify"
+    });
     
-    // Add signature line
+    // Add signature line with better positioning
     y += 20;
-    doc.text("Assinatura do Funcionário: _______________________________", 10, y);
-    doc.text(`Data: ${getFormattedSignatureDate()}`, 150, y);
+    doc.text("Assinatura do Funcionário: _______________________________", 20, y);
+    doc.text(`Data: ${getFormattedSignatureDate()}`, 140, y);
     
     // Convert to Blob
     const pdfBlob = doc.output('blob');

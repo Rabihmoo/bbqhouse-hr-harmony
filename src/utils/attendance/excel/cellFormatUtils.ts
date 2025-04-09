@@ -51,6 +51,7 @@ export const applyCellFont = (
   options: {
     bold?: boolean;
     size?: number;
+    color?: string;
   }
 ): void => {
   if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
@@ -99,5 +100,8 @@ export const applyFolgaCellFormatting = (
   });
   
   // Make text bold for emphasis
-  applyCellFont(ws, cellAddress, { bold: true });
+  applyCellFont(ws, cellAddress, { 
+    bold: true,
+    size: 10 
+  });
 };
