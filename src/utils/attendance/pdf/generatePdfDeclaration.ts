@@ -4,6 +4,7 @@ import { getFormattedSignatureDate } from "@/utils/attendance/declarationGenerat
 import * as XLSX from "xlsx";
 import { extractDeclarationText, convertWorkbookToData } from "./excelToPdfConverter";
 
+// Render Table Header
 export const renderTableHeaders = (doc: jsPDF, startY: number): number => {
   const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
   const columnWidths = [45, 25, 25, 25, 30, 30];
@@ -19,12 +20,14 @@ export const renderTableHeaders = (doc: jsPDF, startY: number): number => {
   return startY + 8;
 };
 
+// Render Table Rows
 export const renderTableRows = (doc: jsPDF, sheetData: any[][], startY: number): number => {
   const columnWidths = [45, 25, 25, 25, 30, 30];
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   let y = startY;
   const dataRows = sheetData.slice(2).filter(row => row[0] !== "");
+
   dataRows.forEach(row => {
     let x = 10;
     const isFolga = row[2] === "FOLGA";
@@ -49,33 +52,41 @@ export const renderTableRows = (doc: jsPDF, sheetData: any[][], startY: number):
     });
     y += 6;
   });
+
   return y;
 };
 
+// Totals Summary
 export const addTotalsSummary = (doc: jsPDF, report: EmployeeReport, startY: number): number => {
   let y = startY + 2;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
+
   doc.text("TOTAL WORKING HOURS", 10, y + 4);
   const h = Math.floor(report.totalHours);
   const m = Math.round((report.totalHours - h) * 60);
   const total = `${h}:${m.toString().padStart(2, '0')}`;
   doc.rect(130, y, 30, 7);
   doc.text(total, 145, y + 4, { align: "center" });
+
   y += 8;
   doc.text("WORKING DAYS", 10, y + 4);
   doc.rect(130, y, 30, 7);
   doc.text(`${report.workingDays}`, 145, y + 4, { align: "center" });
+
   return y + 8;
 };
 
+// Signature Block
 export const addSignatureBlock = (doc: jsPDF, startY: number) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const boxMargin = 10;
   const boxWidth = pageWidth - 20;
   let y = startY + 6;
+
   const text =
     "Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.";
+
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setDrawColor(0);
@@ -85,6 +96,7 @@ export const addSignatureBlock = (doc: jsPDF, startY: number) => {
     maxWidth: boxWidth - 4,
     align: "justify"
   });
+
   y += 22;
   doc.setFontSize(9);
   doc.rect(10, y, 90, 8);
@@ -93,47 +105,38 @@ export const addSignatureBlock = (doc: jsPDF, startY: number) => {
   doc.text(`Data: ${getFormattedSignatureDate()}`, 117, y + 5);
 };
 
-/**
- * Generates a PDF declaration document for an employee
- */
+// MAIN FUNCTION — PDF GENERATOR
 export const generateEmployeeDeclarationPdf = (
   employeeReport: EmployeeReport,
   workbook: XLSX.WorkBook
 ): jsPDF => {
-  // Create a new PDF document
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4'
   });
-  
-  // Add title
+
+  // Title
   doc.setFontSize(12);
   doc.text("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS", 105, 12, { align: "center" });
-  
+
   // Extract data from Excel
   const sheetData = convertWorkbookToData(workbook);
-  
-  // Add declaration text
+
+  // Declaration paragraph
   const declarationText = extractDeclarationText(sheetData);
   doc.setFontSize(8);
-  doc.text(declarationText, 105, 25, { 
+  doc.text(declarationText, 105, 25, {
     maxWidth: 180,
     align: "center"
   });
-  
-  // Add table headers
+
+  // Render table and sections
   let y = 45;
   y = renderTableHeaders(doc, y);
-  
-  // Add table rows
   y = renderTableRows(doc, sheetData, y);
-  
-  // Add totals summary
   y = addTotalsSummary(doc, employeeReport, y);
-  
-  // Add signature block
   addSignatureBlock(doc, y);
-  
+
   return doc;
 };
