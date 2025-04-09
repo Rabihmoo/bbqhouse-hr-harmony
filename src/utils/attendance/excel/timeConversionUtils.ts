@@ -1,4 +1,6 @@
 
+import * as XLSX from "xlsx";
+
 /**
  * Utilities for converting time values for Excel spreadsheets
  */
