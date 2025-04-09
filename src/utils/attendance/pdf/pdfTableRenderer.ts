@@ -89,7 +89,7 @@ export const renderTableRows = (doc: jsPDF, sheetData: any[][], startY: number):
 };
 
 /**
- * Adds total hours and working days summary
+ * Adds total hours and working days summary directly after the table
  */
 export const addTotalsSummary = (doc: jsPDF, employeeReport: EmployeeReport, startY: number): number => {
   let y = startY + 3; // Reduced spacing
@@ -118,5 +118,5 @@ export const addTotalsSummary = (doc: jsPDF, employeeReport: EmployeeReport, sta
   doc.rect(x, y, 30, 7); // Slightly reduced height
   doc.text(workingDays, x + 15, y + 4, { align: "center" });
   
-  return y + 8; // Reduced spacing, return the new Y position after totals
+  return y + 8; // Return the new Y position after totals
 };

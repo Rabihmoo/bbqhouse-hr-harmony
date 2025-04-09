@@ -52,11 +52,11 @@ export const generatePdfForEmployee = async (
     y = renderTableHeaders(doc, y);
     y = renderTableRows(doc, sheetData, y);
     
-    // Add totals summary
+    // Add totals summary directly after the table rows
     y = addTotalsSummary(doc, employeeReport, y);
     
-    // Add signature section with less spacing
-    addSignatureSection(doc, y + 5); // Reduced from +10
+    // Add signature section with the new merged cell format
+    addSignatureSection(doc, y + 5);
     
     // Convert to Blob
     const pdfBlob = doc.output('blob');
