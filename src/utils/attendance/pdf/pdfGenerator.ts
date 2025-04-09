@@ -64,7 +64,8 @@ export const generatePdfForEmployee = async (
     doc.setFillColor(238, 238, 238);
     doc.setDrawColor(0);
     doc.setTextColor(0);
-    doc.setFontStyle("bold");
+    // Replace setFontStyle with setFont
+    doc.setFont("helvetica", "bold");
     
     let y = startY;
     let x = 10;
@@ -75,7 +76,8 @@ export const generatePdfForEmployee = async (
     });
     
     // Data rows
-    doc.setFontStyle("normal");
+    // Replace setFontStyle with setFont
+    doc.setFont("helvetica", "normal");
     y += 10;
     
     // Get actual data rows (skip headers and empty rows)
@@ -115,7 +117,8 @@ export const generatePdfForEmployee = async (
     
     // Add totals
     y += 5;
-    doc.setFontStyle("bold");
+    // Replace setFontStyle with setFont
+    doc.setFont("helvetica", "bold");
     doc.text("TOTAL WORKING HOURS", 10, y + 5);
     
     // Calculate total work time
@@ -136,7 +139,8 @@ export const generatePdfForEmployee = async (
     
     // Add signature text
     y += 20;
-    doc.setFontStyle("normal");
+    // Replace setFontStyle with setFont
+    doc.setFont("helvetica", "normal");
     doc.text("Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.", 10, y, { maxWidth: 190 });
     
     // Add signature line
