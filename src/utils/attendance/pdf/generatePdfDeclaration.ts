@@ -1,3 +1,4 @@
+
 import { jsPDF } from "jspdf";
 import { EmployeeReport } from "@/utils/attendance/types";
 import { getFormattedSignatureDate } from "@/utils/attendance/declarationGenerator";
