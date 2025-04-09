@@ -2,6 +2,7 @@
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
 import { convertTimeStringToExcelTime } from "./timeConversionUtils";
+import { getFormattedSignatureDate } from "../declarationGenerator";
 
 /**
  * Format attendance records for the declaration sheet
@@ -87,28 +88,26 @@ export const createSheetStructure = (
   // Add empty row for spacing
   rows.push(["", "", "", "", "", ""]);
   
-  // Add formulas for totals
+  // Add formulas for totals - Using fixed range E4:E34 as requested
   const totalsRow = dataEndRow + 1;
-  const workTimeCol = 'E';
-  const extraHoursCol = 'F';
   
   rows.push([
     "TOTAL WORKING HOURS", 
     "", 
     "", 
     "", 
-    { f: `SUM(${workTimeCol}${dataStartRow+1}:${workTimeCol}${dataEndRow+1})`, t: 'n', z: '[h]:mm' },
-    { f: `SUM(${extraHoursCol}${dataStartRow+1}:${extraHoursCol}${dataEndRow+1})`, t: 'n', z: '[h]:mm' }
+    { f: `SUM(E4:E34)`, t: 'n', z: '[h]:mm' }, // Fixed range as requested
+    { f: `SUM(F4:F34)`, t: 'n', z: '[h]:mm' }  // For consistency
   ]);
   
-  // Add working days with COUNTIF formula
+  // Add working days with COUNTIF formula - Using fixed range E4:E34 as requested
   const workingDaysRow = totalsRow + 1;
   rows.push([
     "WORKING DAYS", 
     "", 
     "", 
     "", 
-    { f: `COUNTIF(${workTimeCol}${dataStartRow+1}:${workTimeCol}${dataEndRow+1},">0:00")` },
+    { f: `COUNTIF(E4:E34,">0:00")` }, // Fixed range as requested
     ""
   ]);
   
@@ -143,20 +142,4 @@ export const createSheetStructure = (
     signatureTextRow,
     signatureLineRow
   };
-};
-
-// Helper function to get formatted date for signature
-const getFormattedSignatureDate = (): string => {
-  const currentDate = new Date();
-  const day = currentDate.getDate();
-  
-  const months = [
-    'JANEIRO', 'FEVEREIRO', 'MARÇO', 'ABRIL',
-    'MAIO', 'JUNHO', 'JULHO', 'AGOSTO',
-    'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'
-  ];
-  
-  const month = months[currentDate.getMonth()];
-  
-  return `${day} DE ${month}`;
 };

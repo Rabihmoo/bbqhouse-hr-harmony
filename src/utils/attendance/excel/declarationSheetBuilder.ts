@@ -74,7 +74,7 @@ const applyDeclarationSheetFormatting = (
   
   // Define row heights for declaration and signature text
   const rowHeights: { [rowIndex: number]: number } = {};
-  rowHeights[0] = 180; // Title + declaration text row
+  rowHeights[0] = 240; // Title + declaration text row - increased to 240 as requested
   rowHeights[signatureTextRow] = 50; // Signature text row
   
   setRowHeights(ws, rowHeights);
@@ -84,13 +84,13 @@ const applyDeclarationSheetFormatting = (
     // Declaration text across all columns (A1:F1)
     { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
     
-    // Signature text across all columns
+    // Signature text across all columns (A:F in signature row)
     { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } },
     
-    // Signature line (left portion)
+    // Signature line (Employee signature cell - merge A-D)
     { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } },
     
-    // Date cell (right portion)
+    // Date cell (merge E-F)
     { s: { r: signatureLineRow, c: 4 }, e: { r: signatureLineRow, c: 5 } },
     
     // TOTAL WORKING HOURS label
@@ -101,18 +101,18 @@ const applyDeclarationSheetFormatting = (
   ];
   setMergedCells(ws, merges);
   
-  // Apply text wrapping for declaration cell
+  // Apply text wrapping and alignment for declaration cell - added center alignment
   applyCellTextFormatting(ws, 'A1', { 
     wrapText: true, 
-    vertical: 'top', 
-    horizontal: 'left' 
+    vertical: 'center', 
+    horizontal: 'center' 
   });
   
-  // Apply text wrapping for signature cell
+  // Apply text wrapping and alignment for signature text cell - added center alignment
   applyCellTextFormatting(ws, XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }), { 
     wrapText: true, 
-    vertical: 'top',
-    horizontal: 'left'
+    vertical: 'center',
+    horizontal: 'center'
   });
   
   // Apply formatting to all cells (borders, bold headers, etc.)
