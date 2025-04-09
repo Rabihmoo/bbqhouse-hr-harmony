@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { FileDown, FileSpreadsheet } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,10 @@ import {
   getExportFileName 
 } from '@/utils/exportOperations';
 import { format } from "date-fns";
+
+import { generateEmployeeDeclarationPdf } from "@/utils/attendance/pdf/generatePdfDeclaration";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 interface ExportAttendanceButtonProps {
   filteredDailyRecords: AttendanceRecord[];
@@ -39,8 +42,7 @@ export const ExportAttendanceButton = ({
 
     const exportData = prepareAttendanceDataForExport(filteredDailyRecords);
     const fileName = getExportFileName(`Attendance_${format(selectedDate, 'yyyy-MM-dd')}`);
-    
-    // Group records by employee for individual exports
+
     const employeeGroups: {[key: string]: AttendanceRecord[]} = {};
     filteredDailyRecords.forEach(record => {
       if (!employeeGroups[record.employeeId]) {
@@ -51,7 +53,6 @@ export const ExportAttendanceButton = ({
 
     if (type === 'csv') {
       exportToCsv(exportData, fileName);
-      // Register individual exports
       Object.entries(employeeGroups).forEach(([employeeId, records]) => {
         const employeeName = records[0].employeeName.replace(/\s+/g, '_');
         const individualFileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
@@ -60,7 +61,6 @@ export const ExportAttendanceButton = ({
       toast.success("Attendance data exported as CSV");
     } else {
       exportToExcel(exportData, fileName);
-      // Register individual exports
       Object.entries(employeeGroups).forEach(([employeeId, records]) => {
         const employeeName = records[0].employeeName.replace(/\s+/g, '_');
         const individualFileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
@@ -68,6 +68,37 @@ export const ExportAttendanceButton = ({
       });
       toast.success("Attendance data exported as Excel");
     }
+  };
+
+  const handleExportPdf = () => {
+    const employeeGroups: {[key: string]: AttendanceRecord[]} = {};
+    filteredDailyRecords.forEach(record => {
+      if (!employeeGroups[record.employeeId]) {
+        employeeGroups[record.employeeId] = [];
+      }
+      employeeGroups[record.employeeId].push(record);
+    });
+
+    Object.entries(employeeGroups).forEach(([employeeId, records]) => {
+      const employeeName = records[0].employeeName.replace(/\s+/g, '_');
+      const fileName = `${employeeName}_${format(selectedDate, 'yyyy-MM-dd')}`;
+
+      const employeeReport = {
+        employeeName: records[0].employeeName,
+        totalHours: records.reduce((acc, r) => acc + (r.totalHours || 0), 0),
+        workingDays: records.length
+      };
+
+      const workbook = XLSX.utils.book_new();
+      const sheet = XLSX.utils.json_to_sheet(prepareAttendanceDataForExport(records));
+      XLSX.utils.book_append_sheet(workbook, sheet, "Sheet1");
+
+      const pdfDoc = generateEmployeeDeclarationPdf(employeeReport, workbook);
+      const pdfBlob = pdfDoc.output("blob");
+      saveAs(pdfBlob, `${fileName}.pdf`);
+    });
+
+    toast.success("Attendance exported as PDF");
   };
 
   return (
@@ -86,6 +117,10 @@ export const ExportAttendanceButton = ({
         <DropdownMenuItem onClick={() => handleExport('excel')}>
           <FileSpreadsheet className="h-4 w-4 mr-2" />
           Export as Excel
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleExportPdf}>
+          <FileSpreadsheet className="h-4 w-4 mr-2" />
+          Export as PDF
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
