@@ -18,12 +18,13 @@ export const generatePdfForEmployee = async (
     // Create a workbook with a single sheet
     const workbook = XLSX.utils.book_new();
     
-    // Create the declaration sheet
+    // Create the declaration sheet - IMPORTANT: Set includeSignature to false
+    // This prevents duplication of signature and totals
     const sheet = createEmployeeDeclarationSheet(
       employeeReport,
       month.toUpperCase(),
       year,
-      true // Include signature
+      false // Changed to false to prevent duplication
     );
     
     // Add the sheet to the workbook
@@ -44,18 +45,18 @@ export const generatePdfForEmployee = async (
     const sheetData = jsonData[0].data;
     
     // Set title
-    doc.setFontSize(12); // Reduced from 14
+    doc.setFontSize(12);
     doc.text("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS", 105, 10, { align: "center" });
     
-    // Set declaration text - reduce space by making font smaller
-    doc.setFontSize(8); // Even smaller font (was 9)
+    // Set declaration text
+    doc.setFontSize(8);
     doc.text(sheetData[0][0].replace("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS\n\n", ""), 10, 20, { 
       maxWidth: 190, 
       align: "left"
     });
     
-    // Create table - move up significantly
-    const startY = 45; // Move table up (was 65)
+    // Create table
+    const startY = 45;
     const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
     const columnWidths = [45, 25, 25, 25, 30, 30];
     
@@ -67,7 +68,7 @@ export const generatePdfForEmployee = async (
     
     let y = startY;
     let x = 10;
-    const headerHeight = 7; // Even smaller header (was 8)
+    const headerHeight = 7;
     
     headers.forEach((header, i) => {
       doc.rect(x, y, columnWidths[i], headerHeight, "FD");
@@ -82,8 +83,8 @@ export const generatePdfForEmployee = async (
     // Get actual data rows (skip headers and empty rows)
     const dataRows = sheetData.slice(2).filter(row => row.length > 0 && row[0] !== "");
     
-    // Set row height - make even more compact
-    const rowHeight = 5; // Further reduced (was 6)
+    // Set row height
+    const rowHeight = 5;
     
     // Process all rows without limiting
     dataRows.forEach((row) => {
@@ -130,8 +131,8 @@ export const generatePdfForEmployee = async (
       y += rowHeight;
     });
     
-    // Add totals
-    y += 2; // Much less spacing (was 3)
+    // Add totals - We manually add these after the table
+    y += 2;
     doc.setFont("helvetica", "bold");
     doc.text("TOTAL WORKING HOURS", 10, y + 4);
     
@@ -145,7 +146,7 @@ export const generatePdfForEmployee = async (
     doc.text(formattedTotalTime, x + 15, y + 3, { align: "center" });
     
     // Add working days
-    y += 7; // Less spacing (was 8)
+    y += 7;
     doc.text("WORKING DAYS", 10, y + 4);
     
     // Calculate working days
@@ -155,13 +156,13 @@ export const generatePdfForEmployee = async (
     doc.text(workingDays, x + 15, y + 3, { align: "center" });
     
     // Add signature text
-    y += 9; // Even less spacing (was 15)
-    doc.setFontSize(8); // Make signature text smaller
+    y += 9;
+    doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
     doc.text("Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.", 10, y, { maxWidth: 190 });
     
     // Add signature line
-    y += 10; // Much less spacing (was 15)
+    y += 10;
     doc.text("Assinatura do Funcionário: _______________________________", 10, y);
     doc.text(`Data: ${getFormattedSignatureDate()}`, 150, y);
     
