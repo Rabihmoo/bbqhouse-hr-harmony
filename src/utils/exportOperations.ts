@@ -22,10 +22,10 @@ export const exportToCsv = (data: any[], filename: string, employeeId?: string) 
   const link = document.createElement('a');
   link.setAttribute('href', url);
   link.setAttribute('download', `${filename}.csv`);
-  link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(url);
   
   // Register the export in attendance records
   registerExport(employeeId, filename, 'csv');
@@ -49,10 +49,10 @@ export const exportToExcel = (data: any[], filename: string, employeeId?: string
   const link = document.createElement('a');
   link.setAttribute('href', url);
   link.setAttribute('download', `${filename}.xlsx`);
-  link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  URL.revokeObjectURL(url);
   
   // Register the export in attendance records
   registerExport(employeeId, filename, 'xlsx');

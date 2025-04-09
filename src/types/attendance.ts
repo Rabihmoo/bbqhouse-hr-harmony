@@ -9,6 +9,9 @@ export interface AttendanceRecord {
   totalHours: number;
   status: 'present' | 'absent' | 'late' | 'half-day';
   notes?: string;
+  biNumber?: string;
+  department?: string;
+  company?: string;
 }
 
 export interface NewAttendance {
@@ -18,4 +21,17 @@ export interface NewAttendance {
   clockOut: string;
   status: 'present' | 'absent' | 'late' | 'half-day';
   notes: string;
+}
+
+export interface EmployeeReport {
+  employeeName: string;
+  employeeId: string;
+  biNumber: string;
+  department: string;
+  company: string;
+  month: string;
+  year: string;
+  totalHours: number;
+  workingDays: number;
+  sheetData: any[][];
 }
