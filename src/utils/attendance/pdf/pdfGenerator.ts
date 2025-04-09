@@ -1,4 +1,3 @@
-
 import { EmployeeReport } from "../types";
 import * as XLSX from "xlsx";
 import { downloadExcelFile } from "../excelUtils";
@@ -49,14 +48,14 @@ export const generatePdfForEmployee = async (
     doc.text("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS", 105, 15, { align: "center" });
     
     // Set declaration text
-    doc.setFontSize(10);
+    doc.setFontSize(9); // Smaller font size (was 10)
     doc.text(sheetData[0][0].replace("DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS\n\n", ""), 10, 30, { 
       maxWidth: 190, 
       align: "left"
     });
     
     // Create table
-    const startY = 70;
+    const startY = 65; // Move table up slightly (was 70)
     const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
     const columnWidths = [45, 25, 25, 25, 30, 30];
     
@@ -64,76 +63,77 @@ export const generatePdfForEmployee = async (
     doc.setFillColor(238, 238, 238);
     doc.setDrawColor(0);
     doc.setTextColor(0);
-    // Replace setFontStyle with setFont
     doc.setFont("helvetica", "bold");
     
     let y = startY;
     let x = 10;
+    const headerHeight = 8; // Smaller header height (was 10)
+    
     headers.forEach((header, i) => {
-      doc.rect(x, y, columnWidths[i], 10, "FD");
-      doc.text(header, x + columnWidths[i] / 2, y + 6, { align: "center" });
+      doc.rect(x, y, columnWidths[i], headerHeight, "FD");
+      doc.text(header, x + columnWidths[i] / 2, y + headerHeight/2, { align: "center" });
       x += columnWidths[i];
     });
     
     // Data rows
-    // Replace setFontStyle with setFont
     doc.setFont("helvetica", "normal");
-    y += 10;
+    y += headerHeight;
     
     // Get actual data rows (skip headers and empty rows)
     const dataRows = sheetData.slice(2).filter(row => row.length > 0 && row[0] !== "");
     
-    dataRows.forEach((row, rowIndex) => {
-      if (rowIndex < 20) {  // Limit rows to fit on one page
-        x = 10;
+    // Set row height
+    const rowHeight = 6; // Reduced row height (was 8)
+    
+    // Process all rows without limiting to 20
+    dataRows.forEach((row) => {
+      x = 10;
+      
+      // Check for FOLGA special case
+      const isFolga = row[2] === "FOLGA";
+      
+      row.forEach((cell, cellIndex) => {
+        // Format time values properly
+        let cellText = cell.toString();
         
-        // Check for FOLGA special case
-        const isFolga = row[2] === "FOLGA";
+        // Handle numeric time values
+        if (cellIndex === 4 || cellIndex === 5) { // Work Time or Extra Hours column
+          if (typeof cell === 'number') {
+            // Convert Excel time value to HH:MM format
+            const totalMinutes = Math.round(cell * 24 * 60); // Convert to minutes
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            cellText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+          }
+        }
         
-        row.forEach((cell, cellIndex) => {
-          // Format time values properly
-          let cellText = cell.toString();
-          
-          // Handle numeric time values
-          if (cellIndex === 4 || cellIndex === 5) { // Work Time or Extra Hours column
-            if (typeof cell === 'number') {
-              // Convert Excel time value to HH:MM format
-              const totalMinutes = Math.round(cell * 24 * 60); // Convert to minutes
-              const hours = Math.floor(totalMinutes / 60);
-              const minutes = totalMinutes % 60;
-              cellText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-            }
-          }
-          
-          // Handle merging for FOLGA
-          if (isFolga && cellIndex === 2) {
-            // Draw the merged FOLGA cell with proper border and centered text
-            doc.rect(x, y, columnWidths[2] + columnWidths[3], 8);
-            doc.text("FOLGA", x + (columnWidths[2] + columnWidths[3]) / 2, y + 5, { align: "center" });
-            x += columnWidths[2] + columnWidths[3];
-            return;
-          }
-          
-          // Skip the clock out cell for FOLGA rows
-          if (isFolga && cellIndex === 3) {
-            return;
-          }
-          
-          // Draw normal cell
-          doc.rect(x, y, columnWidths[cellIndex], 8);
-          doc.text(cellText, x + columnWidths[cellIndex] / 2, y + 5, { align: "center" });
-          x += columnWidths[cellIndex];
-        });
+        // Handle merging for FOLGA
+        if (isFolga && cellIndex === 2) {
+          // Draw the merged FOLGA cell with proper border and centered text
+          doc.rect(x, y, columnWidths[2] + columnWidths[3], rowHeight);
+          doc.text("FOLGA", x + (columnWidths[2] + columnWidths[3]) / 2, y + rowHeight/2, { align: "center" });
+          x += columnWidths[2] + columnWidths[3];
+          return;
+        }
         
-        y += 8;
-      }
+        // Skip the clock out cell for FOLGA rows
+        if (isFolga && cellIndex === 3) {
+          return;
+        }
+        
+        // Draw normal cell
+        doc.rect(x, y, columnWidths[cellIndex], rowHeight);
+        doc.text(cellText, x + columnWidths[cellIndex] / 2, y + rowHeight/2, { align: "center" });
+        x += columnWidths[cellIndex];
+      });
+      
+      y += rowHeight;
     });
     
     // Add totals
-    y += 5;
-    // Replace setFontStyle with setFont
+    y += 3; // Less spacing (was 5)
     doc.setFont("helvetica", "bold");
-    doc.text("TOTAL WORKING HOURS", 10, y + 5);
+    doc.text("TOTAL WORKING HOURS", 10, y + 4);
     
     // Format total work time correctly
     const totalHours = Math.floor(employeeReport.totalHours);
@@ -141,27 +141,26 @@ export const generatePdfForEmployee = async (
     const formattedTotalTime = `${totalHours}:${totalMinutes.toString().padStart(2, '0')}`;
     
     x = 130;
-    doc.rect(x, y, 30, 8);
-    doc.text(formattedTotalTime, x + 15, y + 5, { align: "center" });
+    doc.rect(x, y, 30, 6);
+    doc.text(formattedTotalTime, x + 15, y + 3, { align: "center" });
     
     // Add working days
-    y += 10;
-    doc.text("WORKING DAYS", 10, y + 5);
+    y += 8; // Less spacing (was 10)
+    doc.text("WORKING DAYS", 10, y + 4);
     
     // Calculate working days
     const workingDays = employeeReport.workingDays.toString();
     x = 130;
-    doc.rect(x, y, 30, 8);
-    doc.text(workingDays, x + 15, y + 5, { align: "center" });
+    doc.rect(x, y, 30, 6);
+    doc.text(workingDays, x + 15, y + 3, { align: "center" });
     
     // Add signature text
-    y += 20;
-    // Replace setFontStyle with setFont
+    y += 15; // Less spacing (was 20)
     doc.setFont("helvetica", "normal");
     doc.text("Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.", 10, y, { maxWidth: 190 });
     
     // Add signature line
-    y += 20;
+    y += 15; // Less spacing (was 20)
     doc.text("Assinatura do Funcionário: _______________________________", 10, y);
     doc.text(`Data: ${getFormattedSignatureDate()}`, 150, y);
     
