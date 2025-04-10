@@ -1,28 +1,13 @@
-
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
-import {
-  generateDeclarationText,
-  generateSignatureText,
-  getFormattedSignatureDate,
-} from "../declarationGenerator";
+import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "../declarationGenerator";
 import { convertTimeStringToExcelTime } from "./timeConversionUtils";
-import {
-  setColumnWidths,
-  setRowHeights,
-  setMergedCells,
-  applyTimeFormatting,
-  applyFormattingToAllCells,
-  addAutoFilter,
-} from "./worksheetFormatUtils";
-import { applyCellTextFormatting, applyCellFont } from "./cellFormatUtils";
+import { setColumnWidths, setRowHeights, setMergedCells, applyTimeFormatting, applyFormattingToAllCells, addAutoFilter } from "./worksheetFormatUtils";
+import { applyCellTextFormatting } from "./cellFormatUtils";
 import { createSheetStructure } from "./attendanceDataFormatter";
 
 /**
- * Creates a well-formatted employee declaration sheet with:
- * - Properly formatted declaration paragraph
- * - Correct cell merging and alignment
- * - Consistent styling throughout
+ * Creates a single employee declaration sheet with proper formatting
  */
 export const createEmployeeDeclarationSheet = (
   employeeReport: EmployeeReport,
@@ -30,7 +15,7 @@ export const createEmployeeDeclarationSheet = (
   year: string,
   includeSignature: boolean
 ): XLSX.WorkSheet => {
-  // 1. Generate the declaration content
+  // Create the full declaration title and text
   const declarationTitle = "DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS";
   const declarationText = generateDeclarationText(
     employeeReport.employeeName,
@@ -40,10 +25,10 @@ export const createEmployeeDeclarationSheet = (
     year
   );
 
-  // Combine title and text with proper line breaks
-  const fullDeclarationText = `${declarationTitle}\r\n${declarationText}`;
+  // Add line breaks for better wrapping in Excel
+  const formattedDeclarationText = `${declarationTitle}\n\n${declarationText.replace(/\. /g, '.\n')}`;
 
-  // 2. Create the sheet structure
+  // Create sheet structure with headers and data
   const {
     rows,
     dataStartRow,
@@ -52,160 +37,73 @@ export const createEmployeeDeclarationSheet = (
     workingDaysRow,
     signatureTextRow,
     signatureLineRow,
-    folgaRows,
-  } = createSheetStructure(employeeReport, month, year, fullDeclarationText);
+    folgaRows
+  } = createSheetStructure(employeeReport, month, year, formattedDeclarationText);
 
-  // 3. Create worksheet from the 2D array
+  // Manually add the declaration text into first cell (A1)
+  rows[0] = [formattedDeclarationText];
+
+  // Create worksheet from rows
   const ws = XLSX.utils.aoa_to_sheet(rows);
 
-  // 4. Apply comprehensive formatting
-  applyDeclarationSheetFormatting(
-    ws,
-    dataStartRow,
-    dataEndRow,
-    totalsRow,
-    workingDaysRow,
-    signatureTextRow,
-    signatureLineRow,
-    folgaRows,
-    includeSignature
-  );
+  // Set proper column widths for readability
+  setColumnWidths(ws, [30, 12, 10, 10, 10, 12]);
 
-  return ws;
-};
-
-/**
- * Applies all formatting to the worksheet with special attention to:
- * - Declaration paragraph formatting (A1)
- * - Consistent cell styling
- * - Proper column widths and row heights
- */
-const applyDeclarationSheetFormatting = (
-  ws: XLSX.WorkSheet,
-  dataStartRow: number,
-  dataEndRow: number,
-  totalsRow: number,
-  workingDaysRow: number,
-  signatureTextRow: number,
-  signatureLineRow: number,
-  folgaRows: number[],
-  includeSignature: boolean
-): void => {
-  // ========== COLUMN WIDTHS ==========
-  // Set optimized column widths for better readability
-  ws['!cols'] = [
-    { wpx: 150 }, // Column A
-    { wpx: 80 },  // Column B
-    { wpx: 80 },  // Column C
-    { wpx: 80 },  // Column D
-    { wpx: 80 },  // Column E
-    { wpx: 100 }, // Column F
-  ];
-
-  // ========== ROW HEIGHTS ==========
+  // Define row heights and adjust first row to be tall enough
   const rowHeights: { [key: number]: number } = {
-    0: 200, // Declaration row (A1) - tall enough for wrapped text
-    1: 20,  // Empty spacer row
-    2: 25,  // Header row
-    [signatureTextRow]: 50, // Signature text row
-    [signatureLineRow]: 25, // Signature line row
+    0: 240, // A1: Title + declaration text
+    [signatureTextRow]: 50 // Signature explanation row
   };
 
-  // Set consistent height for data rows
-  for (let i = dataStartRow; i <= dataEndRow; i++) {
-    rowHeights[i] = 20;
-  }
+  setRowHeights(ws, rowHeights);
 
-  ws['!rows'] = Object.keys(rowHeights).map((rowIndex) => ({
-    hpx: rowHeights[parseInt(rowIndex)],
-  }));
-
-  // ========== MERGED CELLS ==========
+  // Define merged cells
   const merges = [
-    // Declaration paragraph (A1:F1)
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
-    // Signature section
-    { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } }, // Text
-    { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } }, // Line
-    { s: { r: signatureLineRow, c: 4 }, e: { r: signatureLineRow, c: 5 } }, // Date
-    // Summary rows
-    { s: { r: totalsRow, c: 0 }, e: { r: totalsRow, c: 3 } },    // Totals label
-    { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } }, // Working days
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } }, // A1:F1 Declaration text
+    { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } },
+    { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } },
+    { s: { r: signatureLineRow, c: 4 }, e: { r: signatureLineRow, c: 5 } },
+    { s: { r: totalsRow, c: 0 }, e: { r: totalsRow, c: 3 } },
+    { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } }
   ];
 
-  // Merge FOLGA rows
-  folgaRows.forEach((row) => {
-    merges.push({ s: { r: row, c: 2 }, e: { r: row, c: 3 } }); // Clock In/Out columns
+  folgaRows.forEach(row => {
+    merges.push({ s: { r: row, c: 2 }, e: { r: row, c: 3 } });
   });
 
-  ws['!merges'] = merges;
+  setMergedCells(ws, merges);
 
-  // ========== CELL FORMATTING ==========
-  // Format the declaration paragraph (A1)
-  const a1Address = XLSX.utils.encode_cell({ r: 0, c: 0 });
-  ws[a1Address].s = {
-    alignment: {
-      wrapText: true,
-      vertical: "center",
-      horizontal: "center",
-      shrinkToFit: false,
-    },
-    font: {
-      name: "Arial",
-      sz: 12,
-      bold: true, // Bold title in the first line
-    },
-  };
+  // Apply cell formatting to A1 manually
+  applyCellTextFormatting(ws, 'A1', {
+    wrapText: true,
+    vertical: 'center',
+    horizontal: 'center'
+  });
 
-  // Format signature confirmation text
-  if (includeSignature) {
-    // Apply text formatting
-    applyCellTextFormatting(
-      ws,
-      XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }),
-      {
-        wrapText: true,
-        vertical: "center",
-        horizontal: "center"
-      }
-    );
-    
-    // Apply font styling separately
-    applyCellFont(
-      ws,
-      XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }),
-      {
-        italic: true
-      }
-    );
-  }
+  // Format signature area as well
+  applyCellTextFormatting(ws, XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }), {
+    wrapText: true,
+    vertical: 'center',
+    horizontal: 'center'
+  });
 
-  // Apply consistent formatting to all cells
+  // Apply borders and basic formatting
   applyFormattingToAllCells(ws, {
-    headerRow: 2, // Header is at row 3 (0-indexed)
+    headerRow: 2,
     boldRows: [totalsRow, workingDaysRow],
     applyBorders: true,
     applyWrapText: true
   });
-  
-  // Apply font styling to all cells separately
-  for (let r = 0; r <= dataEndRow + 5; r++) {
-    for (let c = 0; c <= 5; c++) {
-      const cellAddress = XLSX.utils.encode_cell({ r, c });
-      if (ws[cellAddress]) {
-        applyCellFont(ws, cellAddress, { name: "Arial", sz: 11 });
-      }
-    }
-  }
 
-  // ========== SPECIAL FORMATTING ==========
-  // Format time totals as HH:MM
+  // Time format fix for totals
   applyTimeFormatting(
     ws,
-    XLSX.utils.encode_cell({ r: totalsRow, c: 4 }), // Start cell
-    XLSX.utils.encode_cell({ r: totalsRow, c: 5 })  // End cell
+    XLSX.utils.encode_cell({ r: totalsRow, c: 4 }),
+    XLSX.utils.encode_cell({ r: totalsRow, c: 5 })
   );
 
-  // Add filter to header row
-  addAutoFilter(ws, "A3:F3");
+  // Filter
+  addAutoFilter(ws, `A3:F3`);
+
+  return ws;
 };
