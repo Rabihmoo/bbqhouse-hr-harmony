@@ -1,4 +1,3 @@
-
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
 import {
@@ -59,12 +58,12 @@ export const createEmployeeDeclarationSheet = (
   // Create worksheet from rows
   const ws = XLSX.utils.aoa_to_sheet(rows);
 
-  // Set proper column widths for readability
-  setColumnWidths(ws, [30, 12, 10, 10, 10, 12]);
+  // Set proper column widths for readability - increased for better text wrapping
+  setColumnWidths(ws, [40, 15, 15, 15, 15, 15]);
 
-  // Define row heights and adjust first row to be tall enough (300 pixels for A1)
+  // Define row heights and adjust first row to be tall enough
   const rowHeights: { [key: number]: number } = {
-    0: 300, // A1: Title + declaration text - increased height for better visibility
+    0: 300, // A1: Title + declaration text
     [signatureTextRow]: 50 // Signature explanation row
   };
 
@@ -86,20 +85,15 @@ export const createEmployeeDeclarationSheet = (
 
   setMergedCells(ws, merges);
 
-  // Apply cell formatting to A1 manually - this is the key part
+  // Apply comprehensive formatting to A1 cell after merging
   const a1Address = 'A1';
   
-  // Ensure cell A1 exists
+  // Ensure cell A1 exists and has the correct value
   if (!ws[a1Address]) {
     ws[a1Address] = { t: 's', v: formattedDeclarationText };
   }
   
-  // Make sure the cell has a style object
-  if (!ws[a1Address].s) {
-    ws[a1Address].s = {};
-  }
-  
-  // Apply comprehensive formatting directly to A1 cell to ensure proper text wrapping
+  // Apply formatting to A1
   ws[a1Address].s = {
     alignment: {
       wrapText: true,
@@ -110,7 +104,7 @@ export const createEmployeeDeclarationSheet = (
     font: {
       name: "Arial",
       sz: 11,
-      bold: false, // Regular text for better readability
+      bold: false,
     },
     border: {
       top: { style: 'thin' },
@@ -119,21 +113,20 @@ export const createEmployeeDeclarationSheet = (
       right: { style: 'thin' }
     }
   };
-  
-  // Make the title (first line) bold - we'll handle this in the text itself
-  
-  // Format signature area as well
-  applyCellTextFormatting(ws, XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }), {
+
+  // Format signature area
+  const signatureCell = XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 });
+  applyCellTextFormatting(ws, signatureCell, {
     wrapText: true,
     vertical: 'center',
     horizontal: 'center'
   });
   
-  applyCellFont(ws, XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }), {
+  applyCellFont(ws, signatureCell, {
     italic: true
   });
 
-  // Apply borders and basic formatting
+  // Apply borders and basic formatting to all cells
   applyFormattingToAllCells(ws, {
     headerRow: 2,
     boldRows: [totalsRow, workingDaysRow],
@@ -148,7 +141,7 @@ export const createEmployeeDeclarationSheet = (
     XLSX.utils.encode_cell({ r: totalsRow, c: 5 })
   );
 
-  // Filter
+  // Add auto filter
   addAutoFilter(ws, `A3:F3`);
 
   return ws;
