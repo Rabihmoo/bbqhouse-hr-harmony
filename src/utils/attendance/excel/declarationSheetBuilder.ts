@@ -1,9 +1,19 @@
-
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
-import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "../declarationGenerator";
+import {
+  generateDeclarationText,
+  generateSignatureText,
+  getFormattedSignatureDate
+} from "../declarationGenerator";
 import { convertTimeStringToExcelTime } from "./timeConversionUtils";
-import { setColumnWidths, setRowHeights, setMergedCells, applyTimeFormatting, applyFormattingToAllCells, addAutoFilter } from "./worksheetFormatUtils";
+import {
+  setColumnWidths,
+  setRowHeights,
+  setMergedCells,
+  applyTimeFormatting,
+  applyFormattingToAllCells,
+  addAutoFilter
+} from "./worksheetFormatUtils";
 import { applyCellTextFormatting } from "./cellFormatUtils";
 import { createSheetStructure } from "./attendanceDataFormatter";
 
@@ -16,7 +26,6 @@ export const createEmployeeDeclarationSheet = (
   year: string,
   includeSignature: boolean
 ): XLSX.WorkSheet => {
-  // Create the full declaration title and text
   const declarationTitle = "DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS";
   const declarationText = generateDeclarationText(
     employeeReport.employeeName,
@@ -25,37 +34,33 @@ export const createEmployeeDeclarationSheet = (
     month,
     year
   );
-  
-  // Combine title and text for the merged cell
+
   const fullDeclarationText = `${declarationTitle}\n\n${declarationText}`;
-  
-  // Create sheet structure with headers and data
-  const { 
-    rows, 
-    dataStartRow, 
-    dataEndRow, 
+
+  const {
+    rows,
+    dataStartRow,
+    dataEndRow,
     totalsRow,
     workingDaysRow,
     signatureTextRow,
     signatureLineRow,
     folgaRows
   } = createSheetStructure(employeeReport, month, year, fullDeclarationText);
-  
-  // Create worksheet from rows
+
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  
-  // Apply formatting to worksheet
+
   applyDeclarationSheetFormatting(
-    ws, 
-    dataStartRow, 
-    dataEndRow, 
+    ws,
+    dataStartRow,
+    dataEndRow,
     totalsRow,
     workingDaysRow,
     signatureTextRow,
     signatureLineRow,
     folgaRows
   );
-  
+
   return ws;
 };
 
@@ -63,7 +68,7 @@ export const createEmployeeDeclarationSheet = (
  * Applies all necessary formatting to the worksheet
  */
 const applyDeclarationSheetFormatting = (
-  ws: XLSX.WorkSheet, 
+  ws: XLSX.WorkSheet,
   dataStartRow: number,
   dataEndRow: number,
   totalsRow: number,
@@ -72,76 +77,69 @@ const applyDeclarationSheetFormatting = (
   signatureLineRow: number,
   folgaRows: number[]
 ): void => {
-  // Set column widths for better readability
-  setColumnWidths(ws, [25, 12, 10, 10, 10, 12]);
-  
-  // Define row heights for declaration and signature text
+  // Expanded column widths for readability
+  setColumnWidths(ws, [30, 15, 15, 15, 15, 20]);
+
+  // Increase row height for declaration text
   const rowHeights: { [key: number]: number } = {
-    0: 240 // Title + declaration text row - increased to 240 as requested
+    0: 360 // Extra space for wrapped title + paragraph
   };
-  
-  // Set the signature text row height
-  rowHeights[signatureTextRow] = 50; // Signature text row
-  
+
+  rowHeights[signatureTextRow] = 50;
+
   setRowHeights(ws, rowHeights);
-  
-  // Define merged cells
+
   const merges = [
-    // Declaration text across all columns (A1:F1)
+    // Declaration title + text
     { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
-    
-    // Signature text across all columns (A:F in signature row)
+    // Signature explanation text
     { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } },
-    
-    // Signature line (Employee signature cell - merge A-D)
+    // Signature line
     { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } },
-    
-    // Date cell (merge E-F)
+    // Date line
     { s: { r: signatureLineRow, c: 4 }, e: { r: signatureLineRow, c: 5 } },
-    
-    // TOTAL WORKING HOURS label
+    // Totals
     { s: { r: totalsRow, c: 0 }, e: { r: totalsRow, c: 3 } },
-    
-    // WORKING DAYS label
-    { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } },
+    // Working days
+    { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } }
   ];
-  
-  // Add merges for FOLGA rows (merge columns C and D)
+
+  // Merge FOLGA cells (Clock In and Clock Out)
   folgaRows.forEach(row => {
     merges.push({ s: { r: row, c: 2 }, e: { r: row, c: 3 } });
   });
-  
+
   setMergedCells(ws, merges);
-  
-  // Apply text wrapping and alignment for declaration cell
-  applyCellTextFormatting(ws, 'A1', { 
-    wrapText: true, 
-    vertical: 'center', 
-    horizontal: 'center' 
-  });
-  
-  // Apply text wrapping and alignment for signature text cell
-  applyCellTextFormatting(ws, XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }), { 
-    wrapText: true, 
+
+  // Format declaration paragraph cell
+  applyCellTextFormatting(ws, 'A1', {
+    wrapText: true,
     vertical: 'center',
     horizontal: 'center'
   });
-  
-  // Apply formatting to all cells (borders, bold headers, wrap text for all cells)
+
+  // Format signature text cell
+  applyCellTextFormatting(ws, XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }), {
+    wrapText: true,
+    vertical: 'center',
+    horizontal: 'center'
+  });
+
+  // General formatting
   applyFormattingToAllCells(ws, {
-    headerRow: 2, // Header is at row 3 (0-indexed)
+    headerRow: 2, // Zero-indexed row 3
     boldRows: [totalsRow, workingDaysRow],
     applyBorders: true,
-    applyWrapText: true  // Apply wrap text to all cells
+    applyWrapText: true
   });
-  
-  // Make sure formula cells use proper time format for SUM results
+
+  // Format time totals
   applyTimeFormatting(
-    ws, 
-    XLSX.utils.encode_cell({ r: totalsRow, c: 4 }), 
+    ws,
+    XLSX.utils.encode_cell({ r: totalsRow, c: 4 }),
     XLSX.utils.encode_cell({ r: totalsRow, c: 5 })
   );
-  
-  // Add AutoFilter for the header row
+
+  // Enable filter
   addAutoFilter(ws, `A3:F3`);
 };
