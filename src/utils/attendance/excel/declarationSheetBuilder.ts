@@ -1,9 +1,21 @@
+
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
-import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "../declarationGenerator";
+import {
+  generateDeclarationText,
+  generateSignatureText,
+  getFormattedSignatureDate,
+} from "../declarationGenerator";
 import { convertTimeStringToExcelTime } from "./timeConversionUtils";
-import { setColumnWidths, setRowHeights, setMergedCells, applyTimeFormatting, applyFormattingToAllCells, addAutoFilter } from "./worksheetFormatUtils";
-import { applyCellTextFormatting } from "./cellFormatUtils";
+import {
+  setColumnWidths,
+  setRowHeights,
+  setMergedCells,
+  applyTimeFormatting,
+  applyFormattingToAllCells,
+  addAutoFilter,
+} from "./worksheetFormatUtils";
+import { applyCellTextFormatting, applyCellFont, applyCellBorders } from "./cellFormatUtils";
 import { createSheetStructure } from "./attendanceDataFormatter";
 
 /**
@@ -25,7 +37,8 @@ export const createEmployeeDeclarationSheet = (
     year
   );
 
-  // Add line breaks for better wrapping in Excel
+  // Format with explicit line breaks for better Excel rendering
+  // Use \n\n for paragraph breaks to ensure proper spacing
   const formattedDeclarationText = `${declarationTitle}\n\n${declarationText.replace(/\. /g, '.\n')}`;
 
   // Create sheet structure with headers and data
@@ -49,9 +62,9 @@ export const createEmployeeDeclarationSheet = (
   // Set proper column widths for readability
   setColumnWidths(ws, [30, 12, 10, 10, 10, 12]);
 
-  // Define row heights and adjust first row to be tall enough
+  // Define row heights and adjust first row to be tall enough (300 pixels for A1)
   const rowHeights: { [key: number]: number } = {
-    0: 240, // A1: Title + declaration text
+    0: 300, // A1: Title + declaration text - increased height for better visibility
     [signatureTextRow]: 50 // Signature explanation row
   };
 
@@ -73,18 +86,51 @@ export const createEmployeeDeclarationSheet = (
 
   setMergedCells(ws, merges);
 
-  // Apply cell formatting to A1 manually
-  applyCellTextFormatting(ws, 'A1', {
-    wrapText: true,
-    vertical: 'center',
-    horizontal: 'center'
-  });
-
+  // Apply cell formatting to A1 manually - this is the key part
+  const a1Address = 'A1';
+  
+  // Ensure cell A1 exists
+  if (!ws[a1Address]) {
+    ws[a1Address] = { t: 's', v: formattedDeclarationText };
+  }
+  
+  // Make sure the cell has a style object
+  if (!ws[a1Address].s) {
+    ws[a1Address].s = {};
+  }
+  
+  // Apply comprehensive formatting directly to A1 cell to ensure proper text wrapping
+  ws[a1Address].s = {
+    alignment: {
+      wrapText: true,
+      vertical: "center",
+      horizontal: "center",
+      shrinkToFit: false,
+    },
+    font: {
+      name: "Arial",
+      sz: 11,
+      bold: false, // Regular text for better readability
+    },
+    border: {
+      top: { style: 'thin' },
+      bottom: { style: 'thin' },
+      left: { style: 'thin' },
+      right: { style: 'thin' }
+    }
+  };
+  
+  // Make the title (first line) bold - we'll handle this in the text itself
+  
   // Format signature area as well
   applyCellTextFormatting(ws, XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }), {
     wrapText: true,
     vertical: 'center',
     horizontal: 'center'
+  });
+  
+  applyCellFont(ws, XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }), {
+    italic: true
   });
 
   // Apply borders and basic formatting

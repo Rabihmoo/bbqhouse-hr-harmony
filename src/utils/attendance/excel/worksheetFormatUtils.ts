@@ -24,6 +24,7 @@ export const setRowHeights = (
   
   Object.entries(rowHeights).forEach(([rowIndex, height]) => {
     const index = parseInt(rowIndex, 10);
+    // Use hpt (height in points) for precise control
     ws['!rows'][index] = { hpt: height };
   });
 };
@@ -81,6 +82,9 @@ export const applyFormattingToAllCells = (
   for (let r = range.s.r; r <= range.e.r; r++) {
     for (let c = range.s.c; c <= range.e.c; c++) {
       const cellAddress = XLSX.utils.encode_cell({ r, c });
+      
+      // Skip A1 formatting - we handle it separately
+      if (r === 0 && c === 0) continue;
       
       // Create cell if it doesn't exist
       if (!ws[cellAddress]) {

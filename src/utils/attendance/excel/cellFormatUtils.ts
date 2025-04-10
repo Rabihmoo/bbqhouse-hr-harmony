@@ -19,7 +19,8 @@ export const applyCellTextFormatting = (
   ws[cellAddress].s.alignment = { 
     wrapText: options.wrapText ?? false, 
     vertical: options.vertical ?? 'top', 
-    horizontal: options.horizontal ?? 'left' 
+    horizontal: options.horizontal ?? 'left',
+    shrinkToFit: false // Prevent text from shrinking to fit
   };
 };
 
@@ -39,10 +40,14 @@ export const applyCellFont = (
   if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
-  ws[cellAddress].s.font = {
-    ...(ws[cellAddress].s.font || {}),
-    ...options
-  };
+  if (!ws[cellAddress].s.font) {
+    ws[cellAddress].s.font = {};
+  }
+  
+  if (options.bold !== undefined) ws[cellAddress].s.font.bold = options.bold;
+  if (options.italic !== undefined) ws[cellAddress].s.font.italic = options.italic;
+  if (options.sz !== undefined) ws[cellAddress].s.font.sz = options.sz;
+  if (options.name !== undefined) ws[cellAddress].s.font.name = options.name;
 };
 
 /**
