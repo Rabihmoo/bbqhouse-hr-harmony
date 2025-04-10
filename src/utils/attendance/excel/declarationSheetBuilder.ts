@@ -48,6 +48,9 @@ export const createEmployeeDeclarationSheet = (
     folgaRows
   } = createSheetStructure(employeeReport, month, year, fullDeclarationText);
 
+  // Force declaration text to appear in A1
+  rows[0][0] = fullDeclarationText;
+
   const ws = XLSX.utils.aoa_to_sheet(rows);
 
   applyDeclarationSheetFormatting(
@@ -77,69 +80,58 @@ const applyDeclarationSheetFormatting = (
   signatureLineRow: number,
   folgaRows: number[]
 ): void => {
-  // Expanded column widths for readability
+  // Set column widths
   setColumnWidths(ws, [30, 15, 15, 15, 15, 20]);
 
-  // Increase row height for declaration text
+  // Adjust row height
   const rowHeights: { [key: number]: number } = {
-    0: 360 // Extra space for wrapped title + paragraph
+    0: 360,
+    [signatureTextRow]: 50
   };
-
-  rowHeights[signatureTextRow] = 50;
 
   setRowHeights(ws, rowHeights);
 
   const merges = [
-    // Declaration title + text
     { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
-    // Signature explanation text
     { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } },
-    // Signature line
     { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } },
-    // Date line
     { s: { r: signatureLineRow, c: 4 }, e: { r: signatureLineRow, c: 5 } },
-    // Totals
     { s: { r: totalsRow, c: 0 }, e: { r: totalsRow, c: 3 } },
-    // Working days
     { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } }
   ];
 
-  // Merge FOLGA cells (Clock In and Clock Out)
   folgaRows.forEach(row => {
     merges.push({ s: { r: row, c: 2 }, e: { r: row, c: 3 } });
   });
 
   setMergedCells(ws, merges);
 
-  // Format declaration paragraph cell
+  // 🟢 APPLY ACTUAL WRAP TO A1
   applyCellTextFormatting(ws, 'A1', {
     wrapText: true,
     vertical: 'center',
     horizontal: 'center'
   });
 
-  // Format signature text cell
+  // Signature text formatting
   applyCellTextFormatting(ws, XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }), {
     wrapText: true,
     vertical: 'center',
     horizontal: 'center'
   });
 
-  // General formatting
   applyFormattingToAllCells(ws, {
-    headerRow: 2, // Zero-indexed row 3
+    headerRow: 2,
     boldRows: [totalsRow, workingDaysRow],
     applyBorders: true,
     applyWrapText: true
   });
 
-  // Format time totals
   applyTimeFormatting(
     ws,
     XLSX.utils.encode_cell({ r: totalsRow, c: 4 }),
     XLSX.utils.encode_cell({ r: totalsRow, c: 5 })
   );
 
-  // Enable filter
   addAutoFilter(ws, `A3:F3`);
 };
