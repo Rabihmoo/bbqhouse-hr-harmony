@@ -39,8 +39,8 @@ export const createEmployeeDeclarationSheet = (
     year
   );
 
-  // Combine with double line break between title and text
-  const fullDeclarationText = `${declarationTitle}\n\n${declarationText}`;
+  // Combine title and text with proper line breaks
+  const fullDeclarationText = `${declarationTitle}\r\n${declarationText}`;
 
   // 2. Create the sheet structure
   const {
@@ -92,7 +92,14 @@ const applyDeclarationSheetFormatting = (
 ): void => {
   // ========== COLUMN WIDTHS ==========
   // Set optimized column widths for better readability
-  setColumnWidths(ws, [25, 12, 10, 10, 10, 12]); // A-F columns
+  ws['!cols'] = [
+    { wpx: 150 }, // Column A
+    { wpx: 80 },  // Column B
+    { wpx: 80 },  // Column C
+    { wpx: 80 },  // Column D
+    { wpx: 80 },  // Column E
+    { wpx: 100 }, // Column F
+  ];
 
   // ========== ROW HEIGHTS ==========
   const rowHeights: { [key: number]: number } = {
@@ -102,48 +109,52 @@ const applyDeclarationSheetFormatting = (
     [signatureTextRow]: 50, // Signature text row
     [signatureLineRow]: 25, // Signature line row
   };
-  
+
   // Set consistent height for data rows
   for (let i = dataStartRow; i <= dataEndRow; i++) {
     rowHeights[i] = 20;
   }
-  
-  setRowHeights(ws, rowHeights);
+
+  ws['!rows'] = Object.keys(rowHeights).map((rowIndex) => ({
+    hpx: rowHeights[parseInt(rowIndex)],
+  }));
 
   // ========== MERGED CELLS ==========
   const merges = [
     // Declaration paragraph (A1:F1)
     { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
-    
     // Signature section
     { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } }, // Text
     { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } }, // Line
     { s: { r: signatureLineRow, c: 4 }, e: { r: signatureLineRow, c: 5 } }, // Date
-    
     // Summary rows
     { s: { r: totalsRow, c: 0 }, e: { r: totalsRow, c: 3 } },    // Totals label
     { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } }, // Working days
   ];
 
   // Merge FOLGA rows
-  folgaRows.forEach(row => {
+  folgaRows.forEach((row) => {
     merges.push({ s: { r: row, c: 2 }, e: { r: row, c: 3 } }); // Clock In/Out columns
   });
 
-  setMergedCells(ws, merges);
+  ws['!merges'] = merges;
 
   // ========== CELL FORMATTING ==========
   // Format the declaration paragraph (A1)
-  applyCellTextFormatting(ws, "A1", {
-    wrapText: true,
-    vertical: "center",
-    horizontal: "center",
+  const a1Address = XLSX.utils.encode_cell({ r: 0, c: 0 });
+  ws[a1Address].s = {
+    alignment: {
+      wrapText: true,
+      vertical: "center",
+      horizontal: "center",
+      shrinkToFit: false,
+    },
     font: {
       name: "Arial",
       sz: 12,
-      bold: true, // Only for the title (title is first line)
-    }
-  });
+      bold: true, // Bold title in the first line
+    },
+  };
 
   // Format signature confirmation text
   if (includeSignature) {
@@ -154,7 +165,7 @@ const applyDeclarationSheetFormatting = (
         wrapText: true,
         vertical: "center",
         horizontal: "center",
-        font: { italic: true }
+        font: { italic: true },
       }
     );
   }
@@ -165,7 +176,7 @@ const applyDeclarationSheetFormatting = (
     boldRows: [totalsRow, workingDaysRow],
     applyBorders: true,
     applyWrapText: true,
-    baseFont: { name: "Arial", sz: 11 }
+    baseFont: { name: "Arial", sz: 11 },
   });
 
   // ========== SPECIAL FORMATTING ==========
@@ -178,4 +189,38 @@ const applyDeclarationSheetFormatting = (
 
   // Add filter to header row
   addAutoFilter(ws, "A3:F3");
+};
+
+// Enhanced applyCellTextFormatting utility
+export const applyCellTextFormatting = (
+  ws: XLSX.WorkSheet,
+  cellAddress: string,
+  options: {
+    wrapText?: boolean;
+    vertical?: "top" | "center" | "bottom";
+    horizontal?: "left" | "center" | "right";
+    bold?: boolean;
+    fontSize?: number;
+    italic?: boolean;
+  }
+) => {
+  if (!ws[cellAddress]) return;
+
+  ws[cellAddress].s = ws[cellAddress].s || {};
+
+  ws[cellAddress].s.alignment = {
+    ...(ws[cellAddress].s.alignment || {}),
+    wrapText: options.wrapText ?? true,
+    vertical: options.vertical ?? "center",
+    horizontal: options.horizontal ?? "center",
+  };
+
+  if (options.bold || options.fontSize || options.italic) {
+    ws[cellAddress].s.font = {
+      ...(ws[cellAddress].s.font || {}),
+      bold: options.bold,
+      sz: options.fontSize,
+      italic: options.italic,
+    };
+  }
 };
