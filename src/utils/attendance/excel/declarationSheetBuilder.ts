@@ -16,7 +16,7 @@ export const createEmployeeDeclarationSheet = (
   includeSignature: boolean
 ): XLSX.WorkSheet => {
   // Create data array for the sheet
-  const rows = createDeclarationSheetData(employeeReport, month, year);
+  const rows = createDeclarationSheetData(employeeReport, month, year, includeSignature);
   
   // Create worksheet from the 2D array
   const ws = XLSX.utils.aoa_to_sheet(rows);
@@ -33,7 +33,8 @@ export const createEmployeeDeclarationSheet = (
 const createDeclarationSheetData = (
   employeeReport: EmployeeReport,
   month: string,
-  year: string
+  year: string,
+  includeSignature: boolean
 ): any[][] => {
   // Initialize with empty declaration cell (will be formatted separately)
   const rows: any[][] = [
@@ -74,7 +75,7 @@ const createDeclarationSheetData = (
   const totalsRow = [
     "TOTAL WORKING HOURS", "", "", "", 
     employeeReport.totalHours || "0:00", 
-    employeeReport.totalExtraHours || "0:00"
+    employeeReport.totalExtraHours || employeeReport.extraHours || "0:00"  // Use totalExtraHours with fallback to extraHours
   ];
   rows.push(totalsRow);
   
@@ -240,7 +241,9 @@ const formatDeclarationSheet = (
   folgaRows.forEach(row => {
     const folgaCell = XLSX.utils.encode_cell({ r: row, c: 2 });
     ws[folgaCell].v = "FOLGA";
-    applyFolgaCellFormatting(ws, folgaCell);
+    
+    // Apply FOLGA cell formatting
+    applyFolgaFormatting(ws, folgaCell);
   });
   
   // Format time cells
@@ -276,4 +279,29 @@ const formatDeclarationSheet = (
   
   // Add filter to the header row
   addAutoFilter(ws, "A3:F3");
+};
+
+/**
+ * Specifically formats FOLGA cells with proper alignment and border
+ * This replaces the missing applyFolgaCellFormatting function
+ */
+const applyFolgaFormatting = (
+  ws: XLSX.WorkSheet,
+  cellAddress: string
+): void => {
+  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+  if (!ws[cellAddress].s) ws[cellAddress].s = {};
+  
+  // Ensure strong border is applied
+  applyCellBorders(ws, cellAddress, 'thin');
+  
+  // Center text both horizontally and vertically
+  applyCellTextFormatting(ws, cellAddress, {
+    wrapText: true,
+    horizontal: 'center',
+    vertical: 'center'
+  });
+  
+  // Make text bold for emphasis
+  applyCellFont(ws, cellAddress, { bold: true });
 };

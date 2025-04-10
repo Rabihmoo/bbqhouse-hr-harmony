@@ -7,6 +7,7 @@ export interface EmployeeAttendanceRecord {
   clockOut: string;
   workTime: string;
   extraHours: string;
+  status?: string; // Added status property
 }
 
 export interface EmployeeReport {
@@ -18,6 +19,7 @@ export interface EmployeeReport {
   workingDays: number;
   totalHours: number;
   extraHours: number;
+  totalExtraHours?: string; // Added totalExtraHours property
   attendanceRecords: EmployeeAttendanceRecord[];
 }
 
