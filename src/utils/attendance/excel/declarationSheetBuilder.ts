@@ -2,9 +2,33 @@
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "../declarationGenerator";
-import { convertTimeStringToExcelTime } from "./timeConversionUtils";
+import { convertTimeStringToExcelTime, ensureTimeFormatting } from "./timeConversionUtils";
 import { setColumnWidths, setRowHeights, setMergedCells, applyTimeFormatting, applyFormattingToAllCells, addAutoFilter } from "./worksheetFormatUtils";
-import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill, applyParagraphFormatting, applyFolgaCellFormatting } from "./cellFormatUtils";
+import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill, applyParagraphFormatting } from "./cellFormatUtils";
+
+/**
+ * Specifically formats FOLGA cells with proper formatting
+ */
+const applyFolgaCellFormatting = (
+  ws: XLSX.WorkSheet,
+  cellAddress: string
+): void => {
+  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+  if (!ws[cellAddress].s) ws[cellAddress].s = {};
+  
+  // Ensure strong border is applied
+  applyCellBorders(ws, cellAddress, 'thin');
+  
+  // Center text both horizontally and vertically
+  applyCellTextFormatting(ws, cellAddress, {
+    wrapText: true,
+    horizontal: 'center',
+    vertical: 'center'
+  });
+  
+  // Make text bold for emphasis
+  applyCellFont(ws, cellAddress, { bold: true });
+};
 
 /**
  * Creates a single employee declaration sheet with proper formatting
