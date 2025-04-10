@@ -15,7 +15,7 @@ import {
   applyFormattingToAllCells,
   addAutoFilter,
 } from "./worksheetFormatUtils";
-import { applyCellTextFormatting } from "./cellFormatUtils";
+import { applyCellTextFormatting, applyCellFont } from "./cellFormatUtils";
 import { createSheetStructure } from "./attendanceDataFormatter";
 
 /**
@@ -159,14 +159,23 @@ const applyDeclarationSheetFormatting = (
 
   // Format signature confirmation text
   if (includeSignature) {
+    // Apply text formatting
     applyCellTextFormatting(
       ws,
       XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }),
       {
         wrapText: true,
         vertical: "center",
-        horizontal: "center",
-        font: { italic: true },
+        horizontal: "center"
+      }
+    );
+    
+    // Apply font styling separately
+    applyCellFont(
+      ws,
+      XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 }),
+      {
+        italic: true
       }
     );
   }
@@ -176,9 +185,18 @@ const applyDeclarationSheetFormatting = (
     headerRow: 2, // Header is at row 3 (0-indexed)
     boldRows: [totalsRow, workingDaysRow],
     applyBorders: true,
-    applyWrapText: true,
-    baseFont: { name: "Arial", sz: 11 },
+    applyWrapText: true
   });
+  
+  // Apply font styling to all cells separately
+  for (let r = 0; r <= dataEndRow + 5; r++) {
+    for (let c = 0; c <= 5; c++) {
+      const cellAddress = XLSX.utils.encode_cell({ r, c });
+      if (ws[cellAddress]) {
+        applyCellFont(ws, cellAddress, { name: "Arial", sz: 11 });
+      }
+    }
+  }
 
   // ========== SPECIAL FORMATTING ==========
   // Format time totals as HH:MM
@@ -191,5 +209,3 @@ const applyDeclarationSheetFormatting = (
   // Add filter to header row
   addAutoFilter(ws, "A3:F3");
 };
-
-// Removed the duplicate applyCellTextFormatting function that was causing the conflict

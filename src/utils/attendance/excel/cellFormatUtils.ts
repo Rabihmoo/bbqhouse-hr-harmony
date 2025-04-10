@@ -24,6 +24,28 @@ export const applyCellTextFormatting = (
 };
 
 /**
+ * Applies font styling to a cell
+ */
+export const applyCellFont = (
+  ws: XLSX.WorkSheet,
+  cellAddress: string,
+  options: {
+    bold?: boolean;
+    italic?: boolean;
+    sz?: number;
+    name?: string;
+  }
+): void => {
+  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+  if (!ws[cellAddress].s) ws[cellAddress].s = {};
+  
+  ws[cellAddress].s.font = {
+    ...(ws[cellAddress].s.font || {}),
+    ...options
+  };
+};
+
+/**
  * Applies border styling to a cell
  */
 export const applyCellBorders = (
@@ -39,26 +61,6 @@ export const applyCellBorders = (
     bottom: { style },
     left: { style },
     right: { style }
-  };
-};
-
-/**
- * Applies font styling to a cell
- */
-export const applyCellFont = (
-  ws: XLSX.WorkSheet,
-  cellAddress: string,
-  options: {
-    bold?: boolean;
-    size?: number;
-  }
-): void => {
-  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
-  if (!ws[cellAddress].s) ws[cellAddress].s = {};
-  
-  ws[cellAddress].s.font = {
-    ...(ws[cellAddress].s.font || {}),
-    ...options
   };
 };
 

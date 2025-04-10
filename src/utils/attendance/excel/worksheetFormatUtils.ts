@@ -94,9 +94,7 @@ export const applyFormattingToAllCells = (
       
       // Apply wrap text if needed
       if (options.applyWrapText) {
-        if (!ws[cellAddress].s) ws[cellAddress].s = {};
-        if (!ws[cellAddress].s.alignment) ws[cellAddress].s.alignment = {};
-        ws[cellAddress].s.alignment.wrapText = true;
+        applyCellTextFormatting(ws, cellAddress, { wrapText: true });
       }
       
       // Apply header formatting
