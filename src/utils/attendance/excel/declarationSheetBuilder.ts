@@ -1,3 +1,4 @@
+
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
 import {
@@ -191,36 +192,4 @@ const applyDeclarationSheetFormatting = (
   addAutoFilter(ws, "A3:F3");
 };
 
-// Enhanced applyCellTextFormatting utility
-export const applyCellTextFormatting = (
-  ws: XLSX.WorkSheet,
-  cellAddress: string,
-  options: {
-    wrapText?: boolean;
-    vertical?: "top" | "center" | "bottom";
-    horizontal?: "left" | "center" | "right";
-    bold?: boolean;
-    fontSize?: number;
-    italic?: boolean;
-  }
-) => {
-  if (!ws[cellAddress]) return;
-
-  ws[cellAddress].s = ws[cellAddress].s || {};
-
-  ws[cellAddress].s.alignment = {
-    ...(ws[cellAddress].s.alignment || {}),
-    wrapText: options.wrapText ?? true,
-    vertical: options.vertical ?? "center",
-    horizontal: options.horizontal ?? "center",
-  };
-
-  if (options.bold || options.fontSize || options.italic) {
-    ws[cellAddress].s.font = {
-      ...(ws[cellAddress].s.font || {}),
-      bold: options.bold,
-      sz: options.fontSize,
-      italic: options.italic,
-    };
-  }
-};
+// Removed the duplicate applyCellTextFormatting function that was causing the conflict
