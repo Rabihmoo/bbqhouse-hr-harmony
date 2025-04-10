@@ -51,6 +51,8 @@ export const applyCellFont = (
   options: {
     bold?: boolean;
     size?: number;
+    name?: string;
+    italic?: boolean;
   }
 ): void => {
   if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
@@ -77,6 +79,51 @@ export const applyCellFill = (
     fgColor: { rgb: color } 
   };
 };
+
+/**
+ * Specifically formats paragraph text with proper wrapping and formatting
+ * This function is specifically designed to handle multi-line text in Excel
+ */
+export const applyParagraphFormatting = (
+  ws: XLSX.WorkSheet,
+  cellAddress: string,
+  text: string,
+  options?: {
+    fontSize?: number;
+    bold?: boolean;
+    italic?: boolean;
+    alignment?: 'left' | 'center' | 'right';
+  }
+): void => {
+  // Ensure the cell exists
+  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+  
+  // Replace \n with explicit line breaks for Excel
+  // This ensures proper line breaks within the cell
+  const formattedText = text.replace(/\n/g, '\r\n');
+  
+  // Set the cell value
+  ws[cellAddress].v = formattedText;
+  ws[cellAddress].t = 's';
+  
+  // Apply styling
+  if (!ws[cellAddress].s) ws[cellAddress].s = {};
+  
+  // Ensure text wrapping is enabled
+  ws[cellAddress].s.alignment = {
+    wrapText: true,
+    vertical: 'center',
+    horizontal: options?.alignment || 'center',
+  };
+  
+  // Apply font styling if provided
+  ws[cellAddress].s.font = {
+    ...(ws[cellAddress].s.font || {}),
+    bold: options?.bold ?? false,
+    italic: options?.italic ?? false,
+    sz: options?.fontSize || 12,
+  };
+}
 
 /**
  * Specifically formats FOLGA cells with proper alignment and border
