@@ -4,7 +4,7 @@ import { EmployeeReport } from "../types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "../declarationGenerator";
 import { convertTimeStringToExcelTime } from "./timeConversionUtils";
 import { setColumnWidths, setRowHeights, setMergedCells, applyTimeFormatting, applyFormattingToAllCells, addAutoFilter } from "./worksheetFormatUtils";
-import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill, applyParagraphFormatting } from "./cellFormatUtils";
+import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill, applyParagraphFormatting, applyFolgaCellFormatting } from "./cellFormatUtils";
 
 /**
  * Creates a single employee declaration sheet with proper formatting
@@ -21,14 +21,14 @@ export const createEmployeeDeclarationSheet = (
   // Create worksheet from the 2D array
   const ws = XLSX.utils.aoa_to_sheet(rows);
   
-  // Format the sheet with proper styling
+  // Apply comprehensive formatting to the sheet
   formatDeclarationSheet(ws, employeeReport, month, year, includeSignature);
   
   return ws;
 };
 
 /**
- * Creates the basic data structure for the declaration sheet
+ * Creates the data structure for the declaration sheet
  */
 const createDeclarationSheetData = (
   employeeReport: EmployeeReport,
@@ -48,9 +48,6 @@ const createDeclarationSheetData = (
   ]);
   
   // Add employee attendance records
-  let rowIndex = 3; // Starting from row 4 (0-indexed)
-  const folgaRows: number[] = [];
-  
   employeeReport.attendanceRecords.forEach(record => {
     const recordRow = [
       employeeReport.employeeName,
@@ -62,20 +59,13 @@ const createDeclarationSheetData = (
     ];
     
     rows.push(recordRow);
-    
-    // Track FOLGA rows for special formatting
-    if (record.status === "FOLGA") {
-      folgaRows.push(rowIndex);
-    }
-    
-    rowIndex++;
   });
   
   // Add totals row
   const totalsRow = [
     "TOTAL WORKING HOURS", "", "", "", 
     employeeReport.totalHours || "0:00", 
-    employeeReport.totalExtraHours || employeeReport.extraHours || "0:00"  // Use totalExtraHours with fallback to extraHours
+    employeeReport.totalExtraHours || employeeReport.extraHours || "0:00"
   ];
   rows.push(totalsRow);
   
@@ -122,7 +112,7 @@ const formatDeclarationSheet = (
   const signatureTextRow = includeSignature ? workingDaysRow + 2 : -1;
   const signatureLineRow = includeSignature ? signatureTextRow + 1 : -1;
   
-  // Get FOLGA rows for special formatting
+  // Track FOLGA rows for special formatting
   const folgaRows: number[] = [];
   employeeReport.attendanceRecords.forEach((record, index) => {
     if (record.status === "FOLGA") {
@@ -131,7 +121,7 @@ const formatDeclarationSheet = (
   });
   
   // ===== FORMAT THE DECLARATION TEXT (A1) =====
-  // Generate the declaration text
+  // Generate the declaration text with title and body
   const declarationTitle = "DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS";
   const declarationText = generateDeclarationText(
     employeeReport.employeeName,
@@ -144,31 +134,26 @@ const formatDeclarationSheet = (
   // Format with explicit line breaks for Excel
   const fullDeclarationText = `${declarationTitle}\n\n${declarationText}`;
   
-  // Apply special paragraph formatting to ensure wrapping works
+  // Apply special paragraph formatting to ensure proper wrapping
   applyParagraphFormatting(ws, 'A1', fullDeclarationText, {
     fontSize: 12,
-    bold: false
+    bold: false,
+    alignment: 'center'
   });
   
-  // Apply title formatting separately
+  // Make the title bold separately
   const a1Cell = ws['A1'];
   if (a1Cell && a1Cell.v && typeof a1Cell.v === 'string') {
-    // Extract and format just the title with bold
-    const titleEndsAt = a1Cell.v.indexOf('\n\n');
-    if (titleEndsAt > 0) {
-      const title = a1Cell.v.substring(0, titleEndsAt);
-      // We can't directly format part of the text, but we can make the whole cell bold
-      // which is a reasonable compromise
-      applyCellFont(ws, 'A1', { bold: true });
-    }
+    applyCellFont(ws, 'A1', { bold: true });
   }
   
   // ===== COLUMN WIDTHS =====
   setColumnWidths(ws, [25, 12, 10, 10, 10, 12]);
   
   // ===== ROW HEIGHTS =====
+  // Set a very large height for declaration text to ensure it fits completely
   const rowHeights: { [key: number]: number } = {
-    0: 240, // Declaration text row - increased height for better visibility
+    0: 300, // Declaration text row - extra large height
     1: 20,  // Spacer row
     2: 30,  // Header row
   };
@@ -183,9 +168,9 @@ const formatDeclarationSheet = (
   rowHeights[workingDaysRow] = 25;
   
   if (includeSignature) {
-    rowHeights[signatureTextRow - 1] = 20; // Spacer row
-    rowHeights[signatureTextRow] = 60;    // Signature text
-    rowHeights[signatureLineRow] = 30;    // Signature line
+    rowHeights[workingDaysRow + 1] = 20; // Spacer row
+    rowHeights[signatureTextRow] = 60;   // Signature text
+    rowHeights[signatureLineRow] = 30;   // Signature line
   }
   
   setRowHeights(ws, rowHeights);
@@ -236,14 +221,14 @@ const formatDeclarationSheet = (
     fontSize: 11
   });
   
-  // ===== SPECIAL FORMATTING =====
+  // ===== SPECIAL FORMATTING FOR SPECIFIC CELLS =====
   // Format FOLGA cells
   folgaRows.forEach(row => {
     const folgaCell = XLSX.utils.encode_cell({ r: row, c: 2 });
     ws[folgaCell].v = "FOLGA";
     
     // Apply FOLGA cell formatting
-    applyFolgaFormatting(ws, folgaCell);
+    applyFolgaCellFormatting(ws, folgaCell);
   });
   
   // Format time cells
@@ -279,29 +264,4 @@ const formatDeclarationSheet = (
   
   // Add filter to the header row
   addAutoFilter(ws, "A3:F3");
-};
-
-/**
- * Specifically formats FOLGA cells with proper alignment and border
- * This replaces the missing applyFolgaCellFormatting function
- */
-const applyFolgaFormatting = (
-  ws: XLSX.WorkSheet,
-  cellAddress: string
-): void => {
-  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
-  if (!ws[cellAddress].s) ws[cellAddress].s = {};
-  
-  // Ensure strong border is applied
-  applyCellBorders(ws, cellAddress, 'thin');
-  
-  // Center text both horizontally and vertically
-  applyCellTextFormatting(ws, cellAddress, {
-    wrapText: true,
-    horizontal: 'center',
-    vertical: 'center'
-  });
-  
-  // Make text bold for emphasis
-  applyCellFont(ws, cellAddress, { bold: true });
 };

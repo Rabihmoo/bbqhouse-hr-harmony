@@ -2,10 +2,6 @@
 import * as XLSX from "xlsx";
 
 /**
- * Utilities for converting time values for Excel spreadsheets
- */
-
-/**
  * Convert time string (HH:MM) to Excel time value
  * Excel time is a decimal number between 0 and 1, where 0 is 00:00 and 1 is 24:00
  */

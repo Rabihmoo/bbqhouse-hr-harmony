@@ -2,7 +2,7 @@
 import * as XLSX from "xlsx";
 
 /**
- * Applies text wrapping and alignment to a cell
+ * Applies text formatting to a cell with improved text wrapping
  */
 export const applyCellTextFormatting = (
   ws: XLSX.WorkSheet,
@@ -81,8 +81,7 @@ export const applyCellFill = (
 };
 
 /**
- * Specifically formats paragraph text with proper wrapping and formatting
- * This function is specifically designed to handle multi-line text in Excel
+ * Special formatting for declaration text with enhanced wrapping
  */
 export const applyParagraphFormatting = (
   ws: XLSX.WorkSheet,
@@ -99,7 +98,6 @@ export const applyParagraphFormatting = (
   if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
   
   // Replace \n with explicit line breaks for Excel
-  // This ensures proper line breaks within the cell
   const formattedText = text.replace(/\n/g, '\r\n');
   
   // Set the cell value
@@ -109,7 +107,7 @@ export const applyParagraphFormatting = (
   // Apply styling
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
-  // Ensure text wrapping is enabled
+  // Ensure text wrapping is enabled with explicit settings
   ws[cellAddress].s.alignment = {
     wrapText: true,
     vertical: 'center',
@@ -126,7 +124,7 @@ export const applyParagraphFormatting = (
 }
 
 /**
- * Specifically formats FOLGA cells with proper alignment and border
+ * Specifically formats FOLGA cells with proper formatting
  */
 export const applyFolgaCellFormatting = (
   ws: XLSX.WorkSheet,

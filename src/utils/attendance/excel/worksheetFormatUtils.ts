@@ -4,7 +4,7 @@ import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill
 import { ensureTimeFormatting } from "./timeConversionUtils";
 
 /**
- * Set column widths for the worksheet
+ * Set column widths for the worksheet with improved precision
  */
 export const setColumnWidths = (
   ws: XLSX.WorkSheet, 
@@ -14,7 +14,7 @@ export const setColumnWidths = (
 };
 
 /**
- * Set row heights for specific rows
+ * Set row heights for specific rows with enhanced precision
  */
 export const setRowHeights = (
   ws: XLSX.WorkSheet,
@@ -60,12 +60,12 @@ export const applyTimeFormatting = (
     }
   }
   
-  // Ensure time formatting for all work time cells (Column E)
+  // Ensure time formatting for all work time cells
   ensureTimeFormatting(ws, 'E4', 'E34');
 };
 
 /**
- * Apply formatting to all cells in a worksheet
+ * Apply comprehensive formatting to all cells in a worksheet
  */
 export const applyFormattingToAllCells = (
   ws: XLSX.WorkSheet,
@@ -141,7 +141,7 @@ export const applyFormattingToAllCells = (
   }
   
   // Ensure time formatting for work time column
-  ensureTimeFormatting(ws, 'E4', 'E34'); // Column E (Work Time) from row 4 to 34
+  ensureTimeFormatting(ws, 'E4', 'E34');
 };
 
 /**
