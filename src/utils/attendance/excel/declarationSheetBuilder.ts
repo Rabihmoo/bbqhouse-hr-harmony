@@ -59,11 +59,11 @@ export const createEmployeeDeclarationSheet = (
   const ws = XLSX.utils.aoa_to_sheet(rows);
 
   // Set proper column widths for readability - increased for better text wrapping
-  setColumnWidths(ws, [40, 15, 15, 15, 15, 15]);
+  setColumnWidths(ws, [45, 15, 15, 15, 15, 15]);
 
   // Define row heights and adjust first row to be tall enough
   const rowHeights: { [key: number]: number } = {
-    0: 300, // A1: Title + declaration text
+    0: 400, // Increased height for A1 to ensure text visibility
     [signatureTextRow]: 50 // Signature explanation row
   };
 
@@ -93,18 +93,18 @@ export const createEmployeeDeclarationSheet = (
     ws[a1Address] = { t: 's', v: formattedDeclarationText };
   }
   
-  // Apply formatting to A1
+  // Apply formatting to A1 with explicit style properties
   ws[a1Address].s = {
     alignment: {
       wrapText: true,
       vertical: "center",
       horizontal: "center",
-      shrinkToFit: false,
+      shrinkToFit: false
     },
     font: {
       name: "Arial",
       sz: 11,
-      bold: false,
+      bold: false
     },
     border: {
       top: { style: 'thin' },
