@@ -17,8 +17,8 @@ export interface EmployeeReport {
   department: string;
   company: string;
   workingDays: number;
-  totalHours: number;
-  extraHours: number;
+  totalHours: string;  // Changed to string to match expected format
+  extraHours: string;  // Changed to string to match expected format
   totalExtraHours?: string;
   attendanceRecords: EmployeeAttendanceRecord[];
 }

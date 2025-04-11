@@ -13,11 +13,11 @@ const applyFolgaCellFormatting = (
   ws: XLSX.WorkSheet,
   cellAddress: string
 ): void => {
-  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: 'FOLGA' };
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
-  // Ensure strong border is applied
-  applyCellBorders(ws, cellAddress, 'thin');
+  // Apply bold text and center it
+  applyCellFont(ws, cellAddress, { bold: true });
   
   // Center text both horizontally and vertically
   applyCellTextFormatting(ws, cellAddress, {
@@ -26,8 +26,8 @@ const applyFolgaCellFormatting = (
     vertical: 'center'
   });
   
-  // Make text bold for emphasis
-  applyCellFont(ws, cellAddress, { bold: true });
+  // Apply standard border
+  applyCellBorders(ws, cellAddress, 'thin');
 };
 
 /**
@@ -39,96 +39,13 @@ export const createEmployeeDeclarationSheet = (
   year: string,
   includeSignature: boolean
 ): XLSX.WorkSheet => {
-  // Create data array for the sheet
-  const rows = createDeclarationSheetData(employeeReport, month, year, includeSignature);
+  // Create base worksheet
+  const ws = XLSX.utils.aoa_to_sheet([[""]]);
   
-  // Create worksheet from the 2D array
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  
-  // Apply comprehensive formatting to the sheet
-  formatDeclarationSheet(ws, employeeReport, month, year, includeSignature);
-  
-  return ws;
-};
-
-/**
- * Creates the data structure for the declaration sheet
- */
-const createDeclarationSheetData = (
-  employeeReport: EmployeeReport,
-  month: string,
-  year: string,
-  includeSignature: boolean
-): any[][] => {
-  // Initialize with empty declaration cell (will be formatted separately)
-  const rows: any[][] = [
-    [""], // Row 0: Declaration text (A1) - will be formatted separately
-    [""], // Row 1: Empty spacer row
-  ];
-  
-  // Add headers row
-  rows.push([
-    "Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"
-  ]);
-  
-  // Add employee attendance records
-  employeeReport.attendanceRecords.forEach(record => {
-    const recordRow = [
-      employeeReport.employeeName,
-      record.date,
-      record.clockIn || "",
-      record.clockOut || "",
-      record.workTime || "",
-      record.extraHours || ""
-    ];
-    
-    rows.push(recordRow);
-  });
-  
-  // Add totals row
-  const totalsRow = [
-    "TOTAL WORKING HOURS", "", "", "", 
-    employeeReport.totalHours || "0:00", 
-    employeeReport.totalExtraHours || employeeReport.extraHours || "0:00"
-  ];
-  rows.push(totalsRow);
-  
-  // Add working days row
-  const workingDaysRow = [
-    "WORKING DAYS", "", "", "", 
-    employeeReport.workingDays.toString(), 
-    ""
-  ];
-  rows.push(workingDaysRow);
-  
-  // Add signature section if needed
-  if (includeSignature) {
-    // Empty row before signature
-    rows.push(["", "", "", "", "", ""]);
-    
-    // Signature text row
-    const signatureText = generateSignatureText();
-    rows.push([signatureText, "", "", "", "", ""]);
-    
-    // Signature line row
-    const formattedDate = getFormattedSignatureDate();
-    rows.push(["Employee Signature:", "", "", "", `Date: ${formattedDate}`, ""]);
-  }
-  
-  return rows;
-};
-
-/**
- * Applies comprehensive formatting to the declaration sheet
- */
-const formatDeclarationSheet = (
-  ws: XLSX.WorkSheet,
-  employeeReport: EmployeeReport,
-  month: string,
-  year: string,
-  includeSignature: boolean
-): void => {
-  // Get the number of data rows and important row indices
+  // Define important row indices
+  const declarationRow = 0;
+  const spacerRow = 1;
+  const headerRow = 2;
   const dataStartRow = 3;
   const dataEndRow = dataStartRow + employeeReport.attendanceRecords.length - 1;
   const totalsRow = dataEndRow + 1;
@@ -136,16 +53,7 @@ const formatDeclarationSheet = (
   const signatureTextRow = includeSignature ? workingDaysRow + 2 : -1;
   const signatureLineRow = includeSignature ? signatureTextRow + 1 : -1;
   
-  // Track FOLGA rows for special formatting
-  const folgaRows: number[] = [];
-  employeeReport.attendanceRecords.forEach((record, index) => {
-    if (record.status === "FOLGA") {
-      folgaRows.push(dataStartRow + index);
-    }
-  });
-  
-  // ===== FORMAT THE DECLARATION TEXT (A1) =====
-  // Generate the declaration text with title and body
+  // Generate and format declaration title and text
   const declarationTitle = "DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS";
   const declarationText = generateDeclarationText(
     employeeReport.employeeName,
@@ -154,32 +62,204 @@ const formatDeclarationSheet = (
     month,
     year
   );
+  const fullText = `${declarationTitle}\n\n${declarationText}`;
   
-  // Format with explicit line breaks for Excel
-  const fullDeclarationText = `${declarationTitle}\n\n${declarationText}`;
+  // Set declaration text in cell A1 with proper formatting
+  ws["A1"] = { t: 's', v: fullText };
   
-  // Apply special paragraph formatting to ensure proper wrapping
-  applyParagraphFormatting(ws, 'A1', fullDeclarationText, {
-    fontSize: 12,
-    bold: false,
-    alignment: 'center'
-  });
-  
-  // Make the title bold separately
-  const a1Cell = ws['A1'];
-  if (a1Cell && a1Cell.v && typeof a1Cell.v === 'string') {
-    applyCellFont(ws, 'A1', { bold: true });
+  // Add headers row in row 3
+  const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
+  for (let i = 0; i < headers.length; i++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: headerRow, c: i });
+    ws[cellAddress] = { t: 's', v: headers[i] };
+    
+    // Apply header formatting
+    applyCellFont(ws, cellAddress, { bold: true });
+    applyCellTextFormatting(ws, cellAddress, { 
+      horizontal: 'center',
+      vertical: 'center'
+    });
+    applyCellBorders(ws, cellAddress, 'thin');
   }
   
-  // ===== COLUMN WIDTHS =====
-  setColumnWidths(ws, [25, 12, 10, 10, 10, 12]);
+  // Add employee attendance records
+  employeeReport.attendanceRecords.forEach((record, index) => {
+    const rowIndex = dataStartRow + index;
+    
+    // Employee name
+    ws[XLSX.utils.encode_cell({ r: rowIndex, c: 0 })] = { 
+      t: 's', 
+      v: employeeReport.employeeName 
+    };
+    
+    // Date
+    ws[XLSX.utils.encode_cell({ r: rowIndex, c: 1 })] = { 
+      t: 's', 
+      v: record.date 
+    };
+    
+    // Handle FOLGA status specially with merged cells
+    if (record.status === "FOLGA") {
+      // Set FOLGA in Clock In cell and apply special formatting
+      const folgaCell = XLSX.utils.encode_cell({ r: rowIndex, c: 2 });
+      ws[folgaCell] = { t: 's', v: "FOLGA" };
+      applyFolgaCellFormatting(ws, folgaCell);
+      
+      // Leave Clock Out empty since it will be merged
+      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 3 })] = { t: 's', v: "" };
+      
+      // Set zeros for work and extra hours
+      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 4 })] = { t: 's', v: "0:00" };
+      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 5 })] = { t: 's', v: "0:00" };
+    } else {
+      // Normal day - set all values
+      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 2 })] = { 
+        t: 's', 
+        v: record.clockIn || "" 
+      };
+      
+      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 3 })] = { 
+        t: 's', 
+        v: record.clockOut || "" 
+      };
+      
+      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 4 })] = { 
+        t: 's', 
+        v: record.workTime || "0:00"
+      };
+      
+      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 5 })] = { 
+        t: 's', 
+        v: record.extraHours || "0:00" 
+      };
+    }
+    
+    // Apply border and center alignment to all cells in the row
+    for (let c = 0; c < 6; c++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: rowIndex, c });
+      applyCellBorders(ws, cellAddress, 'thin');
+      applyCellTextFormatting(ws, cellAddress, { 
+        horizontal: 'center',
+        vertical: 'center'
+      });
+    }
+  });
   
-  // ===== ROW HEIGHTS =====
-  // Set a very large height for declaration text to ensure it fits completely
+  // Add totals row with proper formatting and alignment
+  // "TOTAL WORKING HOURS" label in the first cell
+  const totalLabelCell = XLSX.utils.encode_cell({ r: totalsRow, c: 0 });
+  ws[totalLabelCell] = { t: 's', v: "TOTAL WORKING HOURS" };
+  applyCellFont(ws, totalLabelCell, { bold: true });
+  
+  // Empty cells for columns B-D
+  for (let c = 1; c <= 3; c++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: totalsRow, c });
+    ws[cellAddress] = { t: 's', v: "" };
+  }
+  
+  // Total hours values
+  const totalHoursCell = XLSX.utils.encode_cell({ r: totalsRow, c: 4 });
+  ws[totalHoursCell] = { t: 's', v: employeeReport.totalHours || "0:00" };
+  applyCellFont(ws, totalHoursCell, { bold: true });
+  
+  const totalExtraHoursCell = XLSX.utils.encode_cell({ r: totalsRow, c: 5 });
+  ws[totalExtraHoursCell] = { 
+    t: 's', 
+    v: employeeReport.totalExtraHours || employeeReport.extraHours || "0:00" 
+  };
+  applyCellFont(ws, totalExtraHoursCell, { bold: true });
+  
+  // Apply borders to all cells in totals row
+  for (let c = 0; c < 6; c++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: totalsRow, c });
+    applyCellBorders(ws, cellAddress, 'thin');
+    applyCellTextFormatting(ws, cellAddress, { 
+      horizontal: 'center',
+      vertical: 'center'
+    });
+  }
+  
+  // Add working days row with proper formatting
+  const workingDaysLabelCell = XLSX.utils.encode_cell({ r: workingDaysRow, c: 0 });
+  ws[workingDaysLabelCell] = { t: 's', v: "WORKING DAYS" };
+  applyCellFont(ws, workingDaysLabelCell, { bold: true });
+  
+  // Empty cells for columns B-D
+  for (let c = 1; c <= 3; c++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: workingDaysRow, c });
+    ws[cellAddress] = { t: 's', v: "" };
+  }
+  
+  // Working days value
+  const workingDaysCell = XLSX.utils.encode_cell({ r: workingDaysRow, c: 4 });
+  ws[workingDaysCell] = { t: 'n', v: employeeReport.workingDays };
+  applyCellFont(ws, workingDaysCell, { bold: true });
+  
+  // Empty cell for column F
+  const emptyExtraCell = XLSX.utils.encode_cell({ r: workingDaysRow, c: 5 });
+  ws[emptyExtraCell] = { t: 's', v: "" };
+  
+  // Apply borders to all cells in working days row
+  for (let c = 0; c < 6; c++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: workingDaysRow, c });
+    applyCellBorders(ws, cellAddress, 'thin');
+    applyCellTextFormatting(ws, cellAddress, { 
+      horizontal: 'center',
+      vertical: 'center'
+    });
+  }
+  
+  // Add signature section if needed
+  if (includeSignature) {
+    // Empty row before signature
+    for (let c = 0; c < 6; c++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: workingDaysRow + 1, c });
+      ws[cellAddress] = { t: 's', v: "" };
+    }
+    
+    // Signature text
+    const signatureText = "Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.";
+    const signatureTextCell = XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 });
+    ws[signatureTextCell] = { t: 's', v: signatureText };
+    
+    // Empty cells for columns B-F in signature text row
+    for (let c = 1; c < 6; c++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: signatureTextRow, c });
+      ws[cellAddress] = { t: 's', v: "" };
+    }
+    
+    // Signature line row
+    const employeeSignatureCell = XLSX.utils.encode_cell({ r: signatureLineRow, c: 0 });
+    ws[employeeSignatureCell] = { t: 's', v: "Employee Signature:" };
+    applyCellFont(ws, employeeSignatureCell, { bold: true });
+    
+    // Empty cells for columns B-D
+    for (let c = 1; c <= 3; c++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: signatureLineRow, c });
+      ws[cellAddress] = { t: 's', v: "" };
+    }
+    
+    // Date cell
+    const formattedDate = getFormattedSignatureDate();
+    const dateCell = XLSX.utils.encode_cell({ r: signatureLineRow, c: 4 });
+    ws[dateCell] = { t: 's', v: `Date: ${formattedDate}` };
+    applyCellFont(ws, dateCell, { bold: true });
+    
+    // Empty cell for column F
+    const emptySigCell = XLSX.utils.encode_cell({ r: signatureLineRow, c: 5 });
+    ws[emptySigCell] = { t: 's', v: "" };
+  }
+  
+  // ===== APPLY COMPREHENSIVE FORMATTING =====
+  
+  // Set column widths (Name, Date, Clock In, Clock Out, Work Time, Extra Hours)
+  setColumnWidths(ws, [30, 12, 10, 10, 12, 12]);
+  
+  // Set row heights
   const rowHeights: { [key: number]: number } = {
-    0: 300, // Declaration text row - extra large height
-    1: 20,  // Spacer row
-    2: 30,  // Header row
+    [declarationRow]: 150,  // Declaration title and text
+    [spacerRow]: 20,        // Spacer row
+    [headerRow]: 25,        // Headers
   };
   
   // Standard height for data rows
@@ -192,100 +272,77 @@ const formatDeclarationSheet = (
   rowHeights[workingDaysRow] = 25;
   
   if (includeSignature) {
-    rowHeights[workingDaysRow + 1] = 20; // Spacer row
-    rowHeights[signatureTextRow] = 60;   // Signature text
-    rowHeights[signatureLineRow] = 30;   // Signature line
+    rowHeights[workingDaysRow + 1] = 20;   // Empty row
+    rowHeights[signatureTextRow] = 40;     // Signature text
+    rowHeights[signatureLineRow] = 30;     // Signature line
   }
   
   setRowHeights(ws, rowHeights);
   
-  // ===== MERGED CELLS =====
+  // Collect all cell merges
   const merges = [
-    // Declaration text across all columns (A1:F1)
-    { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+    // Declaration text across all columns
+    { s: { r: declarationRow, c: 0 }, e: { r: declarationRow, c: 5 } },
     
-    // Total working hours row - merge label cells
+    // Totals label across four columns
     { s: { r: totalsRow, c: 0 }, e: { r: totalsRow, c: 3 } },
     
-    // Working days row - merge label cells
+    // Working days label across four columns
     { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } },
   ];
   
+  // Add FOLGA cell merges
+  employeeReport.attendanceRecords.forEach((record, index) => {
+    if (record.status === "FOLGA") {
+      const rowIndex = dataStartRow + index;
+      merges.push({
+        s: { r: rowIndex, c: 2 },  // Clock In cell
+        e: { r: rowIndex, c: 3 }   // Clock Out cell
+      });
+    }
+  });
+  
   // Add signature merges if needed
   if (includeSignature) {
-    merges.push(
-      // Signature text across all columns
-      { s: { r: signatureTextRow, c: 0 }, e: { r: signatureTextRow, c: 5 } },
-      
-      // Employee signature label and line
-      { s: { r: signatureLineRow, c: 0 }, e: { r: signatureLineRow, c: 3 } },
-      
-      // Date field
-      { s: { r: signatureLineRow, c: 4 }, e: { r: signatureLineRow, c: 5 } }
-    );
-  }
-  
-  // Add merges for FOLGA cells
-  folgaRows.forEach(row => {
-    merges.push(
-      // Merge Clock In/Out cells for FOLGA
-      { s: { r: row, c: 2 }, e: { r: row, c: 3 } }
-    );
-  });
-  
-  setMergedCells(ws, merges);
-  
-  // ===== APPLY BORDERS AND BASIC FORMATTING TO ALL CELLS =====
-  applyFormattingToAllCells(ws, {
-    headerRow: 2,
-    boldRows: [totalsRow, workingDaysRow],
-    applyBorders: true,
-    applyWrapText: true,
-    fontName: "Arial",
-    fontSize: 11
-  });
-  
-  // ===== SPECIAL FORMATTING FOR SPECIFIC CELLS =====
-  // Format FOLGA cells
-  folgaRows.forEach(row => {
-    const folgaCell = XLSX.utils.encode_cell({ r: row, c: 2 });
-    ws[folgaCell].v = "FOLGA";
-    
-    // Apply FOLGA cell formatting
-    applyFolgaCellFormatting(ws, folgaCell);
-  });
-  
-  // Format time cells
-  applyTimeFormatting(
-    ws,
-    XLSX.utils.encode_cell({ r: dataStartRow, c: 4 }),
-    XLSX.utils.encode_cell({ r: dataEndRow, c: 5 })
-  );
-  
-  // Format totals cell specifically
-  applyTimeFormatting(
-    ws,
-    XLSX.utils.encode_cell({ r: totalsRow, c: 4 }),
-    XLSX.utils.encode_cell({ r: totalsRow, c: 5 })
-  );
-  
-  // Format signature text if included
-  if (includeSignature) {
-    const signatureTextCell = XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 });
-    applyParagraphFormatting(ws, signatureTextCell, ws[signatureTextCell].v.toString(), {
-      italic: true,
-      alignment: 'center'
+    // Signature text across all columns
+    merges.push({ 
+      s: { r: signatureTextRow, c: 0 }, 
+      e: { r: signatureTextRow, c: 5 } 
     });
     
-    // Format signature line
-    const signatureLineCell = XLSX.utils.encode_cell({ r: signatureLineRow, c: 0 });
-    applyCellFont(ws, signatureLineCell, { bold: true });
+    // Employee signature cells
+    merges.push({ 
+      s: { r: signatureLineRow, c: 0 }, 
+      e: { r: signatureLineRow, c: 3 } 
+    });
     
-    // Format date cell
-    const dateCell = XLSX.utils.encode_cell({ r: signatureLineRow, c: 4 });
-    applyCellFont(ws, dateCell, { bold: true });
+    // Date cell
+    merges.push({ 
+      s: { r: signatureLineRow, c: 4 }, 
+      e: { r: signatureLineRow, c: 5 } 
+    });
   }
   
-  // Add filter to the header row
-  addAutoFilter(ws, "A3:F3");
+  // Set all merges
+  setMergedCells(ws, merges);
+  
+  // Apply enhanced paragraph formatting to declaration text
+  applyParagraphFormatting(ws, "A1", fullText, {
+    fontSize: 12,
+    alignment: 'center'
+  });
+  
+  // Make the title bold by directly setting font style
+  if (ws["A1"] && ws["A1"].s) {
+    ws["A1"].s.font = { ...ws["A1"].s.font, bold: true };
+  }
+  
+  // Set the worksheet reference range
+  const lastRow = includeSignature ? signatureLineRow : workingDaysRow;
+  ws['!ref'] = XLSX.utils.encode_range(
+    { r: 0, c: 0 },
+    { r: lastRow, c: 5 }
+  );
+  
+  return ws;
 };

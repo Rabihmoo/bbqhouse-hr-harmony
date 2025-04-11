@@ -110,7 +110,7 @@ export const applyParagraphFormatting = (
   // Ensure text wrapping is enabled with explicit settings
   ws[cellAddress].s.alignment = {
     wrapText: true,
-    vertical: 'center',
+    vertical: 'top',
     horizontal: options?.alignment || 'center',
   };
   
@@ -130,7 +130,7 @@ export const applyFolgaCellFormatting = (
   ws: XLSX.WorkSheet,
   cellAddress: string
 ): void => {
-  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: 'FOLGA' };
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
   // Ensure strong border is applied
