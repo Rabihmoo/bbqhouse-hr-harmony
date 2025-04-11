@@ -61,7 +61,7 @@ export function DeclarationText({
             <TableRow key={idx} className="border border-gray-300">
               <TableCell className="border border-gray-300 text-center">{employeeName}</TableCell>
               <TableCell className="border border-gray-300 text-center">{record.date}</TableCell>
-              {record.clockIn === "FOLGA" ? (
+              {record.status === "FOLGA" || record.clockIn === "FOLGA" ? (
                 <>
                   <TableCell colSpan={2} className="border border-gray-300 text-center font-bold">
                     FOLGA

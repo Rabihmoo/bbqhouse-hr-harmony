@@ -81,7 +81,7 @@ export const applyCellFill = (
 };
 
 /**
- * Special formatting for declaration text with enhanced wrapping
+ * Enhanced text formatting for declaration text with explicit wrapping
  */
 export const applyParagraphFormatting = (
   ws: XLSX.WorkSheet,
@@ -97,7 +97,7 @@ export const applyParagraphFormatting = (
   // Ensure the cell exists
   if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
   
-  // Replace \n with explicit line breaks for Excel
+  // Set the cell value with explicit line breaks
   const formattedText = text.replace(/\n/g, '\r\n');
   
   // Set the cell value
@@ -107,7 +107,7 @@ export const applyParagraphFormatting = (
   // Apply styling
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
-  // Ensure text wrapping is enabled with explicit settings
+  // Setup explicit wrapping configuration
   ws[cellAddress].s.alignment = {
     wrapText: true,
     vertical: 'top',
@@ -121,6 +121,9 @@ export const applyParagraphFormatting = (
     italic: options?.italic ?? false,
     sz: options?.fontSize || 12,
   };
+  
+  // Make sure to explicitly set format to allow proper text rendering
+  ws[cellAddress].z = '@';
 }
 
 /**
@@ -146,3 +149,4 @@ export const applyFolgaCellFormatting = (
   // Make text bold for emphasis
   applyCellFont(ws, cellAddress, { bold: true });
 };
+

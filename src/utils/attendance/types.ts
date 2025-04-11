@@ -7,7 +7,7 @@ export interface EmployeeAttendanceRecord {
   clockOut: string;
   workTime: string;
   extraHours: string;
-  status?: string; // Add status field to identify FOLGA
+  status?: string; // Can be "FOLGA" or other statuses
 }
 
 export interface EmployeeReport {

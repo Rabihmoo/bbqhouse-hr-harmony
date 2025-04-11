@@ -50,6 +50,15 @@ export const exportEmployeeDeclarations = async (
     // Create a workbook for multiple sheets (one per employee)
     const workbook = XLSX.utils.book_new();
     
+    // Set workbook properties to help prevent Protected View warnings
+    workbook.Props = {
+      Title: `Employee Declarations ${reportData.month} ${reportData.year}`,
+      Subject: "Employee Work Declarations",
+      Author: "BBQ HR System",
+      CreatedDate: new Date(),
+      Company: "BBQ",
+    };
+    
     // Process each employee
     for (const employeeReport of filteredReports) {
       // Create the declaration sheet for this employee
@@ -80,7 +89,13 @@ export const exportEmployeeDeclarations = async (
     
     // Generate Excel file for all employees
     if (options.format === 'excel' || options.format === 'both') {
-      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const excelBuffer = XLSX.write(workbook, { 
+        bookType: 'xlsx', 
+        type: 'array',
+        bookSST: false,
+        compression: true
+      });
+      
       const blob = new Blob([excelBuffer], { 
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
       });

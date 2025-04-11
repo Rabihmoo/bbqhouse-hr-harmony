@@ -29,7 +29,7 @@ export const createEmployeeDeclarationSheet = (
   const signatureTextRow = includeSignature ? workingDaysRow + 2 : -1;
   const signatureLineRow = includeSignature ? signatureTextRow + 1 : -1;
   
-  // Generate and format declaration title and text
+  // Generate declaration title and text
   const declarationTitle = "DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS";
   const declarationText = generateDeclarationText(
     employeeReport.employeeName,
@@ -40,8 +40,13 @@ export const createEmployeeDeclarationSheet = (
   );
   const fullText = `${declarationTitle}\n\n${declarationText}`;
   
-  // Set declaration text in cell A1 with proper formatting
+  // Set declaration text in cell A1 with enhanced wrapping
   ws["A1"] = { t: 's', v: fullText };
+  applyParagraphFormatting(ws, "A1", fullText, {
+    fontSize: 12,
+    alignment: 'center',
+    bold: true
+  });
   
   // Add headers row in row 3
   const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
@@ -78,13 +83,13 @@ export const createEmployeeDeclarationSheet = (
     };
     
     // Handle FOLGA status specially with merged cells
-    if (record.clockIn === "FOLGA") {
+    if (record.status === "FOLGA" || record.clockIn === "FOLGA") {
       // Set FOLGA in Clock In cell and apply special formatting
       const folgaCell = XLSX.utils.encode_cell({ r: rowIndex, c: 2 });
       ws[folgaCell] = { t: 's', v: "FOLGA" };
       applyFolgaCellFormatting(ws, folgaCell);
       
-      // Leave Clock Out empty since it will be merged
+      // Set empty for Clock Out cell since it will be merged
       ws[XLSX.utils.encode_cell({ r: rowIndex, c: 3 })] = { t: 's', v: "" };
       
       // Add this merge to our collection
@@ -206,6 +211,9 @@ export const createEmployeeDeclarationSheet = (
     const signatureText = "Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.";
     const signatureTextCell = XLSX.utils.encode_cell({ r: signatureTextRow, c: 0 });
     ws[signatureTextCell] = { t: 's', v: signatureText };
+    applyParagraphFormatting(ws, signatureTextCell, signatureText, {
+      alignment: 'left'
+    });
     
     // Empty cells for columns B-F in signature text row
     for (let c = 1; c < 6; c++) {
@@ -300,23 +308,15 @@ export const createEmployeeDeclarationSheet = (
   // Set all merges
   setMergedCells(ws, merges);
   
-  // Apply enhanced paragraph formatting to declaration text
-  applyParagraphFormatting(ws, "A1", fullText, {
-    fontSize: 12,
-    alignment: 'center'
-  });
-  
-  // Make the title bold by directly setting font style
-  if (ws["A1"] && ws["A1"].s) {
-    ws["A1"].s.font = { ...ws["A1"].s.font, bold: true };
-  }
-  
   // Set the worksheet reference range
   const lastRow = includeSignature ? signatureLineRow : workingDaysRow;
   ws['!ref'] = XLSX.utils.encode_range(
     { r: 0, c: 0 },
     { r: lastRow, c: 5 }
   );
+  
+  // Add metadata to prevent protected view warnings
+  ws['!protect'] = false;
   
   return ws;
 };
