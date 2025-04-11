@@ -57,6 +57,9 @@ export const processAttendanceData = (file: File, autoExport: boolean = false): 
             clockOut = "nao saida";
           }
           
+          // Track status for FOLGA entries
+          const status = clockIn === "FOLGA" ? "FOLGA" : "normal";
+          
           // Calculate working hours and extra hours
           const { workTime, extraHours } = calculateWorkingHours(clockIn, clockOut);
           
@@ -85,7 +88,8 @@ export const processAttendanceData = (file: File, autoExport: boolean = false): 
             clockIn,
             clockOut,
             workTime,
-            extraHours
+            extraHours,
+            status
           });
           
           employeeData.totalHours += workTimeHours;
@@ -186,12 +190,10 @@ export const generateEmployeeDeclarationExcel = (employeeReport: EmployeeReport,
   ]);
   
   // Add a row for the totals
-  const totalRow = ["", "", "", "", employeeReport.totalHours, ""];
+  const totalRow = ["TOTAL WORKING HOURS", "", "", "", employeeReport.totalHours, ""];
   
   // Add summary rows
   const summaryRows = [
-    [""],
-    ["TOTAL WORKING HOURS", "", "", "", employeeReport.totalHours, ""],
     ["WORKING DAYS", "", "", "", employeeReport.workingDays.toString(), ""],
     [""],
     ["Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima."],

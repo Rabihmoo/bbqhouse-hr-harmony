@@ -4,31 +4,7 @@ import { EmployeeReport } from "../types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "../declarationGenerator";
 import { convertTimeStringToExcelTime, ensureTimeFormatting } from "./timeConversionUtils";
 import { setColumnWidths, setRowHeights, setMergedCells, applyTimeFormatting, applyFormattingToAllCells, addAutoFilter } from "./worksheetFormatUtils";
-import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill, applyParagraphFormatting } from "./cellFormatUtils";
-
-/**
- * Specifically formats FOLGA cells with proper formatting
- */
-const applyFolgaCellFormatting = (
-  ws: XLSX.WorkSheet,
-  cellAddress: string
-): void => {
-  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: 'FOLGA' };
-  if (!ws[cellAddress].s) ws[cellAddress].s = {};
-  
-  // Apply bold text and center it
-  applyCellFont(ws, cellAddress, { bold: true });
-  
-  // Center text both horizontally and vertically
-  applyCellTextFormatting(ws, cellAddress, {
-    wrapText: true,
-    horizontal: 'center',
-    vertical: 'center'
-  });
-  
-  // Apply standard border
-  applyCellBorders(ws, cellAddress, 'thin');
-};
+import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill, applyParagraphFormatting, applyFolgaCellFormatting } from "./cellFormatUtils";
 
 /**
  * Creates a single employee declaration sheet with proper formatting
@@ -82,6 +58,9 @@ export const createEmployeeDeclarationSheet = (
     applyCellBorders(ws, cellAddress, 'thin');
   }
   
+  // Collect all FOLGA cell merges for later use
+  const merges = [];
+  
   // Add employee attendance records
   employeeReport.attendanceRecords.forEach((record, index) => {
     const rowIndex = dataStartRow + index;
@@ -99,7 +78,7 @@ export const createEmployeeDeclarationSheet = (
     };
     
     // Handle FOLGA status specially with merged cells
-    if (record.status === "FOLGA") {
+    if (record.clockIn === "FOLGA") {
       // Set FOLGA in Clock In cell and apply special formatting
       const folgaCell = XLSX.utils.encode_cell({ r: rowIndex, c: 2 });
       ws[folgaCell] = { t: 's', v: "FOLGA" };
@@ -108,9 +87,15 @@ export const createEmployeeDeclarationSheet = (
       // Leave Clock Out empty since it will be merged
       ws[XLSX.utils.encode_cell({ r: rowIndex, c: 3 })] = { t: 's', v: "" };
       
+      // Add this merge to our collection
+      merges.push({
+        s: { r: rowIndex, c: 2 },  // Clock In cell
+        e: { r: rowIndex, c: 3 }   // Clock Out cell
+      });
+      
       // Set zeros for work and extra hours
-      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 4 })] = { t: 's', v: "0:00" };
-      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 5 })] = { t: 's', v: "0:00" };
+      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 4 })] = { t: 's', v: "00:00" };
+      ws[XLSX.utils.encode_cell({ r: rowIndex, c: 5 })] = { t: 's', v: "00:00" };
     } else {
       // Normal day - set all values
       ws[XLSX.utils.encode_cell({ r: rowIndex, c: 2 })] = { 
@@ -125,12 +110,12 @@ export const createEmployeeDeclarationSheet = (
       
       ws[XLSX.utils.encode_cell({ r: rowIndex, c: 4 })] = { 
         t: 's', 
-        v: record.workTime || "0:00"
+        v: record.workTime || "00:00"
       };
       
       ws[XLSX.utils.encode_cell({ r: rowIndex, c: 5 })] = { 
         t: 's', 
-        v: record.extraHours || "0:00" 
+        v: record.extraHours || "00:00" 
       };
     }
     
@@ -159,13 +144,13 @@ export const createEmployeeDeclarationSheet = (
   
   // Total hours values
   const totalHoursCell = XLSX.utils.encode_cell({ r: totalsRow, c: 4 });
-  ws[totalHoursCell] = { t: 's', v: employeeReport.totalHours || "0:00" };
+  ws[totalHoursCell] = { t: 's', v: employeeReport.totalHours || "00:00" };
   applyCellFont(ws, totalHoursCell, { bold: true });
   
   const totalExtraHoursCell = XLSX.utils.encode_cell({ r: totalsRow, c: 5 });
   ws[totalExtraHoursCell] = { 
     t: 's', 
-    v: employeeReport.totalExtraHours || employeeReport.extraHours || "0:00" 
+    v: employeeReport.totalExtraHours || employeeReport.extraHours || "00:00" 
   };
   applyCellFont(ws, totalExtraHoursCell, { bold: true });
   
@@ -279,8 +264,8 @@ export const createEmployeeDeclarationSheet = (
   
   setRowHeights(ws, rowHeights);
   
-  // Collect all cell merges
-  const merges = [
+  // Add the standard merges
+  merges.push(
     // Declaration text across all columns
     { s: { r: declarationRow, c: 0 }, e: { r: declarationRow, c: 5 } },
     
@@ -288,19 +273,8 @@ export const createEmployeeDeclarationSheet = (
     { s: { r: totalsRow, c: 0 }, e: { r: totalsRow, c: 3 } },
     
     // Working days label across four columns
-    { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } },
-  ];
-  
-  // Add FOLGA cell merges
-  employeeReport.attendanceRecords.forEach((record, index) => {
-    if (record.status === "FOLGA") {
-      const rowIndex = dataStartRow + index;
-      merges.push({
-        s: { r: rowIndex, c: 2 },  // Clock In cell
-        e: { r: rowIndex, c: 3 }   // Clock Out cell
-      });
-    }
-  });
+    { s: { r: workingDaysRow, c: 0 }, e: { r: workingDaysRow, c: 3 } }
+  );
   
   // Add signature merges if needed
   if (includeSignature) {

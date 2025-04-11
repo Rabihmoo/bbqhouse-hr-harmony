@@ -16,6 +16,7 @@ interface DeclarationTextProps {
     clockOut: string;
     workTime: string;
     extraHours: string;
+    status?: string;
   }[];
   totalHours: string;
   extraHours: string;
@@ -60,24 +61,32 @@ export function DeclarationText({
             <TableRow key={idx} className="border border-gray-300">
               <TableCell className="border border-gray-300 text-center">{employeeName}</TableCell>
               <TableCell className="border border-gray-300 text-center">{record.date}</TableCell>
-              <TableCell className="border border-gray-300 text-center">{record.clockIn}</TableCell>
-              <TableCell className="border border-gray-300 text-center">{record.clockOut}</TableCell>
+              {record.clockIn === "FOLGA" ? (
+                <>
+                  <TableCell colSpan={2} className="border border-gray-300 text-center font-bold">
+                    FOLGA
+                  </TableCell>
+                </>
+              ) : (
+                <>
+                  <TableCell className="border border-gray-300 text-center">{record.clockIn}</TableCell>
+                  <TableCell className="border border-gray-300 text-center">{record.clockOut}</TableCell>
+                </>
+              )}
               <TableCell className="border border-gray-300 text-center">{record.workTime}</TableCell>
               <TableCell className="border border-gray-300 text-center">{record.extraHours}</TableCell>
             </TableRow>
           ))}
-          <TableRow className="border border-gray-300">
-            <TableCell colSpan={4} className="border border-gray-300"></TableCell>
+          <TableRow className="border border-gray-300 font-bold">
+            <TableCell colSpan={4} className="border border-gray-300 text-right pr-4">TOTAL WORKING HOURS</TableCell>
             <TableCell className="border border-gray-300 text-center">{totalHours}</TableCell>
-            <TableCell className="border border-gray-300"></TableCell>
+            <TableCell className="border border-gray-300 text-center">{extraHours}</TableCell>
           </TableRow>
         </TableBody>
       </Table>
       
       <div className="mt-6">
         <div className="grid grid-cols-2 gap-4 text-center border-collapse">
-          <div className="border border-gray-300 py-2 text-right font-bold pr-4">TOTAL WORKING HOURS</div>
-          <div className="border border-gray-300 py-2 text-center font-bold">{totalHours}</div>
           <div className="border border-gray-300 py-2 text-right font-bold pr-4">WORKING DAYS</div>
           <div className="border border-gray-300 py-2 text-center font-bold">{workingDays}</div>
         </div>
