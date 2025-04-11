@@ -9,7 +9,7 @@ export const createPdfTable = (
   doc: jsPDF,
   employeeReport: EmployeeReport,
   dataRows: any[]
-): void => {
+): number => {  // Changed return type from void to number
   // Create table
   const startY = 70;
   const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
