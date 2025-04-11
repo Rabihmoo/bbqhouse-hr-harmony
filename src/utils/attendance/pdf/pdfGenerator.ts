@@ -2,7 +2,7 @@
 import { EmployeeReport } from "../types";
 import * as XLSX from "xlsx";
 import { downloadExcelFile } from "../excelUtils";
-import { createEmployeeDeclarationSheet } from "../excel/declarationSheetBuilder";
+import { createEmployeeDeclarationSheet } from "../excel/employeeDeclarationBuilder";
 import { toast } from "sonner";
 import { jsPDF } from "jspdf";
 import { ExcelToJSON, downloadPdfFile } from "../excelUtils";
