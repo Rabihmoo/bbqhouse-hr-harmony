@@ -104,15 +104,15 @@ export const processAttendanceData = (file: File, autoExport: boolean = false): 
             e.fullName === data.name || e.id === id || e.fullName.toLowerCase().includes(data.name.toLowerCase())
           );
           
-          const report = {
+          const report: EmployeeReport = {
             employeeId: id,
             employeeName: data.name,
             biNumber: employeeInfo?.biNumber || "000000000",
             department: employeeInfo?.department || "Not specified",
             company: employeeInfo?.company || "MYR HR Management",
             workingDays: data.workingDays,
-            totalHours: Math.round(data.totalHours * 10) / 10,
-            extraHours: Math.round(data.extraHours * 10) / 10,
+            totalHours: formatTime(data.totalHours),
+            extraHours: formatTime(data.extraHours),
             attendanceRecords: data.records
           };
           
@@ -186,12 +186,12 @@ export const generateEmployeeDeclarationExcel = (employeeReport: EmployeeReport,
   ]);
   
   // Add a row for the totals
-  const totalRow = ["", "", "", "", formatTime(employeeReport.totalHours), ""];
+  const totalRow = ["", "", "", "", employeeReport.totalHours, ""];
   
   // Add summary rows
   const summaryRows = [
     [""],
-    ["TOTAL WORKING HOURS", "", "", "", formatTime(employeeReport.totalHours), ""],
+    ["TOTAL WORKING HOURS", "", "", "", employeeReport.totalHours, ""],
     ["WORKING DAYS", "", "", "", employeeReport.workingDays.toString(), ""],
     [""],
     ["Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima."],

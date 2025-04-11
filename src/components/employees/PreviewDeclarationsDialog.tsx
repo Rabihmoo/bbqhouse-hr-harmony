@@ -135,7 +135,7 @@ export default function PreviewDeclarationsDialog({
                 <div className="mt-4 grid grid-cols-2 gap-2 border-collapse">
                   <div className="border p-2 font-semibold text-right">TOTAL WORKING HOURS</div>
                   <div className="border p-2 text-center">
-                    {formatTime(selectedEmployee.totalHours)}
+                    {selectedEmployee.totalHours}
                   </div>
                   <div className="border p-2 font-semibold text-right">WORKING DAYS</div>
                   <div className="border p-2 text-center">

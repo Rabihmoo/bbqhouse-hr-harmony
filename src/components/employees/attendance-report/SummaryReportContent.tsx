@@ -19,8 +19,8 @@ export function SummaryReportContent({ reportData }: SummaryReportContentProps) 
         'Company': report.company,
         'Department': report.department,
         'Working Days': report.workingDays,
-        'Total Hours': report.totalHours.toFixed(1),
-        'Extra Hours': report.extraHours.toFixed(1)
+        'Total Hours': report.totalHours,
+        'Extra Hours': report.extraHours
       }));
 
       // Export combined report
@@ -35,8 +35,8 @@ export function SummaryReportContent({ reportData }: SummaryReportContentProps) 
           'Company': report.company,
           'Department': report.department,
           'Working Days': report.workingDays,
-          'Total Hours': report.totalHours.toFixed(1),
-          'Extra Hours': report.extraHours.toFixed(1)
+          'Total Hours': report.totalHours,
+          'Extra Hours': report.extraHours
         }];
 
         const individualFileName = `${report.employeeName.replace(/\s+/g, '_')}_Declaration_${reportData.month}_${reportData.year}`;

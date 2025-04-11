@@ -17,8 +17,8 @@ interface DeclarationTextProps {
     workTime: string;
     extraHours: string;
   }[];
-  totalHours: number;
-  extraHours: number;
+  totalHours: string;
+  extraHours: string;
   workingDays: number;
 }
 
@@ -33,7 +33,6 @@ export function DeclarationText({
   extraHours,
   workingDays
 }: DeclarationTextProps) {
-  const formattedTotalHours = formatTime(totalHours);
   const formattedSignatureDate = getFormattedSignatureDate();
   
   return (
@@ -69,7 +68,7 @@ export function DeclarationText({
           ))}
           <TableRow className="border border-gray-300">
             <TableCell colSpan={4} className="border border-gray-300"></TableCell>
-            <TableCell className="border border-gray-300 text-center">{formattedTotalHours}</TableCell>
+            <TableCell className="border border-gray-300 text-center">{totalHours}</TableCell>
             <TableCell className="border border-gray-300"></TableCell>
           </TableRow>
         </TableBody>
@@ -78,7 +77,7 @@ export function DeclarationText({
       <div className="mt-6">
         <div className="grid grid-cols-2 gap-4 text-center border-collapse">
           <div className="border border-gray-300 py-2 text-right font-bold pr-4">TOTAL WORKING HOURS</div>
-          <div className="border border-gray-300 py-2 text-center font-bold">{formattedTotalHours}</div>
+          <div className="border border-gray-300 py-2 text-center font-bold">{totalHours}</div>
           <div className="border border-gray-300 py-2 text-right font-bold pr-4">WORKING DAYS</div>
           <div className="border border-gray-300 py-2 text-center font-bold">{workingDays}</div>
         </div>

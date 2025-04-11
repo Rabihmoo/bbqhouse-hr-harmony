@@ -18,7 +18,18 @@ export const sendDeclarationsViaEmail = async (
   try {
     // Calculate summary stats
     const totalEmployees = filteredEmployees.length;
-    const totalHours = filteredEmployees.reduce((sum, emp) => sum + emp.totalHours, 0);
+    
+    // Calculate total hours by parsing the string values
+    let totalHoursValue = 0;
+    filteredEmployees.forEach(emp => {
+      const parts = emp.totalHours.split(':');
+      if (parts.length === 2) {
+        const hours = parseInt(parts[0], 10);
+        const minutes = parseInt(parts[1], 10);
+        totalHoursValue += hours + (minutes / 60);
+      }
+    });
+    
     const totalWorkingDays = filteredEmployees.reduce((sum, emp) => sum + emp.workingDays, 0);
     
     // Prepare the attachments (Excel file is created in exportDeclarations.ts)
@@ -44,7 +55,7 @@ export const sendDeclarationsViaEmail = async (
         
         Resumo:
         - Total de Funcionários: ${totalEmployees}
-        - Total de Horas Trabalhadas: ${formatTime(totalHours)}
+        - Total de Horas Trabalhadas: ${formatTime(totalHoursValue)}
         - Total de Dias Trabalhados: ${totalWorkingDays}
         
         Funcionários: ${employeeNames}

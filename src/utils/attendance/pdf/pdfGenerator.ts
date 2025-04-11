@@ -135,14 +135,10 @@ export const generatePdfForEmployee = async (
     doc.setFont("helvetica", "bold");
     doc.text("TOTAL WORKING HOURS", 10, y + 5);
     
-    // Format total work time correctly
-    const totalHours = Math.floor(employeeReport.totalHours);
-    const totalMinutes = Math.round((employeeReport.totalHours - totalHours) * 60);
-    const formattedTotalTime = `${totalHours}:${totalMinutes.toString().padStart(2, '0')}`;
-    
+    // Use totalHours string directly
     x = 130;
     doc.rect(x, y, 30, 8);
-    doc.text(formattedTotalTime, x + 15, y + 5, { align: "center" });
+    doc.text(employeeReport.totalHours, x + 15, y + 5, { align: "center" });
     
     // Add working days
     y += 10;

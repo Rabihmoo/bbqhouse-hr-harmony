@@ -1,6 +1,6 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AttendanceReport, formatTime } from "@/utils/attendanceProcessor";
+import { AttendanceReport } from "@/utils/attendanceProcessor";
 import { format } from "date-fns";
 
 interface SummaryTableProps {
@@ -33,8 +33,8 @@ export function SummaryTable({ reportData }: SummaryTableProps) {
               <TableCell className="font-medium">{report.employeeName}</TableCell>
               <TableCell>{report.department}</TableCell>
               <TableCell className="text-right">{report.workingDays}</TableCell>
-              <TableCell className="text-right">{formatTime(report.totalHours)}</TableCell>
-              <TableCell className="text-right">{formatTime(report.extraHours)}</TableCell>
+              <TableCell className="text-right">{report.totalHours}</TableCell>
+              <TableCell className="text-right">{report.extraHours}</TableCell>
             </TableRow>
           ))}
         </TableBody>
