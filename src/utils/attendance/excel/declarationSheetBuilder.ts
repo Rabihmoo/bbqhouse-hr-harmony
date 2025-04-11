@@ -315,8 +315,27 @@ export const createEmployeeDeclarationSheet = (
     { r: lastRow, c: 5 }
   );
   
-  // Add metadata to prevent protected view warnings
-  ws['!protect'] = false;
+  // Fix for the ProtectInfo type error
+  // Instead of setting ws['!protect'] = false, use the proper object structure
+  ws['!protect'] = {
+    password: '',           // No password protection
+    sheet: false,           // Don't protect the sheet
+    objects: false,         // Don't protect objects
+    scenarios: false,       // Don't protect scenarios
+    formatCells: false,     // Allow formatting cells
+    formatColumns: false,   // Allow formatting columns
+    formatRows: false,      // Allow formatting rows
+    insertColumns: false,   // Allow inserting columns
+    insertRows: false,      // Allow inserting rows
+    insertHyperlinks: false,// Allow inserting hyperlinks
+    deleteColumns: false,   // Allow deleting columns
+    deleteRows: false,      // Allow deleting rows
+    selectLockedCells: true,// Allow selecting locked cells
+    sort: false,            // Allow sorting
+    autoFilter: false,      // Allow auto filter
+    pivotTables: false,     // Allow pivot tables
+    selectUnlockedCells: true // Allow selecting unlocked cells
+  };
   
   return ws;
 };
