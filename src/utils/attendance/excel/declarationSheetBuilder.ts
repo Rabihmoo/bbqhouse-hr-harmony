@@ -315,11 +315,11 @@ export const createEmployeeDeclarationSheet = (
     { r: lastRow, c: 5 }
   );
   
-  // Fix for the ProtectInfo type error
-  // Instead of setting ws['!protect'] = false, use the proper object structure
+  // Fix for the ProtectInfo type error - use only valid properties defined in the ProtectInfo interface
   ws['!protect'] = {
+    // Note: The 'sheet' property is not valid for ProtectInfo
+    // Instead, use only the valid properties:
     password: '',           // No password protection
-    sheet: false,           // Don't protect the sheet
     objects: false,         // Don't protect objects
     scenarios: false,       // Don't protect scenarios
     formatCells: false,     // Allow formatting cells
