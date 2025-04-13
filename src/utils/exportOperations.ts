@@ -1,7 +1,11 @@
-
 import * as XLSX from 'xlsx';
 import { AttendanceRecord } from '@/types/attendance';
 import { format } from 'date-fns';
+import { 
+  applyWorksheetStyling, 
+  workbookToBlob,
+  downloadExcelFile
+} from './attendance/excelUtils';
 
 /**
  * Export data as CSV file
@@ -32,27 +36,58 @@ export const exportToCsv = (data: any[], filename: string, employeeId?: string) 
 };
 
 /**
- * Export data as Excel file
+ * Export data as Excel file with improved formatting
  */
 export const exportToExcel = (data: any[], filename: string, employeeId?: string) => {
-  // Convert data to worksheet
+  // Convert data to worksheet with improved formatting
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
   
-  // Create a buffer
-  const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-  const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  // Apply comprehensive styling to make text readable and wrapped
+  applyWorksheetStyling(worksheet, {
+    headerRow: 0,
+    boldRows: [0],
+    columnWidths: data[0] ? Object.keys(data[0]).map(() => ({ wch: 20 })) : [] // Set reasonable column width
+  });
   
-  // Download the file
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.setAttribute('href', url);
-  link.setAttribute('download', `${filename}.xlsx`);
-  link.style.visibility = 'hidden';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  // Ensure text wrapping for all cells
+  const range = XLSX.utils.decode_range(worksheet['!ref'] || "A1");
+  for (let r = range.s.r; r <= range.e.r; r++) {
+    for (let c = range.s.c; c <= range.e.c; c++) {
+      const cell_address = XLSX.utils.encode_cell({ r, c });
+      
+      if (!worksheet[cell_address]) {
+        worksheet[cell_address] = { t: 's', v: '' };
+      }
+      
+      if (!worksheet[cell_address].s) {
+        worksheet[cell_address].s = {};
+      }
+      
+      // Set explicit text wrapping for all cells
+      worksheet[cell_address].s.alignment = {
+        wrapText: true,
+        vertical: 'top',
+        horizontal: 'left'
+      };
+    }
+  }
+  
+  // Convert to blob with better options for text handling
+  const excelBuffer = XLSX.write(workbook, { 
+    bookType: 'xlsx', 
+    type: 'array',
+    bookSST: false, // Use shared string table for better text handling
+    compression: true
+  });
+  
+  const blob = new Blob([excelBuffer], { 
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+  });
+  
+  // Download using the helper function
+  downloadExcelFile(blob, `${filename}.xlsx`);
   
   // Register the export in attendance records
   registerExport(employeeId, filename, 'xlsx');

@@ -22,28 +22,29 @@ export const applyFinalFormatting = (
   }
 ): void => {
   // Set column widths (Name, Date, Clock In, Clock Out, Work Time, Extra Hours)
-  setColumnWidths(ws, [30, 12, 10, 10, 12, 12]);
+  // Increased column widths for better text display
+  setColumnWidths(ws, [40, 15, 15, 15, 15, 15]);
   
-  // Set row heights
+  // Set row heights - increased for better wrapping
   const rowHeights: { [key: number]: number } = {
-    [rowIndices.declarationRow]: 150,  // Declaration title and text
-    [rowIndices.spacerRow]: 20,        // Spacer row
-    [rowIndices.headerRow]: 25,        // Headers
+    [rowIndices.declarationRow]: 180,  // Declaration title and text - increased height
+    [rowIndices.spacerRow]: 25,        // Spacer row
+    [rowIndices.headerRow]: 30,        // Headers - increased height
   };
   
-  // Standard height for data rows
+  // Standard height for data rows - increased for better readability
   for (let i = rowIndices.dataStartRow; i <= rowIndices.dataEndRow; i++) {
-    rowHeights[i] = 20;
+    rowHeights[i] = 25;
   }
   
-  // Heights for special rows
-  rowHeights[rowIndices.totalsRow] = 25;
-  rowHeights[rowIndices.workingDaysRow] = 25;
+  // Heights for special rows - increased
+  rowHeights[rowIndices.totalsRow] = 30;
+  rowHeights[rowIndices.workingDaysRow] = 30;
   
   if (rowIndices.signatureTextRow !== undefined && rowIndices.signatureLineRow !== undefined) {
-    rowHeights[rowIndices.workingDaysRow + 1] = 20;   // Empty row
-    rowHeights[rowIndices.signatureTextRow] = 40;     // Signature text
-    rowHeights[rowIndices.signatureLineRow] = 30;     // Signature line
+    rowHeights[rowIndices.workingDaysRow + 1] = 25;   // Empty row
+    rowHeights[rowIndices.signatureTextRow] = 60;     // Signature text - increased significantly
+    rowHeights[rowIndices.signatureLineRow] = 35;     // Signature line
   }
   
   setRowHeights(ws, rowHeights);
@@ -94,3 +95,4 @@ export const applyFinalFormatting = (
     selectUnlockedCells: true // Allow selecting unlocked cells
   };
 };
+

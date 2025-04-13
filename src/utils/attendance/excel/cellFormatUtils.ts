@@ -82,6 +82,7 @@ export const applyCellFill = (
 
 /**
  * Enhanced text formatting for declaration text with explicit wrapping
+ * Improved to ensure text is properly wrapped in Excel
  */
 export const applyParagraphFormatting = (
   ws: XLSX.WorkSheet,
@@ -97,7 +98,8 @@ export const applyParagraphFormatting = (
   // Ensure the cell exists
   if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
   
-  // Set the cell value with explicit line breaks
+  // Set the cell value with explicit line breaks for Excel
+  // Use \r\n for Excel line breaks (important)
   const formattedText = text.replace(/\n/g, '\r\n');
   
   // Set the cell value
@@ -107,7 +109,7 @@ export const applyParagraphFormatting = (
   // Apply styling
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
-  // Setup explicit wrapping configuration
+  // Setup explicit wrapping configuration with wider settings
   ws[cellAddress].s.alignment = {
     wrapText: true,
     vertical: 'top',

@@ -4,17 +4,19 @@ import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill
 import { ensureTimeFormatting } from "./timeConversionUtils";
 
 /**
- * Set column widths for the worksheet with improved precision
+ * Set column widths for the worksheet with improved precision for text wrapping
  */
 export const setColumnWidths = (
   ws: XLSX.WorkSheet, 
   widths: number[]
 ): void => {
+  // For Excel, width is measured in characters
+  // Increase widths to accommodate wrapped text better
   ws['!cols'] = widths.map(wch => ({ wch }));
 };
 
 /**
- * Set row heights for specific rows with enhanced precision
+ * Set row heights for specific rows with enhanced precision for wrapped text
  */
 export const setRowHeights = (
   ws: XLSX.WorkSheet,
@@ -24,6 +26,7 @@ export const setRowHeights = (
   
   Object.entries(rowHeights).forEach(([rowIndex, height]) => {
     const index = parseInt(rowIndex, 10);
+    // Use hpt (height-points) for precise control of row height
     ws['!rows'][index] = { hpt: height };
   });
 };
@@ -66,6 +69,7 @@ export const applyTimeFormatting = (
 
 /**
  * Apply comprehensive formatting to all cells in a worksheet
+ * Enhanced with better text wrapping support
  */
 export const applyFormattingToAllCells = (
   ws: XLSX.WorkSheet,
@@ -94,14 +98,12 @@ export const applyFormattingToAllCells = (
         applyCellBorders(ws, cellAddress);
       }
       
-      // Apply wrap text if needed
-      if (options.applyWrapText) {
-        applyCellTextFormatting(ws, cellAddress, {
-          wrapText: true,
-          vertical: 'center',
-          horizontal: 'center'
-        });
-      }
+      // Apply wrap text - default to true for better readability
+      applyCellTextFormatting(ws, cellAddress, {
+        wrapText: options.applyWrapText !== false,
+        vertical: 'center',
+        horizontal: 'center'
+      });
       
       // Apply font if specified
       if (options.fontName || options.fontSize) {
@@ -153,3 +155,4 @@ export const addAutoFilter = (
 ): void => {
   ws['!autofilter'] = { ref: range };
 };
+

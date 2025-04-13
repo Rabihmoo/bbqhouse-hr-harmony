@@ -3,7 +3,7 @@ import * as XLSX from "xlsx";
 import { applyParagraphFormatting } from "./cellFormatUtils";
 
 /**
- * Sets the declaration content in the worksheet
+ * Sets the declaration content in the worksheet with enhanced text wrapping
  */
 export const setDeclarationContent = (
   ws: XLSX.WorkSheet,
@@ -11,7 +11,7 @@ export const setDeclarationContent = (
   declarationRow: number
 ): void => {
   // Set declaration text in cell A1 with enhanced wrapping
-  ws["A1"] = { t: 's', v: fullText };
+  // This ensures the text is properly displayed and wrapped in Excel
   applyParagraphFormatting(ws, "A1", fullText, {
     fontSize: 12,
     alignment: 'center',
@@ -28,7 +28,8 @@ export const setDeclarationContent = (
     applyCellFont(ws, cellAddress, { bold: true });
     applyCellTextFormatting(ws, cellAddress, { 
       horizontal: 'center',
-      vertical: 'center'
+      vertical: 'center',
+      wrapText: true
     });
     applyCellBorders(ws, cellAddress, 'thin');
   }
@@ -36,3 +37,4 @@ export const setDeclarationContent = (
 
 // Re-exporting these functions from cellFormatUtils to avoid circular dependencies
 import { applyCellFont, applyCellTextFormatting, applyCellBorders } from "./cellFormatUtils";
+
