@@ -24,10 +24,10 @@ export const createEmployeeDeclarationSheet = (
   // Define important row indices
   const rowIndices = {
     declarationRow: 0,
-    spacerRow: 1,
-    headerRow: 2,
-    dataStartRow: 3,
-    dataEndRow: 3 + employeeReport.attendanceRecords.length - 1,
+    spacerRow: 2, // Increased to account for declaration title and text being separate
+    headerRow: 3,
+    dataStartRow: 4,
+    dataEndRow: 4 + employeeReport.attendanceRecords.length - 1,
     totalsRow: 0, // Will be calculated later
     workingDaysRow: 0, // Will be calculated later
     signatureTextRow: 0, // Will be calculated later if needed
@@ -53,7 +53,7 @@ export const createEmployeeDeclarationSheet = (
   );
   const fullText = `${declarationTitle}\n\n${declarationText}`;
   
-  // Set declaration content
+  // Set declaration content with improved formatting
   setDeclarationContent(ws, fullText, rowIndices.declarationRow);
   
   // Add employee attendance records

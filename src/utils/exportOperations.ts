@@ -1,3 +1,4 @@
+
 import * as XLSX from 'xlsx';
 import { AttendanceRecord } from '@/types/attendance';
 import { format } from 'date-fns';
@@ -39,16 +40,34 @@ export const exportToCsv = (data: any[], filename: string, employeeId?: string) 
  * Export data as Excel file with improved formatting
  */
 export const exportToExcel = (data: any[], filename: string, employeeId?: string) => {
-  // Convert data to worksheet with improved formatting
+  // Convert data to worksheet
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
+  
+  // Set workbook properties to help prevent Protected View warnings
+  workbook.Props = {
+    Title: filename,
+    Subject: "Employee Attendance Data",
+    Author: "BBQ HR System",
+    CreatedDate: new Date(),
+    Company: "BBQ",
+  };
+  
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
   
   // Apply comprehensive styling to make text readable and wrapped
   applyWorksheetStyling(worksheet, {
     headerRow: 0,
     boldRows: [0],
-    columnWidths: data[0] ? Object.keys(data[0]).map(() => ({ wch: 20 })) : [] // Set reasonable column width
+    // Set wider column widths based on content length
+    columnWidths: data[0] ? Object.keys(data[0]).map(key => {
+      // Use longer width for Employee name column
+      if (key === 'Employee') return { wch: 40 };
+      // Use medium width for Notes
+      if (key === 'Notes') return { wch: 30 };
+      // Use standard width for other columns
+      return { wch: 20 };
+    }) : []
   });
   
   // Ensure text wrapping for all cells
@@ -65,14 +84,36 @@ export const exportToExcel = (data: any[], filename: string, employeeId?: string
         worksheet[cell_address].s = {};
       }
       
-      // Set explicit text wrapping for all cells
+      // Set explicit text wrapping for all cells with improved alignment
       worksheet[cell_address].s.alignment = {
         wrapText: true,
-        vertical: 'top',
-        horizontal: 'left'
+        vertical: 'center',
+        horizontal: c === 0 ? 'left' : 'center',  // Left align first column, center others
+        indent: c === 0 ? 1 : 0  // Add indent for first column
       };
+      
+      // Add borders to all cells
+      worksheet[cell_address].s.border = {
+        top: { style: 'thin' },
+        bottom: { style: 'thin' },
+        left: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+      
+      // Add special formatting for header row
+      if (r === 0) {
+        worksheet[cell_address].s.font = { bold: true, sz: 12 };
+        worksheet[cell_address].s.fill = { 
+          fgColor: { rgb: "EEEEEE" },
+          patternType: 'solid'
+        };
+      }
     }
   }
+  
+  // Set row heights for better text display
+  worksheet['!rows'] = Array(range.e.r + 1).fill(null).map(() => ({ hpt: 30 }));
+  worksheet['!rows'][0] = { hpt: 35 }; // Header row height
   
   // Convert to blob with better options for text handling
   const excelBuffer = XLSX.write(workbook, { 

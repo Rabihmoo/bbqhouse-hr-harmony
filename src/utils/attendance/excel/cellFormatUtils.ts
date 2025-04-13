@@ -17,9 +17,10 @@ export const applyCellTextFormatting = (
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
   ws[cellAddress].s.alignment = { 
-    wrapText: options.wrapText ?? false, 
-    vertical: options.vertical ?? 'top', 
-    horizontal: options.horizontal ?? 'left' 
+    wrapText: options.wrapText ?? true, // Default to true for better text display
+    vertical: options.vertical ?? 'center', // Default to center for better appearance
+    horizontal: options.horizontal ?? 'left',
+    indent: 1 // Add some indent for better text display
   };
 };
 
@@ -35,10 +36,10 @@ export const applyCellBorders = (
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
   ws[cellAddress].s.border = {
-    top: { style },
-    bottom: { style },
-    left: { style },
-    right: { style }
+    top: { style, color: { auto: 1 } },
+    bottom: { style, color: { auto: 1 } },
+    left: { style, color: { auto: 1 } },
+    right: { style, color: { auto: 1 } }
   };
 };
 
@@ -60,7 +61,10 @@ export const applyCellFont = (
   
   ws[cellAddress].s.font = {
     ...(ws[cellAddress].s.font || {}),
-    ...options
+    bold: options.bold ?? false,
+    sz: options.size ?? (options.bold ? 12 : 11), // Slightly larger for bold text
+    name: options.name ?? 'Calibri',
+    italic: options.italic ?? false
   };
 };
 
@@ -76,7 +80,8 @@ export const applyCellFill = (
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
   ws[cellAddress].s.fill = { 
-    fgColor: { rgb: color } 
+    fgColor: { rgb: color },
+    patternType: 'solid'
   };
 };
 
@@ -98,9 +103,13 @@ export const applyParagraphFormatting = (
   // Ensure the cell exists
   if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
   
-  // Set the cell value with explicit line breaks for Excel
   // Use \r\n for Excel line breaks (important)
-  const formattedText = text.replace(/\n/g, '\r\n');
+  // Add extra line breaks for better readability in Excel
+  const formattedText = text
+    .replace(/\n/g, '\r\n')
+    .replace(/\./g, '.\r\n') // Add line breaks after periods for better readability
+    .replace(/\r\n\r\n\r\n/g, '\r\n\r\n') // Remove excessive line breaks
+    .trim();
   
   // Set the cell value
   ws[cellAddress].v = formattedText;
@@ -113,7 +122,8 @@ export const applyParagraphFormatting = (
   ws[cellAddress].s.alignment = {
     wrapText: true,
     vertical: 'top',
-    horizontal: options?.alignment || 'center',
+    horizontal: options?.alignment || 'left',
+    indent: 1 // Add indent for better text presentation
   };
   
   // Apply font styling if provided
@@ -121,7 +131,9 @@ export const applyParagraphFormatting = (
     ...(ws[cellAddress].s.font || {}),
     bold: options?.bold ?? false,
     italic: options?.italic ?? false,
-    sz: options?.fontSize || 12,
+    sz: options?.fontSize || 11,
+    name: 'Calibri',
+    color: { rgb: '000000' } // Make sure text is black for better visibility
   };
   
   // Make sure to explicitly set format to allow proper text rendering
@@ -149,6 +161,8 @@ export const applyFolgaCellFormatting = (
   });
   
   // Make text bold for emphasis
-  applyCellFont(ws, cellAddress, { bold: true });
+  applyCellFont(ws, cellAddress, { 
+    bold: true,
+    size: 12
+  });
 };
-

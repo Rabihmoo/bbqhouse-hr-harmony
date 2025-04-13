@@ -96,7 +96,7 @@ export default function PreviewDeclarationsDialog({
                     DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS
                   </h3>
                   
-                  <p className="whitespace-pre-line text-sm">
+                  <p className="whitespace-pre-line text-sm mt-4">
                     {generateDeclarationText(
                       selectedEmployee.employeeName,
                       selectedEmployee.biNumber,
@@ -104,6 +104,13 @@ export default function PreviewDeclarationsDialog({
                       reportData.month.toUpperCase(),
                       reportData.year
                     )}
+                  </p>
+                </div>
+
+                <div className="mt-4">
+                  <p className="text-sm font-medium mb-2">
+                    A tabela a seguir detalha as horas extras a serem trabalhadas durante o
+                    mês de {reportData.month.toUpperCase()} de {reportData.year}:
                   </p>
                 </div>
 
@@ -132,7 +139,7 @@ export default function PreviewDeclarationsDialog({
                   </TableBody>
                 </Table>
 
-                <div className="mt-4 grid grid-cols-2 gap-2 border-collapse">
+                <div className="mt-6 grid grid-cols-2 gap-2 border-collapse">
                   <div className="border p-2 font-semibold text-right">TOTAL WORKING HOURS</div>
                   <div className="border p-2 text-center">
                     {selectedEmployee.totalHours}
@@ -144,11 +151,11 @@ export default function PreviewDeclarationsDialog({
                 </div>
 
                 <div className="mt-6">
-                  <p>
+                  <p className="text-sm">
                     Ao assinar este documento, confirmo que estou ciente das datas e horários específicos em que as horas extras serão executadas e concordo em cumpri-las conforme indicado na tabela acima.
                   </p>
-                  <div className="mt-4 flex justify-between">
-                    <div>Assinatura do Funcionário: ______________________________</div>
+                  <div className="mt-8 flex justify-between">
+                    <div>Assinatura do Funcionário: _____________________________</div>
                     <div>Data: {new Date().getDate()} DE {reportData.month.toUpperCase()}</div>
                   </div>
                 </div>
