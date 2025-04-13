@@ -1,4 +1,3 @@
-
 import * as XLSX from "xlsx";
 import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill } from "./cellFormatUtils";
 import { ensureTimeFormatting } from "./timeConversionUtils";
@@ -32,11 +31,10 @@ export const setRowHeights = (
   Object.entries(rowHeights).forEach(([rowIndex, height]) => {
     const index = parseInt(rowIndex, 10);
     // Use hpt (height-points) for precise control of row height
-    // Add customHeight flag to ensure height is respected
+    // Remove customHeight since it's not in the RowInfo type
     ws['!rows'][index] = { 
       hpt: height,
       hpx: height,
-      customHeight: 1,
       hidden: false 
     };
   });
