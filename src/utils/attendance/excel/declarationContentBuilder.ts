@@ -27,10 +27,24 @@ export const setDeclarationContent = (
   // Set declaration text in cell A2 with enhanced wrapping and center alignment
   const textCell = XLSX.utils.encode_cell({ r: declarationRow + 1, c: 0 });
   ws[textCell] = { t: 's', v: declarationText };
-  applyParagraphFormatting(ws, textCell, declarationText, {
-    fontSize: 11,
-    alignment: 'center' // Changed from 'left' to 'center' to match the image
-  });
+  
+  // Apply special formatting to ensure text wrapping works correctly
+  ws[textCell].s = {
+    alignment: {
+      wrapText: true,
+      vertical: 'center',
+      horizontal: 'center',
+      indent: 1
+    },
+    font: {
+      name: 'Calibri',
+      sz: 11,
+      color: { rgb: '000000' }
+    }
+  };
+  
+  // Set explicit text format to ensure proper wrapping
+  ws[textCell].z = '@';
   
   // Add headers row in row 3
   const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
