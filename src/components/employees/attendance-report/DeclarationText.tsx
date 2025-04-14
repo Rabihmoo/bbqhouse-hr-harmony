@@ -40,7 +40,7 @@ export function DeclarationText({
     <div className="border rounded-lg p-6 space-y-6 print:border-none print:p-0">
       <div className="text-center mb-6">
         <h2 className="text-xl font-bold mb-4">DECLARAÇÃO INDIVIDUAL DE ACEITAÇÃO DE LABORAÇÃO DE HORAS EXTRAS</h2>
-        <div className="text-left whitespace-pre-line mb-8">
+        <div className="text-center whitespace-pre-line mb-8">
           {generateDeclarationText(employeeName, biNumber, companyName, month, year)}
         </div>
       </div>
@@ -93,7 +93,7 @@ export function DeclarationText({
       </div>
       
       <div className="pt-8 pb-8">
-        <div className="text-left whitespace-pre-line mb-8">
+        <div className="text-center whitespace-pre-line mb-8">
           {generateSignatureText(formattedSignatureDate)}
         </div>
       </div>

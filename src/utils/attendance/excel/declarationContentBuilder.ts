@@ -24,12 +24,12 @@ export const setDeclarationContent = (
     alignment: 'center'
   });
   
-  // Set declaration text in cell A2 with enhanced wrapping
+  // Set declaration text in cell A2 with enhanced wrapping and center alignment
   const textCell = XLSX.utils.encode_cell({ r: declarationRow + 1, c: 0 });
   ws[textCell] = { t: 's', v: declarationText };
   applyParagraphFormatting(ws, textCell, declarationText, {
     fontSize: 11,
-    alignment: 'left'
+    alignment: 'center' // Changed from 'left' to 'center' to match the image
   });
   
   // Add headers row in row 3

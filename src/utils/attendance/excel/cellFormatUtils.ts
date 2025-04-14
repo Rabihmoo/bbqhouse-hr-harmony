@@ -1,4 +1,3 @@
-
 import * as XLSX from "xlsx";
 
 /**
@@ -103,16 +102,9 @@ export const applyParagraphFormatting = (
   // Ensure the cell exists
   if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
   
-  // Use \r\n for Excel line breaks (important)
-  // Better formatting for declaration text by adding strategic breaks
-  const formattedText = text
-    .replace(/\n/g, '\r\n')
-    // Split long lines at logical points
-    .replace(/\. /g, '.\r\n')
-    .replace(/; /g, ';\r\n')
-    // Remove excessive line breaks
-    .replace(/\r\n\r\n\r\n/g, '\r\n\r\n')
-    .trim();
+  // For declaration text, preserve original text without artificial line breaks
+  // This allows Excel to handle the wrapping naturally
+  const formattedText = text.replace(/\n/g, '\r\n');
   
   // Set the cell value
   ws[cellAddress].v = formattedText;
@@ -124,7 +116,7 @@ export const applyParagraphFormatting = (
   // Setup explicit wrapping configuration with better settings
   ws[cellAddress].s.alignment = {
     wrapText: true,
-    vertical: 'top',
+    vertical: 'center', // Changed from 'top' to 'center' to match the image
     horizontal: options?.alignment || 'left',
     indent: 1 // Add indent for better text presentation
   };

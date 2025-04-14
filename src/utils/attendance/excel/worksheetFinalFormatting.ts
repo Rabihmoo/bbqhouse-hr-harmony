@@ -28,7 +28,7 @@ export const applyFinalFormatting = (
   // Set row heights with more reasonable values
   const rowHeights: { [key: number]: number } = {
     [rowIndices.declarationRow]: 30,     // Title row
-    [rowIndices.declarationRow + 1]: 120, // Declaration text - reduced height
+    [rowIndices.declarationRow + 1]: 200, // Declaration text - increased height to fit all text
     [rowIndices.spacerRow]: 20,         // Spacer row
     [rowIndices.headerRow]: 25,         // Headers - reduced height
   };
@@ -44,7 +44,7 @@ export const applyFinalFormatting = (
   
   if (rowIndices.signatureTextRow !== undefined && rowIndices.signatureLineRow !== undefined) {
     rowHeights[rowIndices.workingDaysRow + 1] = 20;   // Empty row
-    rowHeights[rowIndices.signatureTextRow] = 50;     // Signature text - reduced
+    rowHeights[rowIndices.signatureTextRow] = 80;     // Signature text - increased for better visibility
     rowHeights[rowIndices.signatureLineRow] = 30;     // Signature line
   }
   
