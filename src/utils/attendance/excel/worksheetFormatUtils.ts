@@ -15,7 +15,6 @@ export const setColumnWidths = (
   ws['!cols'] = widths.map(wch => ({ 
     wch,
     width: wch * 8, // Provide pixel width as well for better rendering
-    customWidth: 1,
     hidden: false
   }));
 };
