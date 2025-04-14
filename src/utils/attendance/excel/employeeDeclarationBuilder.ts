@@ -72,5 +72,8 @@ export const createEmployeeDeclarationSheet = (
   const lastRow = includeSignature ? rowIndices.signatureLineRow : rowIndices.workingDaysRow;
   applyFinalFormatting(ws, merges, lastRow, rowIndices);
   
+  // Ensure no protection is set
+  delete ws['!protect'];
+  
   return ws;
 };

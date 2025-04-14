@@ -115,6 +115,9 @@ export const exportToExcel = (data: any[], filename: string, employeeId?: string
   worksheet['!rows'] = Array(range.e.r + 1).fill(null).map(() => ({ hpt: 20 }));
   worksheet['!rows'][0] = { hpt: 25 }; // Header row height
   
+  // Remove any worksheet protection
+  delete worksheet['!protect'];
+  
   // Convert to blob with better options for text handling
   const excelBuffer = XLSX.write(workbook, { 
     bookType: 'xlsx', 

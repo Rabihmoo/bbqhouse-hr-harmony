@@ -77,23 +77,6 @@ export const applyFinalFormatting = (
     { r: lastRow, c: 5 }
   );
   
-  // Fix for the ProtectInfo type error - use only valid properties defined in the ProtectInfo interface
-  ws['!protect'] = {
-    password: '',           // No password protection
-    objects: false,         // Don't protect objects
-    scenarios: false,       // Don't protect scenarios
-    formatCells: false,     // Allow formatting cells
-    formatColumns: false,   // Allow formatting columns
-    formatRows: false,      // Allow formatting rows
-    insertColumns: false,   // Allow inserting columns
-    insertRows: false,      // Allow inserting rows
-    insertHyperlinks: false,// Allow inserting hyperlinks
-    deleteColumns: false,   // Allow deleting columns
-    deleteRows: false,      // Allow deleting rows
-    selectLockedCells: true,// Allow selecting locked cells
-    sort: false,            // Allow sorting
-    autoFilter: false,      // Allow auto filter
-    pivotTables: false,     // Allow pivot tables
-    selectUnlockedCells: true // Allow selecting unlocked cells
-  };
+  // Remove worksheet protection completely
+  delete ws['!protect'];
 };
