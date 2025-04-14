@@ -1,3 +1,4 @@
+
 import * as XLSX from 'xlsx';
 import { AttendanceRecord } from '@/types/attendance';
 import { format } from 'date-fns';
@@ -54,18 +55,18 @@ export const exportToExcel = (data: any[], filename: string, employeeId?: string
   
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
   
-  // Apply comprehensive styling to make text readable and wrapped
+  // Apply comprehensive styling with more reasonable column widths
   applyWorksheetStyling(worksheet, {
     headerRow: 0,
     boldRows: [0],
-    // Set wider column widths based on content length
+    // Set more reasonable column widths based on content length
     columnWidths: data[0] ? Object.keys(data[0]).map(key => {
-      // Use longer width for Employee name column
-      if (key === 'Employee') return { wch: 40 };
+      // Use reasonable width for Employee name column
+      if (key === 'Employee') return { wch: 25 };
       // Use medium width for Notes
-      if (key === 'Notes') return { wch: 30 };
+      if (key === 'Notes') return { wch: 20 };
       // Use standard width for other columns
-      return { wch: 20 };
+      return { wch: 15 };
     }) : []
   });
   
@@ -110,9 +111,9 @@ export const exportToExcel = (data: any[], filename: string, employeeId?: string
     }
   }
   
-  // Set row heights for better text display
-  worksheet['!rows'] = Array(range.e.r + 1).fill(null).map(() => ({ hpt: 30 }));
-  worksheet['!rows'][0] = { hpt: 35 }; // Header row height
+  // Set row heights for better text display - use more reasonable heights
+  worksheet['!rows'] = Array(range.e.r + 1).fill(null).map(() => ({ hpt: 20 }));
+  worksheet['!rows'][0] = { hpt: 25 }; // Header row height
   
   // Convert to blob with better options for text handling
   const excelBuffer = XLSX.write(workbook, { 

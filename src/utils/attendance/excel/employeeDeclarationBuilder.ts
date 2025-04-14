@@ -10,7 +10,7 @@ import { addSignatureSection } from "./signatureSectionBuilder";
 import { applyFinalFormatting } from "./worksheetFinalFormatting";
 
 /**
- * Creates a single employee declaration sheet with proper formatting
+ * Creates a single employee declaration sheet with improved formatting
  */
 export const createEmployeeDeclarationSheet = (
   employeeReport: EmployeeReport,
@@ -68,7 +68,7 @@ export const createEmployeeDeclarationSheet = (
     merges.push(...signatureMerges);
   }
   
-  // Apply final comprehensive formatting
+  // Apply final comprehensive formatting with more reasonable settings
   const lastRow = includeSignature ? rowIndices.signatureLineRow : rowIndices.workingDaysRow;
   applyFinalFormatting(ws, merges, lastRow, rowIndices);
   

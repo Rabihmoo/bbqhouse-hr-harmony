@@ -4,17 +4,16 @@ import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill
 import { ensureTimeFormatting } from "./timeConversionUtils";
 
 /**
- * Set column widths for the worksheet with improved precision for text wrapping
+ * Set column widths for the worksheet with reasonable values
  */
 export const setColumnWidths = (
   ws: XLSX.WorkSheet, 
   widths: number[]
 ): void => {
   // For Excel, width is measured in characters
-  // Increase widths to accommodate wrapped text better
+  // Use more reasonable widths that don't stretch the sheet too much
   ws['!cols'] = widths.map(wch => ({ 
-    wch,
-    width: wch * 8, // Provide pixel width as well for better rendering
+    wch, // This is the only property we need for width
     hidden: false
   }));
 };
@@ -31,10 +30,8 @@ export const setRowHeights = (
   Object.entries(rowHeights).forEach(([rowIndex, height]) => {
     const index = parseInt(rowIndex, 10);
     // Use hpt (height-points) for precise control of row height
-    // Removed customHeight as it's not in the RowInfo type
     ws['!rows'][index] = { 
-      hpt: height,
-      hpx: height,
+      hpt: height, // Height in points
       hidden: false 
     };
   });

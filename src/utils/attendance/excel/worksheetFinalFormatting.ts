@@ -22,30 +22,30 @@ export const applyFinalFormatting = (
   }
 ): void => {
   // Set column widths (Name, Date, Clock In, Clock Out, Work Time, Extra Hours)
-  // Significantly increased column widths for better text display
-  setColumnWidths(ws, [45, 18, 18, 18, 18, 18]);
+  // Using more reasonable column widths
+  setColumnWidths(ws, [25, 15, 15, 15, 15, 15]);
   
-  // Set row heights - significantly increased for better wrapping
+  // Set row heights with more reasonable values
   const rowHeights: { [key: number]: number } = {
-    [rowIndices.declarationRow]: 60,    // Title row
-    [rowIndices.declarationRow + 1]: 200, // Declaration text - significantly increased
-    [rowIndices.spacerRow]: 30,        // Spacer row
-    [rowIndices.headerRow]: 35,        // Headers - increased height
+    [rowIndices.declarationRow]: 30,     // Title row
+    [rowIndices.declarationRow + 1]: 120, // Declaration text - reduced height
+    [rowIndices.spacerRow]: 20,         // Spacer row
+    [rowIndices.headerRow]: 25,         // Headers - reduced height
   };
   
-  // Standard height for data rows - increased for better readability
+  // Standard height for data rows - more reasonable height
   for (let i = rowIndices.dataStartRow; i <= rowIndices.dataEndRow; i++) {
-    rowHeights[i] = 30;
+    rowHeights[i] = 20;
   }
   
-  // Heights for special rows - increased
-  rowHeights[rowIndices.totalsRow] = 35;
-  rowHeights[rowIndices.workingDaysRow] = 35;
+  // Heights for special rows - more reasonable
+  rowHeights[rowIndices.totalsRow] = 25;
+  rowHeights[rowIndices.workingDaysRow] = 25;
   
   if (rowIndices.signatureTextRow !== undefined && rowIndices.signatureLineRow !== undefined) {
-    rowHeights[rowIndices.workingDaysRow + 1] = 30;   // Empty row
-    rowHeights[rowIndices.signatureTextRow] = 80;     // Signature text - increased significantly
-    rowHeights[rowIndices.signatureLineRow] = 45;     // Signature line
+    rowHeights[rowIndices.workingDaysRow + 1] = 20;   // Empty row
+    rowHeights[rowIndices.signatureTextRow] = 50;     // Signature text - reduced
+    rowHeights[rowIndices.signatureLineRow] = 30;     // Signature line
   }
   
   setRowHeights(ws, rowHeights);
@@ -79,8 +79,6 @@ export const applyFinalFormatting = (
   
   // Fix for the ProtectInfo type error - use only valid properties defined in the ProtectInfo interface
   ws['!protect'] = {
-    // Note: The 'sheet' property is not valid for ProtectInfo
-    // Instead, use only the valid properties:
     password: '',           // No password protection
     objects: false,         // Don't protect objects
     scenarios: false,       // Don't protect scenarios
