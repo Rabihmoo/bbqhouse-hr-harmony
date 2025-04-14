@@ -14,8 +14,7 @@ export const setColumnWidths = (
   // Using standard Excel width measurement
   ws['!cols'] = widths.map(wch => ({ 
     wch, 
-    hidden: false,
-    customWidth: true  // Explicitly mark as custom width
+    hidden: false
   }));
 };
 
@@ -33,8 +32,7 @@ export const setRowHeights = (
     // Use hpt (height-points) for precise control of row height
     ws['!rows'][index] = { 
       hpt: height, // Height in points
-      hidden: false,
-      customHeight: true  // Explicitly mark as custom height
+      hidden: false
     };
   });
 };

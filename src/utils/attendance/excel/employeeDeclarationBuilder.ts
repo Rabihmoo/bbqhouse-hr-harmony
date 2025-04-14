@@ -77,8 +77,7 @@ export const createEmployeeDeclarationSheet = (
   for (let i = 0; i < 6; i++) {
     ws['!cols'][i] = {
       wch: i === 0 ? 40 : 15, // Column A is wider for the declaration text
-      hidden: false,
-      customWidth: true
+      hidden: false
     };
   }
   
