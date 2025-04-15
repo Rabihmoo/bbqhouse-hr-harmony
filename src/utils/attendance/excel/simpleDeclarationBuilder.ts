@@ -29,7 +29,11 @@ export const createSimpleDeclarationSheet = (
     month,
     year
   );
-  content[1] = [declarationText, "", "", "", "", ""];
+  
+  // Format declaration text to enforce wrapping
+  // Using explicit line breaks for Excel with \r\n
+  const formattedDeclarationText = declarationText.replace(/\n/g, '\r\n');
+  content[1] = [formattedDeclarationText, "", "", "", "", ""];
   
   // Add empty rows to ensure spacing
   content[2] = ["", "", "", "", "", ""];
@@ -161,13 +165,13 @@ export const createSimpleDeclarationSheet = (
     { wch: 15 }  // Extra Hours (F)
   ];
   
-  // Set row heights
+  // Set row heights with much more height for declaration text
   ws["!rows"] = [];
   
-  // Declaration text needs much more height
-  ws["!rows"][1] = { hpt: 300 }; // Declaration text (300 points tall - increased from 150)
+  // Declaration text needs much more height - significantly increased
+  ws["!rows"][1] = { hpt: 500 }; // Declaration text (500 points tall - significantly increased)
   
-  // Apply styles
+  // Apply enhanced styles with better text wrapping
   applySimpleStyles(ws, employeeReport.attendanceRecords.length + 10);
   
   // Set the worksheet reference range
@@ -222,24 +226,29 @@ const applySimpleStyles = (
         };
       }
       
-      // Special formatting for declaration text
+      // Special formatting for declaration text with enhanced wrapping
       if (r === 1) {
         ws[cellAddress].s.alignment = {
-          wrapText: true,
-          vertical: "top",
+          wrapText: true,         // Force text wrapping
+          vertical: "top",        
           horizontal: "left",
-          indent: 1,           // Add left indent
-          readingOrder: 2      // Left-to-right reading
+          indent: 1,              // Add left indent
+          readingOrder: 2         // Left-to-right reading
         };
+        
         // Critical: set cell format to text
         ws[cellAddress].z = "@";
         
-        // Set content type and force wrap text to help Excel recognize line breaks
+        // Enhanced text formatting for Excel to recognize wrapping
         if (ws[cellAddress].v) {
           // Add HTML formatted version to help with text display
-          ws[cellAddress].h = ws[cellAddress].v.toString().replace(/\n/g, '<br>');
+          ws[cellAddress].h = ws[cellAddress].v.toString().replace(/\n/g, '<br>').replace(/\r\n/g, '<br>');
+          
           // Make sure it's recognized as a string
           ws[cellAddress].t = 's';
+          
+          // Create a formatted text version for display
+          ws[cellAddress].w = ws[cellAddress].v.toString();
         }
       }
       
