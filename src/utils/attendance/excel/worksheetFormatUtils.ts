@@ -155,6 +155,26 @@ export const applyFormattingToAllCells = (
     }
   }
   
+  // Make special adjustments for declaration text in row 1
+  if (ws['A1']) {
+    applyCellTextFormatting(ws, 'A1', {
+      wrapText: true,
+      horizontal: 'center',
+      vertical: 'center'
+    });
+  }
+  
+  // Make special adjustments for main declaration text in row 1
+  if (ws['A2']) {
+    applyCellTextFormatting(ws, 'A2', {
+      wrapText: true,
+      horizontal: 'center',
+      vertical: 'center'
+    });
+    // Force text format type
+    ws['A2'].z = '@';
+  }
+  
   // Ensure time formatting for work time column
   ensureTimeFormatting(ws, 'E4', 'E34');
 };

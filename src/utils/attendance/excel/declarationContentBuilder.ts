@@ -29,17 +29,25 @@ export const setDeclarationContent = (
   ws[textCell] = { t: 's', v: declarationText };
   
   // Apply special formatting to ensure text wrapping works correctly
+  // Use more explicit styling to force text wrapping
   ws[textCell].s = {
     alignment: {
       wrapText: true,
       vertical: 'center',
       horizontal: 'center',
-      indent: 1
+      indent: 1,
+      readingOrder: 2  // Left-to-right reading order
     },
     font: {
       name: 'Calibri',
       sz: 11,
       color: { rgb: '000000' }
+    },
+    border: {
+      top: { style: 'thin', color: { auto: 1 } },
+      bottom: { style: 'thin', color: { auto: 1 } },
+      left: { style: 'thin', color: { auto: 1 } },
+      right: { style: 'thin', color: { auto: 1 } }
     }
   };
   

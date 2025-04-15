@@ -20,7 +20,8 @@ export const applyCellTextFormatting = (
     wrapText: options.wrapText ?? true, // Default to true for better text display
     vertical: options.vertical ?? 'center', // Default to center for better appearance
     horizontal: options.horizontal ?? 'left',
-    indent: 1 // Add some indent for better text display
+    indent: 1, // Add some indent for better text display
+    readingOrder: 2 // Left-to-right reading order
   };
 };
 
@@ -111,7 +112,7 @@ export const applyParagraphFormatting = (
   ws[cellAddress].v = formattedText;
   ws[cellAddress].t = 's';
   
-  // Apply styling
+  // Apply styling with explicit alignment settings
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
   // Setup explicit wrapping configuration with better settings
@@ -119,7 +120,8 @@ export const applyParagraphFormatting = (
     wrapText: true,
     vertical: 'center',
     horizontal: options?.alignment || 'center', // Default to center alignment
-    indent: 1 // Add indent for better text presentation
+    indent: 1, // Add indent for better text presentation
+    readingOrder: 2 // Left-to-right reading order
   };
   
   // Apply font styling if provided
@@ -130,6 +132,14 @@ export const applyParagraphFormatting = (
     sz: options?.fontSize || 11,
     name: 'Calibri',
     color: { rgb: '000000' } // Make sure text is black for better visibility
+  };
+  
+  // Add borders to help with cell definition
+  ws[cellAddress].s.border = {
+    top: { style: 'thin', color: { auto: 1 } },
+    bottom: { style: 'thin', color: { auto: 1 } },
+    left: { style: 'thin', color: { auto: 1 } },
+    right: { style: 'thin', color: { auto: 1 } }
   };
   
   // Make sure to explicitly set format to allow proper text rendering and force wrap

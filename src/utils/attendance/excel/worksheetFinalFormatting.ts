@@ -23,12 +23,12 @@ export const applyFinalFormatting = (
 ): void => {
   // Set column widths (Name, Date, Clock In, Clock Out, Work Time, Extra Hours)
   // Using more reasonable column widths for better text display
-  setColumnWidths(ws, [25, 15, 15, 15, 15, 15]);
+  setColumnWidths(ws, [40, 15, 15, 15, 15, 15]);
   
   // Set row heights with more reasonable values
   const rowHeights: { [key: number]: number } = {
     [rowIndices.declarationRow]: 30,     // Title row
-    [rowIndices.declarationRow + 1]: 250, // Declaration text - significantly increased height to fit all text
+    [rowIndices.declarationRow + 1]: 300, // Declaration text - significantly increased height to fit all text
     [rowIndices.spacerRow]: 20,         // Spacer row
     [rowIndices.headerRow]: 25,         // Headers
   };
@@ -44,7 +44,7 @@ export const applyFinalFormatting = (
   
   if (rowIndices.signatureTextRow !== undefined && rowIndices.signatureLineRow !== undefined) {
     rowHeights[rowIndices.workingDaysRow + 1] = 20;   // Empty row
-    rowHeights[rowIndices.signatureTextRow] = 80;     // Signature text
+    rowHeights[rowIndices.signatureTextRow] = 90;     // Signature text - increased height
     rowHeights[rowIndices.signatureLineRow] = 30;     // Signature line
   }
   
