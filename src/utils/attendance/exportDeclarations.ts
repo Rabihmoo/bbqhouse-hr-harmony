@@ -2,7 +2,7 @@
 import * as XLSX from "xlsx";
 import { AttendanceReport } from "./types";
 import { ExportOptions } from "@/hooks/use-attendance-uploader";
-import { createSimpleDeclarationSheet } from "./excel/simpleDeclarationBuilder";
+import { createSimpleDeclarationSheet } from "./excel/declarationBuilder";
 import { generatePdfForEmployee, generateAndDownloadPdf } from "./pdf/pdfGenerator";
 import { registerEmployeeExport } from "./storage/exportStorage";
 import { sendDeclarationsViaEmail } from "./email/emailExporter";
@@ -122,7 +122,7 @@ export const exportEmployeeDeclarations = async (
 };
 
 // Export other functions
-export { createSimpleDeclarationSheet } from "./excel/simpleDeclarationBuilder";
+export { createSimpleDeclarationSheet } from "./excel/declarationBuilder";
 export { generatePdfForEmployee } from "./pdf/pdfGenerator";
 export { registerEmployeeExport } from "./storage/exportStorage";
 export { sendDeclarationsViaEmail } from "./email/emailExporter";
