@@ -1,3 +1,4 @@
+
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "../declarationGenerator";
@@ -164,7 +165,7 @@ export const createSimpleDeclarationSheet = (
   ws["!rows"] = [];
   
   // Declaration text needs much more height
-  ws["!rows"][1] = { hpt: 150 }; // Declaration text (150 points tall)
+  ws["!rows"][1] = { hpt: 300 }; // Declaration text (300 points tall - increased from 150)
   
   // Apply styles
   applySimpleStyles(ws, employeeReport.attendanceRecords.length + 10);
@@ -226,10 +227,20 @@ const applySimpleStyles = (
         ws[cellAddress].s.alignment = {
           wrapText: true,
           vertical: "top",
-          horizontal: "left"
+          horizontal: "left",
+          indent: 1,           // Add left indent
+          readingOrder: 2      // Left-to-right reading
         };
         // Critical: set cell format to text
         ws[cellAddress].z = "@";
+        
+        // Set content type and force wrap text to help Excel recognize line breaks
+        if (ws[cellAddress].v) {
+          // Add HTML formatted version to help with text display
+          ws[cellAddress].h = ws[cellAddress].v.toString().replace(/\n/g, '<br>');
+          // Make sure it's recognized as a string
+          ws[cellAddress].t = 's';
+        }
       }
       
       // Header row
