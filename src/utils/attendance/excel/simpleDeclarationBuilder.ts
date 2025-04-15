@@ -1,4 +1,3 @@
-
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "../declarationGenerator";
@@ -12,8 +11,8 @@ export const createSimpleDeclarationSheet = (
   year: string,
   includeSignature: boolean = true
 ): XLSX.WorkSheet => {
-  // Create empty worksheet
-  const ws = XLSX.utils.aoa_to_sheet([[""]]);
+  // Create empty worksheet - use let instead of const
+  let ws = XLSX.utils.aoa_to_sheet([[""]]);
   
   // Define all content as array of arrays (rows and columns)
   const content: any[][] = [];
