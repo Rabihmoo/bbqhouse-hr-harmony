@@ -2,7 +2,7 @@
 import * as XLSX from "xlsx";
 import { AttendanceReport } from "./types";
 import { ExportOptions } from "@/hooks/use-attendance-uploader";
-import { createEmployeeDeclarationSheet } from "./excel/employeeDeclarationBuilder";
+import { createSimpleDeclarationSheet } from "./excel/simpleDeclarationBuilder";
 import { generatePdfForEmployee, generateAndDownloadPdf } from "./pdf/pdfGenerator";
 import { registerEmployeeExport } from "./storage/exportStorage";
 import { sendDeclarationsViaEmail } from "./email/emailExporter";
@@ -61,8 +61,8 @@ export const exportEmployeeDeclarations = async (
     
     // Process each employee
     for (const employeeReport of filteredReports) {
-      // Create the declaration sheet for this employee
-      const sheet = createEmployeeDeclarationSheet(
+      // Create the declaration sheet for this employee using the new simpler approach
+      const sheet = createSimpleDeclarationSheet(
         employeeReport,
         reportData.month.toUpperCase(),
         reportData.year,
@@ -122,7 +122,7 @@ export const exportEmployeeDeclarations = async (
 };
 
 // Export other functions
-export { createEmployeeDeclarationSheet } from "./excel/employeeDeclarationBuilder";
+export { createSimpleDeclarationSheet } from "./excel/simpleDeclarationBuilder";
 export { generatePdfForEmployee } from "./pdf/pdfGenerator";
 export { registerEmployeeExport } from "./storage/exportStorage";
 export { sendDeclarationsViaEmail } from "./email/emailExporter";
