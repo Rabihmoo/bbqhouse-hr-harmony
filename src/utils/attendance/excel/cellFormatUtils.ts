@@ -1,4 +1,3 @@
-
 import * as XLSX from "xlsx";
 
 /**
@@ -23,6 +22,9 @@ export const applyCellTextFormatting = (
     indent: 1, // Add some indent for better text display
     readingOrder: 2 // Left-to-right reading order
   };
+  
+  // Force text format for better display
+  ws[cellAddress].z = '@';
 };
 
 /**
@@ -105,12 +107,16 @@ export const applyParagraphFormatting = (
   if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
   
   // For Excel, we need to use \r\n for line breaks
-  // First convert any existing line breaks
+  // Convert any existing line breaks
   const formattedText = text.replace(/\n/g, '\r\n');
   
   // Set the cell value
   ws[cellAddress].v = formattedText;
   ws[cellAddress].t = 's';
+  
+  // Add HTML-formatted version to help with wrapping
+  ws[cellAddress].h = formattedText.replace(/\r\n/g, '<br>');
+  ws[cellAddress].w = formattedText;
   
   // Apply styling with explicit alignment settings
   if (!ws[cellAddress].s) ws[cellAddress].s = {};

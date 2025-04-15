@@ -22,15 +22,15 @@ export const applyFinalFormatting = (
   }
 ): void => {
   // Set column widths (Name, Date, Clock In, Clock Out, Work Time, Extra Hours)
-  // Using more reasonable column widths for better text display
-  setColumnWidths(ws, [40, 15, 15, 15, 15, 15]);
+  // Make first column extra wide to improve wrapping
+  setColumnWidths(ws, [50, 15, 15, 15, 15, 15]);
   
-  // Set row heights with more reasonable values
+  // Set row heights with much larger values for declaration text row
   const rowHeights: { [key: number]: number } = {
-    [rowIndices.declarationRow]: 30,     // Title row
-    [rowIndices.declarationRow + 1]: 300, // Declaration text - significantly increased height to fit all text
-    [rowIndices.spacerRow]: 20,         // Spacer row
-    [rowIndices.headerRow]: 25,         // Headers
+    [rowIndices.declarationRow]: 40,      // Title row - slightly taller
+    [rowIndices.declarationRow + 1]: 400, // Declaration text - extremely increased height
+    [rowIndices.spacerRow]: 20,           // Spacer row
+    [rowIndices.headerRow]: 25,           // Headers
   };
   
   // Standard height for data rows - more reasonable height
@@ -44,29 +44,14 @@ export const applyFinalFormatting = (
   
   if (rowIndices.signatureTextRow !== undefined && rowIndices.signatureLineRow !== undefined) {
     rowHeights[rowIndices.workingDaysRow + 1] = 20;   // Empty row
-    rowHeights[rowIndices.signatureTextRow] = 90;     // Signature text - increased height
+    rowHeights[rowIndices.signatureTextRow] = 100;    // Signature text - increased height
     rowHeights[rowIndices.signatureLineRow] = 30;     // Signature line
   }
   
   setRowHeights(ws, rowHeights);
   
-  // Add the standard merges
-  const standardMerges = [
-    // Declaration title across all columns
-    { s: { r: rowIndices.declarationRow, c: 0 }, e: { r: rowIndices.declarationRow, c: 5 } },
-    
-    // Declaration text across all columns
-    { s: { r: rowIndices.declarationRow + 1, c: 0 }, e: { r: rowIndices.declarationRow + 1, c: 5 } },
-    
-    // Totals label across four columns
-    { s: { r: rowIndices.totalsRow, c: 0 }, e: { r: rowIndices.totalsRow, c: 3 } },
-    
-    // Working days label across four columns
-    { s: { r: rowIndices.workingDaysRow, c: 0 }, e: { r: rowIndices.workingDaysRow, c: 3 } }
-  ];
-  
-  // Combine all merges
-  const allMerges = [...standardMerges, ...merges];
+  // Combine all merges and ensure the declaration text spans all columns
+  const allMerges = [...merges];
   
   // Set all merges
   setMergedCells(ws, allMerges);

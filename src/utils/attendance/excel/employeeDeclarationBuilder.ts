@@ -72,14 +72,23 @@ export const createEmployeeDeclarationSheet = (
   const lastRow = includeSignature ? rowIndices.signatureLineRow : rowIndices.workingDaysRow;
   applyFinalFormatting(ws, merges, lastRow, rowIndices);
   
-  // Make sure all columns automatically adjust to the data
-  ws['!cols'] = ws['!cols'] || [];
-  for (let i = 0; i < 6; i++) {
-    ws['!cols'][i] = {
-      wch: i === 0 ? 40 : 15, // Column A is wider for the declaration text
-      hidden: false
-    };
+  // Make sure all columns automatically adjust to the data with better widths
+  ws['!cols'] = [];
+  ws['!cols'][0] = { wch: 50, hidden: false }; // Much wider for column A (declaration text)
+  for (let i = 1; i < 6; i++) {
+    ws['!cols'][i] = { wch: 15, hidden: false }; // Standard width for other columns
   }
+  
+  // Ensure very large row height for the declaration text row
+  if (!ws['!rows']) ws['!rows'] = [];
+  ws['!rows'][rowIndices.declarationRow + 1] = { hpt: 400, hidden: false };
+  
+  // Explicitly set content type for reliable rendering
+  Object.keys(ws).forEach(cell => {
+    if (cell[0] !== '!' && ws[cell] && !ws[cell].z) {
+      ws[cell].z = '@';
+    }
+  });
   
   // Ensure no protection is set
   delete ws['!protect'];

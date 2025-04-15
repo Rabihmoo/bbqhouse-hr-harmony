@@ -24,12 +24,22 @@ export const setDeclarationContent = (
     alignment: 'center'
   });
   
+  // Explicitly set merged cells for title
+  if (!ws['!merges']) ws['!merges'] = [];
+  ws['!merges'].push({ s: { r: declarationRow, c: 0 }, e: { r: declarationRow, c: 5 } });
+  
   // Set declaration text in cell A2 with enhanced wrapping and center alignment
   const textCell = XLSX.utils.encode_cell({ r: declarationRow + 1, c: 0 });
-  ws[textCell] = { t: 's', v: declarationText };
   
-  // Apply special formatting to ensure text wrapping works correctly
-  // Use more explicit styling to force text wrapping
+  // Create cell with rich text type to help with wrapping
+  ws[textCell] = { 
+    t: 's', 
+    v: declarationText,
+    h: declarationText.replace(/\n/g, '<br>'),  // HTML formatted text
+    w: declarationText  // Formatted text for display
+  };
+  
+  // Apply super explicit styling for text wrapping
   ws[textCell].s = {
     alignment: {
       wrapText: true,
@@ -53,6 +63,9 @@ export const setDeclarationContent = (
   
   // Set explicit text format to ensure proper wrapping
   ws[textCell].z = '@';
+  
+  // Explicitly set merged cells for declaration text
+  ws['!merges'].push({ s: { r: declarationRow + 1, c: 0 }, e: { r: declarationRow + 1, c: 5 } });
   
   // Add headers row in row 3
   const headers = ["Name", "Date", "Clock In", "Clock Out", "Work Time", "EXTRA HOURS"];
