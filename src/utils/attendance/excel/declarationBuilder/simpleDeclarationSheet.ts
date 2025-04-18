@@ -40,9 +40,9 @@ export const createSimpleDeclarationSheet = (
   // Process FOLGA entries to add merges for them
   addFolgaMerges(ws, employeeReport.attendanceRecords.length);
   
-  // Set column widths with better distribution
+  // Set column widths with better distribution for text wrapping
   ws["!cols"] = [
-    { wch: 40 }, // Name (A) - wider for text
+    { wch: 50 }, // Name (A) - wider for text
     { wch: 15 }, // Date (B)
     { wch: 15 }, // Clock In (C)
     { wch: 15 }, // Clock Out (D)
@@ -50,11 +50,11 @@ export const createSimpleDeclarationSheet = (
     { wch: 15 }  // Extra Hours (F)
   ];
   
-  // Set row heights with dramatically increased height for declaration text
+  // Set row heights - but focus on declaration text row height
   ws["!rows"] = [];
   
-  // Declaration text needs MUCH more height - significantly increased
-  ws["!rows"][1] = { hpt: 1000 }; // Declaration text (1000 points tall - dramatically increased)
+  // Declaration text needs appropriate height - not too much, not too little
+  ws["!rows"][1] = { hpt: 300 }; // Declaration text with reasonable height for wrapped text
   
   // Apply enhanced styles with better text wrapping
   applyDeclarationStyles(ws, employeeReport.attendanceRecords.length + 10);

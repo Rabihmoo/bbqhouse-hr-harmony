@@ -8,33 +8,39 @@ export const applyDeclarationTextStyle = (
   ws: XLSX.WorkSheet,
   cellAddress: string
 ): void => {
-  // Create or ensure Excel's rich text for better rendering
+  // Create or ensure cell has string type for better rendering
+  if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
   ws[cellAddress].t = 's';
   
+  // If the cell has text content, apply HTML formatting for proper wrapping
   if (ws[cellAddress].v && typeof ws[cellAddress].v === 'string') {
+    // Add HTML-formatted version to improve wrapping in some Excel versions
     ws[cellAddress].h = ws[cellAddress].v.replace(/\n/g, '<br>');
+    
+    // Add rich text format for better rendering in Excel
     ws[cellAddress].r = [{
       t: ws[cellAddress].v,
       s: {
         font: { name: "Calibri", sz: 11 },
         alignment: { 
-          wrapText: true, 
+          wrapText: true,
           vertical: "top", 
-          horizontal: "center", 
+          horizontal: "left", 
           indent: 1 
         }
       }
     }];
   }
   
+  // Apply comprehensive styling for the declaration text cell
   ws[cellAddress].s = {
     alignment: {
-      wrapText: true,
-      vertical: "top",
-      horizontal: "center",
-      indent: 1,
-      readingOrder: 2,
-      shrinkToFit: false
+      wrapText: true,        // Critical for text wrapping
+      vertical: "top",        // Align to top for better text flow
+      horizontal: "left",     // Left align for better readability
+      indent: 1,              // Slight indent
+      readingOrder: 2,        // Left-to-right reading
+      shrinkToFit: false      // Prevent text shrinking
     },
     font: {
       name: "Calibri",
@@ -48,6 +54,7 @@ export const applyDeclarationTextStyle = (
     }
   };
   
+  // Set format to text for proper display
   ws[cellAddress].z = '@';
 };
 
