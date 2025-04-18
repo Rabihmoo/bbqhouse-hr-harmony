@@ -85,4 +85,3 @@ export const applySignatureStyle = (
     bold: true
   };
 };
-
