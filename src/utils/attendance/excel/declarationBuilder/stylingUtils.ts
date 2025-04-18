@@ -34,6 +34,18 @@ export const applyDeclarationStyles = (
       if (r === 0) {
         applyTitleStyle(ws, cellAddress);
       } else if (r === 1) {
+        // Special handling for row 2 (index 1) to ensure full row wrapping
+        if (c <= 5) {
+          // Ensure text wrapping for entire row 2
+          if (!ws[cellAddress].s) ws[cellAddress].s = {};
+          ws[cellAddress].s.alignment = {
+            wrapText: true,
+            vertical: 'top',
+            horizontal: 'left',
+            indent: 1,
+            readingOrder: 2
+          };
+        }
         applyDeclarationTextStyle(ws, cellAddress);
       } else if (r === 3) {
         applyHeaderStyle(ws, cellAddress);
@@ -53,4 +65,3 @@ export const applyDeclarationStyles = (
     }
   }
 };
-
