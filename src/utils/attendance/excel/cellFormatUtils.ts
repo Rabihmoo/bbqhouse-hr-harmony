@@ -1,3 +1,4 @@
+
 import * as XLSX from "xlsx";
 
 /**
@@ -106,41 +107,40 @@ export const applyParagraphFormatting = (
   // Ensure the cell exists
   if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
   
-  // For Excel, we need to use \r\n for line breaks
-  // Convert any existing line breaks
-  const formattedText = text.replace(/\n/g, '\r\n');
-  
-  // Set the cell value
-  ws[cellAddress].v = formattedText;
+  // Set the cell value as a string
+  ws[cellAddress].v = text;
   ws[cellAddress].t = 's';
   
   // Add HTML-formatted version to help with wrapping
-  ws[cellAddress].h = formattedText.replace(/\r\n/g, '<br>');
-  ws[cellAddress].w = formattedText;
+  ws[cellAddress].h = text.replace(/\n/g, '<br>');
+  
+  // Create rich text array for better text handling
+  ws[cellAddress].r = [{
+    t: text,
+    s: {
+      font: {
+        name: 'Calibri',
+        sz: options?.fontSize || 11,
+        bold: options?.bold ?? false,
+        italic: options?.italic ?? false,
+        color: { rgb: '000000' }
+      }
+    }
+  }];
   
   // Apply styling with explicit alignment settings
   if (!ws[cellAddress].s) ws[cellAddress].s = {};
   
-  // Setup explicit wrapping configuration with better settings
+  // Setup explicit wrapping configuration
   ws[cellAddress].s.alignment = {
     wrapText: true,
     vertical: 'center',
-    horizontal: options?.alignment || 'center', // Default to center alignment
-    indent: 1, // Add indent for better text presentation
-    readingOrder: 2 // Left-to-right reading order
+    horizontal: options?.alignment || 'center',
+    indent: 1,
+    readingOrder: 2
   };
   
-  // Apply font styling if provided
-  ws[cellAddress].s.font = {
-    ...(ws[cellAddress].s.font || {}),
-    bold: options?.bold ?? false,
-    italic: options?.italic ?? false,
-    sz: options?.fontSize || 11,
-    name: 'Calibri',
-    color: { rgb: '000000' } // Make sure text is black for better visibility
-  };
-  
-  // Add borders to help with cell definition
+  // Apply borders
   ws[cellAddress].s.border = {
     top: { style: 'thin', color: { auto: 1 } },
     bottom: { style: 'thin', color: { auto: 1 } },
@@ -148,7 +148,7 @@ export const applyParagraphFormatting = (
     right: { style: 'thin', color: { auto: 1 } }
   };
   
-  // Make sure to explicitly set format to allow proper text rendering and force wrap
+  // Explicitly set format to allow proper text rendering
   ws[cellAddress].z = '@';
 }
 
@@ -177,4 +177,7 @@ export const applyFolgaCellFormatting = (
     bold: true,
     size: 12
   });
+  
+  // Add yellow background
+  applyCellFill(ws, cellAddress, "FEF7CD");
 };

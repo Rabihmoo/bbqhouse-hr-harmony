@@ -84,34 +84,59 @@ const applyTitleStyle = (
 };
 
 /**
- * Apply declaration text style with enhanced wrapping
+ * Apply declaration text style with significantly enhanced wrapping
  */
 const applyDeclarationTextStyle = (
   ws: XLSX.WorkSheet,
   cellAddress: string
 ): void => {
-  ws[cellAddress].s.alignment = {
-    wrapText: true,         // Force text wrapping
-    vertical: "top",        
-    horizontal: "left",
-    indent: 1,              // Add left indent
-    readingOrder: 2         // Left-to-right reading
+  // Create or ensure Excel's rich text for better rendering
+  ws[cellAddress].t = 's'; // Force string type
+  
+  // Convert any newlines to Excel-friendly format
+  if (ws[cellAddress].v && typeof ws[cellAddress].v === 'string') {
+    // Create both HTML and plain text versions for better compatibility
+    ws[cellAddress].h = ws[cellAddress].v.replace(/\n/g, '<br>');
+    
+    // Force Excel to recognize this as rich text with wrapping
+    ws[cellAddress].r = [{
+      t: ws[cellAddress].v,
+      s: {
+        font: { name: "Calibri", sz: 11 },
+        alignment: { 
+          wrapText: true, 
+          vertical: "top", 
+          horizontal: "left", 
+          indent: 1 
+        }
+      }
+    }];
+  }
+  
+  // Apply explicit styling with maximum wrap text settings
+  ws[cellAddress].s = {
+    alignment: {
+      wrapText: true,
+      vertical: "top",
+      horizontal: "left",
+      indent: 1,
+      readingOrder: 2,
+      shrinkToFit: false
+    },
+    font: {
+      name: "Calibri",
+      sz: 11
+    },
+    border: {
+      top: { style: "thin", color: { auto: 1 } },
+      bottom: { style: "thin", color: { auto: 1 } },
+      left: { style: "thin", color: { auto: 1 } },
+      right: { style: "thin", color: { auto: 1 } }
+    }
   };
   
-  // Critical: set cell format to text
-  ws[cellAddress].z = "@";
-  
-  // Enhanced text formatting for Excel to recognize wrapping
-  if (ws[cellAddress].v) {
-    // Add HTML formatted version to help with text display
-    ws[cellAddress].h = ws[cellAddress].v.toString().replace(/\n/g, '<br>').replace(/\r\n/g, '<br>');
-    
-    // Make sure it's recognized as a string
-    ws[cellAddress].t = 's';
-    
-    // Create a formatted text version for display
-    ws[cellAddress].w = ws[cellAddress].v.toString();
-  }
+  // Force text format
+  ws[cellAddress].z = '@';
 };
 
 /**

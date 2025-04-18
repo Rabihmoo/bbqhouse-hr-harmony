@@ -4,7 +4,7 @@ import { EmployeeReport } from "../../types";
 import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "../../declarationGenerator";
 import { prepareWorksheetContent } from "./contentPreparation";
 import { applyDeclarationStyles } from "./stylingUtils";
-import { applySpecialMerges } from "./mergeUtils";
+import { applySpecialMerges, addFolgaMerges } from "./mergeUtils";
 
 /**
  * Creates a simple employee declaration sheet with reliable text wrapping
@@ -38,7 +38,10 @@ export const createSimpleDeclarationSheet = (
   // Apply merges to worksheet
   ws["!merges"] = merges;
   
-  // Set column widths
+  // Process FOLGA entries to add merges for them
+  addFolgaMerges(ws, employeeReport.attendanceRecords.length);
+  
+  // Set column widths with better distribution
   ws["!cols"] = [
     { wch: 40 }, // Name (A) - wider for text
     { wch: 15 }, // Date (B)
@@ -48,11 +51,11 @@ export const createSimpleDeclarationSheet = (
     { wch: 15 }  // Extra Hours (F)
   ];
   
-  // Set row heights with much more height for declaration text
+  // Set row heights with dramatically increased height for declaration text
   ws["!rows"] = [];
   
-  // Declaration text needs much more height - significantly increased
-  ws["!rows"][1] = { hpt: 500 }; // Declaration text (500 points tall - significantly increased)
+  // Declaration text needs MUCH more height - significantly increased
+  ws["!rows"][1] = { hpt: 700 }; // Declaration text (700 points tall - dramatically increased)
   
   // Apply enhanced styles with better text wrapping
   applyDeclarationStyles(ws, employeeReport.attendanceRecords.length + 10);
@@ -63,6 +66,9 @@ export const createSimpleDeclarationSheet = (
     { r: 0, c: 0 },
     { r: lastRow, c: 5 }
   );
+  
+  // Force the first row to be visible with proper height
+  if (!ws['!rows'][0]) ws['!rows'][0] = { hpt: 30 };
   
   return ws;
 };

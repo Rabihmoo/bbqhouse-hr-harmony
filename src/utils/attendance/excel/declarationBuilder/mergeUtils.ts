@@ -13,7 +13,7 @@ export const applySpecialMerges = (
     // Title row
     { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
     
-    // Declaration text
+    // Declaration text - spanning all columns for better text wrapping
     { s: { r: 1, c: 0 }, e: { r: 1, c: 5 } },
     
     // Total hours label

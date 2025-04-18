@@ -2,11 +2,12 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Download, Printer } from "lucide-react";
+import { Download, FileSpreadsheet, Printer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AttendanceReport } from "@/utils/attendanceProcessor";
 import { DeclarationText } from "./DeclarationText";
 import { generateAndDownloadPdf } from "@/utils/attendance/pdf/pdfGenerator";
+import { exportEmployeeDeclaration } from "@/utils/attendance/exportDeclarations";
 
 interface IndividualReportContentProps {
   reportData: AttendanceReport;
@@ -42,6 +43,29 @@ export function IndividualReportContent({
     
     if (selectedEmployeeReport) {
       generateAndDownloadPdf(selectedEmployeeReport, month, year);
+    } else {
+      toast({
+        title: "Export failed",
+        description: "Employee data not found.",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleExportExcel = () => {
+    // Get the selected employee report
+    const selectedEmployeeReport = reportData.employeeReports.find(
+      report => report.employeeId === selectedEmployee
+    );
+    
+    if (selectedEmployeeReport) {
+      // Export to Excel with proper formatting
+      exportEmployeeDeclaration(selectedEmployeeReport, month, year);
+      
+      toast({
+        title: "Excel Export Successful",
+        description: "The declaration has been exported to Excel format.",
+      });
     } else {
       toast({
         title: "Export failed",
@@ -95,6 +119,10 @@ export function IndividualReportContent({
             <Button variant="outline" onClick={handlePrintDeclaration}>
               <Printer className="h-4 w-4 mr-2" />
               Print
+            </Button>
+            <Button variant="outline" onClick={handleExportExcel}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Export as Excel
             </Button>
             <Button onClick={handleExportIndividual}>
               <Download className="h-4 w-4 mr-2" />

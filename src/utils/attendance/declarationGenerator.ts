@@ -9,17 +9,8 @@ export const generateDeclarationText = (
   month: string,
   year: string
 ): string => {
-  // Using explicit line breaks with \n for better control
-  return `Eu, ${name}, portador(a) do documento de identificação ${biNumber} e funcionário(a) da empresa ${company},\n`
-    + `venho por meio deste documento declarar o meu consentimento e aceitação para\n`
-    + `realizar horas extras de trabalho de acordo com as condições e termos\n`
-    + `estabelecidos pela legislação vigente e pela política interna da empresa.\n`
-    + `Entendo que a necessidade de laborar horas extras pode surgir devido a\n`
-    + `circunstâncias excepcionais e/ou necessidades operacionais da empresa.\n`
-    + `Estou ciente de que serei compensado(a) adequadamente pelas horas extras\n`
-    + `trabalhadas de acordo com as regras e regulamentos aplicáveis.\n`
-    + `A tabela a seguir detalha as horas extras a serem trabalhadas durante o\n`
-    + `mês de ${month} de ${year}:`;
+  // Creating a well-formatted declaration with explicit formatting for Excel
+  return `Eu, ${name}, portador(a) do documento de identificação ${biNumber} e funcionário(a) da empresa ${company}, venho por meio deste documento declarar o meu consentimento e aceitação para realizar horas extras de trabalho de acordo com as condições e termos estabelecidos pela legislação vigente e pela política interna da empresa. Entendo que a necessidade de laborar horas extras pode surgir devido a circunstâncias excepcionais e/ou necessidades operacionais da empresa. Estou ciente de que serei compensado(a) adequadamente pelas horas extras trabalhadas de acordo com as regras e regulamentos aplicáveis. A tabela a seguir detalha as horas extras a serem trabalhadas durante o mês de ${month} de ${year}:`;
 };
 
 // Function to generate signature text
