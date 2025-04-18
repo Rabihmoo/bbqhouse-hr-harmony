@@ -1,4 +1,3 @@
-
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AttendanceReport } from "@/utils/attendanceProcessor";
 import { DeclarationText } from "./DeclarationText";
 import { generateAndDownloadPdf } from "@/utils/attendance/pdf/pdfGenerator";
-import { exportEmployeeDeclaration } from "@/utils/attendance/exportDeclarations";
+import { exportEmployeeDeclarations } from "@/utils/attendance/exportDeclarations";
 
 interface IndividualReportContentProps {
   reportData: AttendanceReport;
@@ -60,7 +59,19 @@ export function IndividualReportContent({
     
     if (selectedEmployeeReport) {
       // Export to Excel with proper formatting
-      exportEmployeeDeclaration(selectedEmployeeReport, month, year);
+      exportEmployeeDeclarations(
+        { 
+          ...reportData, 
+          employeeReports: [selectedEmployeeReport] 
+        }, 
+        { 
+          filters: { 
+            employees: [selectedEmployee] 
+          },
+          format: 'excel',
+          includeSignature: true
+        }
+      );
       
       toast({
         title: "Excel Export Successful",
