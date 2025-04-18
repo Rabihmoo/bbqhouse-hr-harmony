@@ -1,3 +1,4 @@
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -69,7 +70,8 @@ export function IndividualReportContent({
             employees: [selectedEmployee] 
           },
           format: 'excel',
-          includeSignature: true
+          includeSignature: true,
+          sendEmail: false // Add the missing required property
         }
       );
       
