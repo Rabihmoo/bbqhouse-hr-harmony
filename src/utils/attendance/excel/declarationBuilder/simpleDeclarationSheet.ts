@@ -1,7 +1,6 @@
 
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../../types";
-import { generateDeclarationText, generateSignatureText, getFormattedSignatureDate } from "../../declarationGenerator";
 import { prepareWorksheetContent } from "./contentPreparation";
 import { applyDeclarationStyles } from "./stylingUtils";
 import { applySpecialMerges, addFolgaMerges } from "./mergeUtils";
@@ -55,7 +54,7 @@ export const createSimpleDeclarationSheet = (
   ws["!rows"] = [];
   
   // Declaration text needs MUCH more height - significantly increased
-  ws["!rows"][1] = { hpt: 700 }; // Declaration text (700 points tall - dramatically increased)
+  ws["!rows"][1] = { hpt: 1000 }; // Declaration text (1000 points tall - dramatically increased)
   
   // Apply enhanced styles with better text wrapping
   applyDeclarationStyles(ws, employeeReport.attendanceRecords.length + 10);

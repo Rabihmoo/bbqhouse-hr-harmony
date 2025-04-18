@@ -67,11 +67,14 @@ export function IndividualReportContent({
         }, 
         { 
           filters: { 
-            employees: [selectedEmployee] 
+            employees: [selectedEmployee],
+            department: undefined,
+            branch: undefined,
+            status: 'active'
           },
           format: 'excel',
           includeSignature: true,
-          sendEmail: false // Add the missing required property
+          sendEmail: false
         }
       );
       

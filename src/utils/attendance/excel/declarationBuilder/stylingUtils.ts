@@ -106,7 +106,7 @@ const applyDeclarationTextStyle = (
         alignment: { 
           wrapText: true, 
           vertical: "top", 
-          horizontal: "left", 
+          horizontal: "center", 
           indent: 1 
         }
       }
@@ -118,7 +118,7 @@ const applyDeclarationTextStyle = (
     alignment: {
       wrapText: true,
       vertical: "top",
-      horizontal: "left",
+      horizontal: "center",
       indent: 1,
       readingOrder: 2,
       shrinkToFit: false

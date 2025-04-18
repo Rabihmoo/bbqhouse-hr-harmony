@@ -26,10 +26,8 @@ export const prepareWorksheetContent = (
     year
   );
   
-  // Format declaration text with explicit line breaks for Excel
-  // Using multiple cells (cell per line) to force better wrapping behavior
-  const formattedDeclarationText = declarationText;
-  content[1] = [formattedDeclarationText, "", "", "", "", ""];
+  // Format declaration text for Excel (will be styled for wrapping)
+  content[1] = [declarationText, "", "", "", "", ""];
   
   // Add empty rows to ensure spacing
   content[2] = ["", "", "", "", "", ""];
