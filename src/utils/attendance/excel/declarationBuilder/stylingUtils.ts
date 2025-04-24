@@ -41,7 +41,7 @@ export const applyDeclarationStyles = (
         // Apply automatic text wrapping to all cells in row 2
         ws[cellAddress].s.alignment = {
           wrapText: true,
-          vertical: 'center',
+          vertical: 'top',
           horizontal: 'left',
           indent: 1
         };
@@ -71,4 +71,3 @@ export const applyDeclarationStyles = (
     }
   }
 };
-
