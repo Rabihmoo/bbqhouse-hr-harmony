@@ -35,8 +35,20 @@ export const setDeclarationContent = (
   ws[textCell] = { 
     t: 's', 
     v: declarationText,
-    h: declarationText.replace(/\n/g, '<br>'),  // HTML formatted text
+    h: declarationText.replace(/\n/g, '<br>'),  // HTML formatted text for better wrapping
   };
+  
+  // Add rich text format for better text wrapping in Excel
+  ws[textCell].r = [{
+    t: declarationText,
+    s: {
+      font: {
+        name: 'Calibri',
+        sz: 11,
+        color: { rgb: '000000' }
+      }
+    }
+  }];
   
   // Explicitly set top-left alignment with forced text wrapping
   ws[textCell].s = {
@@ -44,7 +56,8 @@ export const setDeclarationContent = (
       wrapText: true,
       vertical: 'top',
       horizontal: 'left',
-      indent: 1
+      indent: 1,
+      readingOrder: 2   // Left-to-right reading
     },
     font: {
       name: 'Calibri',
@@ -61,6 +74,36 @@ export const setDeclarationContent = (
   
   // Force text format to ensure proper text handling
   ws[textCell].z = '@';
+  
+  // Apply wrapping to ALL cells in row 2
+  for (let i = 1; i <= 5; i++) {
+    const otherCellAddress = XLSX.utils.encode_cell({ r: declarationRow + 1, c: i });
+    if (!ws[otherCellAddress]) {
+      ws[otherCellAddress] = { t: 's', v: '' };
+    }
+    
+    // Apply same wrapping settings to all cells in row 2
+    ws[otherCellAddress].s = {
+      alignment: {
+        wrapText: true,
+        vertical: 'top',
+        horizontal: 'left',
+        indent: 1
+      },
+      font: {
+        name: 'Calibri',
+        sz: 11
+      },
+      border: {
+        top: { style: 'thin', color: { auto: 1 } },
+        bottom: { style: 'thin', color: { auto: 1 } },
+        left: { style: 'thin', color: { auto: 1 } },
+        right: { style: 'thin', color: { auto: 1 } }
+      }
+    };
+    
+    ws[otherCellAddress].z = '@';
+  }
   
   // Explicitly set merged cells for declaration text
   ws['!merges'].push({ s: { r: declarationRow + 1, c: 0 }, e: { r: declarationRow + 1, c: 5 } });

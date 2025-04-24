@@ -81,7 +81,7 @@ export const applyTimeFormatting = (
 
 /**
  * Apply comprehensive formatting to all cells in a worksheet
- * Enhanced with better text wrapping support
+ * Enhanced with better text wrapping support but without changing row heights
  */
 export const applyFormattingToAllCells = (
   ws: XLSX.WorkSheet,
@@ -154,39 +154,40 @@ export const applyFormattingToAllCells = (
     }
   }
   
-  // Specifically apply text wrapping to row 2
+  // Specifically apply text wrapping to row 2 without changing height
   applyRow2Formatting(ws);
   
-  // Make special adjustments for declaration text in row 1
-  if (ws['A1']) {
-    applyCellTextFormatting(ws, 'A1', {
-      wrapText: true,
-      horizontal: 'center',
-      vertical: 'center'
-    });
-  }
-  
-  // Make special adjustments for main declaration text in row 1
+  // Special wrapping for declaration text in row 1 column A
   if (ws['A2']) {
     applyCellTextFormatting(ws, 'A2', {
       wrapText: true,
-      horizontal: 'center',
-      vertical: 'center'
+      horizontal: 'left',
+      vertical: 'top'
     });
     // Force text format type
     ws['A2'].z = '@';
+    
+    // Add HTML formatting for better wrapping
+    if (ws['A2'].v && typeof ws['A2'].v === 'string') {
+      ws['A2'].h = ws['A2'].v.replace(/\n/g, '<br>');
+      
+      // Add rich text format
+      ws['A2'].r = [{
+        t: ws['A2'].v,
+        s: { font: { name: "Calibri", sz: 11 } }
+      }];
+    }
   }
   
-  // Ensure time formatting for work time column
-  ensureTimeFormatting(ws, 'E4', 'E34');
-};
-
-/**
- * Add autofilter to a specified range
- */
-export const addAutoFilter = (
-  ws: XLSX.WorkSheet,
-  range: string
-): void => {
-  ws['!autofilter'] = { ref: range };
+  // Apply similar wrapping to all cells in row 2
+  for (let c = 0; c <= 5; c++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: 1, c });
+    if (!ws[cellAddress]) continue;
+    
+    applyCellTextFormatting(ws, cellAddress, {
+      wrapText: true,
+      vertical: 'top',
+      horizontal: 'left'
+    });
+  }
 };

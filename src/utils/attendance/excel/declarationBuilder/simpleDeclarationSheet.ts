@@ -50,14 +50,15 @@ export const createSimpleDeclarationSheet = (
     { wch: 15 }  // Extra Hours (F)
   ];
   
-  // Set row heights - especially for declaration text row
+  // Set row heights - normal height for all rows
   ws["!rows"] = [];
   
-  // Declaration title row
+  // Declaration title row - normal height
   ws["!rows"][0] = { hpt: 30 };
   
-  // Declaration text needs much more height to properly show all content
-  ws["!rows"][1] = { hpt: 250 }; // Significantly increased height for better text display
+  // Only apply the wrapping style without changing the height
+  // Declaration text - using normal height but ensuring text wrapping works
+  ws["!rows"][1] = { hpt: 30 }; 
   
   // Apply enhanced styles with better text wrapping
   applyDeclarationStyles(ws, employeeReport.attendanceRecords.length + 10);

@@ -34,27 +34,25 @@ export const applyDeclarationStyles = (
       if (r === 0) {
         applyTitleStyle(ws, cellAddress);
       } else if (r === 1) {
-        // Explicit declaration text row formatting
-        // Ensure cell exists
-        if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
-        
-        // Apply text wrapping to ALL cells in row 2 (index 1)
+        // Force text wrapping for EVERY cell in row 2 (index 1)
         if (!ws[cellAddress].s) ws[cellAddress].s = {};
         
-        // Force text wrapping for EVERY cell in row 2
         ws[cellAddress].s.alignment = {
           wrapText: true,
-          vertical: 'top',      // Top alignment is crucial
+          vertical: 'top',
           horizontal: 'left',
           indent: 1
         };
         
-        // Force text format
+        // Force text format for all cells in row 2
         ws[cellAddress].z = '@';
         
-        // Special formatting for declaration text in column A
-        if (c === 0) {
-          applyDeclarationTextStyle(ws, cellAddress);
+        // Convert any text content to rich text format for better wrapping
+        if (ws[cellAddress].v && typeof ws[cellAddress].v === 'string') {
+          ws[cellAddress].r = [{
+            t: ws[cellAddress].v,
+            s: { font: { name: "Calibri", sz: 11 } }
+          }];
         }
       } else if (r === 3) {
         applyHeaderStyle(ws, cellAddress);

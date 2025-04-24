@@ -2,7 +2,7 @@
 import * as XLSX from "xlsx";
 
 /**
- * Apply declaration text style with enhanced wrapping
+ * Apply declaration text style with enhanced wrapping - without increasing height
  */
 export const applyDeclarationTextStyle = (
   ws: XLSX.WorkSheet,
@@ -14,18 +14,25 @@ export const applyDeclarationTextStyle = (
   
   // If the cell has text content, apply HTML formatting for proper wrapping
   if (ws[cellAddress].v && typeof ws[cellAddress].v === 'string') {
-    // Add HTML-formatted version to improve wrapping in some Excel versions
+    // Add HTML-formatted version with explicit line breaks
     ws[cellAddress].h = ws[cellAddress].v.replace(/\n/g, '<br>');
+    
+    // Add rich text format for better rendering in Excel
+    ws[cellAddress].r = [{
+      t: ws[cellAddress].v,
+      s: {
+        font: { name: "Calibri", sz: 11 }
+      }
+    }];
   }
   
-  // Apply comprehensive styling for the declaration text cell
+  // Apply styling for the declaration text cell - focus on wrapping only
   ws[cellAddress].s = {
     alignment: {
       wrapText: true,        // Critical for text wrapping
-      vertical: "top",        // Align to top for declaration text
-      horizontal: "left",     // Left align for better readability
-      indent: 1,              // Slight indent
-      shrinkToFit: false      // Prevent text shrinking
+      vertical: "top",       // Align to top for text visibility
+      horizontal: "left",    // Left align for readability
+      indent: 1              // Slight indent
     },
     font: {
       name: "Calibri",

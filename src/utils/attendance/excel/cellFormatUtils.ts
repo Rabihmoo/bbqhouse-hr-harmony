@@ -182,7 +182,8 @@ export const applyFolgaCellFormatting = (
 };
 
 /**
- * Specifically formats all cells in row 2 with consistent wrap text
+ * Specifically formats all cells in row 2 with consistent wrap text settings
+ * Without increasing row height - just enables text wrapping for all cells
  */
 export const applyRow2Formatting = (
   ws: XLSX.WorkSheet
@@ -194,11 +195,21 @@ export const applyRow2Formatting = (
     // Create the cell if it doesn't exist
     if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
     
-    // Apply consistent text wrapping
-    applyCellTextFormatting(ws, cellAddress, {
-      wrapText: true,
-      vertical: 'top',
-      horizontal: 'left'
-    });
+    // Apply consistent text wrapping without affecting height
+    if (!ws[cellAddress].s) ws[cellAddress].s = {};
+    ws[cellAddress].s.alignment = {
+      wrapText: true,        // Critical for text wrapping
+      vertical: 'top',       // Align to top for better text flow
+      horizontal: 'left',    // Left align for better readability
+      indent: 1              // Small indent
+    };
+    
+    // Force text format for better text display
+    ws[cellAddress].z = '@';
+    
+    // Add HTML formatting for any text content
+    if (ws[cellAddress].v && typeof ws[cellAddress].v === 'string') {
+      ws[cellAddress].h = ws[cellAddress].v.replace(/\n/g, '<br>');
+    }
   }
 };
