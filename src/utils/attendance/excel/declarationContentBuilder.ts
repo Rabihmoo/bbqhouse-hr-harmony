@@ -28,25 +28,23 @@ export const setDeclarationContent = (
   if (!ws['!merges']) ws['!merges'] = [];
   ws['!merges'].push({ s: { r: declarationRow, c: 0 }, e: { r: declarationRow, c: 5 } });
   
-  // Set declaration text in cell A2 with enhanced wrapping and center alignment
+  // Set declaration text in cell A2 with enhanced wrapping and top-left alignment
   const textCell = XLSX.utils.encode_cell({ r: declarationRow + 1, c: 0 });
   
-  // Create cell with rich text type to help with wrapping
+  // Create cell with explicit text formatting for better wrapping
   ws[textCell] = { 
     t: 's', 
     v: declarationText,
     h: declarationText.replace(/\n/g, '<br>'),  // HTML formatted text
-    w: declarationText  // Formatted text for display
   };
   
-  // Apply super explicit styling for text wrapping
+  // Explicitly set top-left alignment with forced text wrapping
   ws[textCell].s = {
     alignment: {
       wrapText: true,
-      vertical: 'center',
-      horizontal: 'center',
-      indent: 1,
-      readingOrder: 2  // Left-to-right reading order
+      vertical: 'top',
+      horizontal: 'left',
+      indent: 1
     },
     font: {
       name: 'Calibri',
@@ -61,7 +59,7 @@ export const setDeclarationContent = (
     }
   };
   
-  // Set explicit text format to ensure proper wrapping
+  // Force text format to ensure proper text handling
   ws[textCell].z = '@';
   
   // Explicitly set merged cells for declaration text

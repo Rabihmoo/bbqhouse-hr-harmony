@@ -34,19 +34,22 @@ export const applyDeclarationStyles = (
       if (r === 0) {
         applyTitleStyle(ws, cellAddress);
       } else if (r === 1) {
-        // Create cell if it doesn't exist
+        // Explicit declaration text row formatting
+        // Ensure cell exists
         if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+        
+        // Apply text wrapping to ALL cells in row 2 (index 1)
         if (!ws[cellAddress].s) ws[cellAddress].s = {};
         
-        // Apply consistent text wrapping to ALL cells in row 2 (index 1)
+        // Force text wrapping for EVERY cell in row 2
         ws[cellAddress].s.alignment = {
           wrapText: true,
-          vertical: 'top',
+          vertical: 'top',      // Top alignment is crucial
           horizontal: 'left',
           indent: 1
         };
         
-        // Set text format for better wrapping
+        // Force text format
         ws[cellAddress].z = '@';
         
         // Special formatting for declaration text in column A

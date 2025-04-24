@@ -56,8 +56,8 @@ export const createSimpleDeclarationSheet = (
   // Declaration title row
   ws["!rows"][0] = { hpt: 30 };
   
-  // Declaration text needs appropriate height to match the reference image
-  ws["!rows"][1] = { hpt: 170 }; // Adjusted height to match the reference image
+  // Declaration text needs much more height to properly show all content
+  ws["!rows"][1] = { hpt: 250 }; // Significantly increased height for better text display
   
   // Apply enhanced styles with better text wrapping
   applyDeclarationStyles(ws, employeeReport.attendanceRecords.length + 10);
