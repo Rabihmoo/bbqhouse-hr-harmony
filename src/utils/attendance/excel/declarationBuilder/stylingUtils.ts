@@ -34,11 +34,11 @@ export const applyDeclarationStyles = (
       if (r === 0) {
         applyTitleStyle(ws, cellAddress);
       } else if (r === 1) {
-        // Force text wrapping for all cells in row 2
+        // Create cell if it doesn't exist
         if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
         if (!ws[cellAddress].s) ws[cellAddress].s = {};
         
-        // Apply automatic text wrapping to all cells in row 2
+        // Apply consistent text wrapping to ALL cells in row 2 (index 1)
         ws[cellAddress].s.alignment = {
           wrapText: true,
           vertical: 'top',

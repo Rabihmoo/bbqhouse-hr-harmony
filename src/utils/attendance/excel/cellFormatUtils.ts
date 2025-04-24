@@ -1,4 +1,3 @@
-
 import * as XLSX from "xlsx";
 
 /**
@@ -180,4 +179,26 @@ export const applyFolgaCellFormatting = (
   
   // Add yellow background
   applyCellFill(ws, cellAddress, "FEF7CD");
+};
+
+/**
+ * Specifically formats all cells in row 2 with consistent wrap text
+ */
+export const applyRow2Formatting = (
+  ws: XLSX.WorkSheet
+): void => {
+  // Apply text wrapping to all cells in row 2 (index 1)
+  for (let c = 0; c <= 5; c++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: 1, c });
+    
+    // Create the cell if it doesn't exist
+    if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+    
+    // Apply consistent text wrapping
+    applyCellTextFormatting(ws, cellAddress, {
+      wrapText: true,
+      vertical: 'top',
+      horizontal: 'left'
+    });
+  }
 };

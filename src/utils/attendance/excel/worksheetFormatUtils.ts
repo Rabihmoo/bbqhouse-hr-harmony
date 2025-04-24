@@ -1,6 +1,5 @@
-
 import * as XLSX from "xlsx";
-import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill } from "./cellFormatUtils";
+import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill, applyRow2Formatting } from "./cellFormatUtils";
 import { ensureTimeFormatting } from "./timeConversionUtils";
 
 /**
@@ -154,6 +153,9 @@ export const applyFormattingToAllCells = (
       }
     }
   }
+  
+  // Specifically apply text wrapping to row 2
+  applyRow2Formatting(ws);
   
   // Make special adjustments for declaration text in row 1
   if (ws['A1']) {

@@ -56,7 +56,7 @@ export const createSimpleDeclarationSheet = (
   // Declaration title row
   ws["!rows"][0] = { hpt: 30 };
   
-  // Declaration text needs appropriate height to match the image
+  // Declaration text needs appropriate height to match the reference image
   ws["!rows"][1] = { hpt: 170 }; // Adjusted height to match the reference image
   
   // Apply enhanced styles with better text wrapping
