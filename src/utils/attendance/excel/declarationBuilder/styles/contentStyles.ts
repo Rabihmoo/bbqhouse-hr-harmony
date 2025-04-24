@@ -21,13 +21,7 @@ export const applyDeclarationTextStyle = (
     ws[cellAddress].r = [{
       t: ws[cellAddress].v,
       s: {
-        font: { name: "Calibri", sz: 11 },
-        alignment: { 
-          wrapText: true,
-          vertical: "top", 
-          horizontal: "left", 
-          indent: 1 
-        }
+        font: { name: "Calibri", sz: 11 }
       }
     }];
   }

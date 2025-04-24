@@ -56,12 +56,34 @@ export const createSimpleDeclarationSheet = (
   // Declaration title row - normal height
   ws["!rows"][0] = { hpt: 30 };
   
-  // Only apply the wrapping style without changing the height
-  // Declaration text - using normal height but ensuring text wrapping works
-  ws["!rows"][1] = { hpt: 30 }; 
+  // Do NOT set a specific height for row 2 (index 1) to let Excel handle wrapping
+  // Instead, we'll rely on the wrapText styling
   
   // Apply enhanced styles with better text wrapping
   applyDeclarationStyles(ws, employeeReport.attendanceRecords.length + 10);
+  
+  // Special handling for row 2 text wrapping - ensure all cells in row 2 have wrap text
+  for (let c = 0; c <= 5; c++) {
+    const cellAddress = XLSX.utils.encode_cell({ r: 1, c });
+    if (ws[cellAddress]) {
+      // Make sure we have a style object
+      if (!ws[cellAddress].s) ws[cellAddress].s = {};
+      
+      // Force text wrapping and left-top alignment
+      ws[cellAddress].s.alignment = {
+        wrapText: true,
+        vertical: 'top',
+        horizontal: 'left',
+        indent: 1
+      };
+      
+      // Set text format
+      ws[cellAddress].z = '@';
+      
+      // Set string type
+      ws[cellAddress].t = 's';
+    }
+  }
   
   // Set the worksheet reference range
   const lastRow = includeSignature ? 9 + employeeReport.attendanceRecords.length : 6 + employeeReport.attendanceRecords.length;

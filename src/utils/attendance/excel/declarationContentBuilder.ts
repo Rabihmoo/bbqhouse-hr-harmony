@@ -102,7 +102,9 @@ export const setDeclarationContent = (
       }
     };
     
+    // Also set explicit text format
     ws[otherCellAddress].z = '@';
+    ws[otherCellAddress].t = 's';
   }
   
   // Explicitly set merged cells for declaration text

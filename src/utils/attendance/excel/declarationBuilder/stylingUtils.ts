@@ -34,9 +34,11 @@ export const applyDeclarationStyles = (
       if (r === 0) {
         applyTitleStyle(ws, cellAddress);
       } else if (r === 1) {
-        // Force text wrapping for EVERY cell in row 2 (index 1)
+        // For row 2 (index 1), apply special text wrapping without changing height
+        // Create style object if it doesn't exist
         if (!ws[cellAddress].s) ws[cellAddress].s = {};
         
+        // Set the wrap text property in the alignment
         ws[cellAddress].s.alignment = {
           wrapText: true,
           vertical: 'top',
@@ -44,11 +46,17 @@ export const applyDeclarationStyles = (
           indent: 1
         };
         
-        // Force text format for all cells in row 2
+        // Set text format
         ws[cellAddress].z = '@';
         
-        // Convert any text content to rich text format for better wrapping
+        // Explicitly set string type for cell
+        ws[cellAddress].t = 's';
+        
+        // Convert to html content with breaks for Excel
         if (ws[cellAddress].v && typeof ws[cellAddress].v === 'string') {
+          ws[cellAddress].h = ws[cellAddress].v.replace(/\n/g, '<br>');
+          
+          // Add rich text format for better wrapping
           ws[cellAddress].r = [{
             t: ws[cellAddress].v,
             s: { font: { name: "Calibri", sz: 11 } }
