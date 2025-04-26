@@ -1,6 +1,5 @@
-
 import * as XLSX from "xlsx";
-import { setColumnWidths, setRowHeights, setMergedCells } from "./worksheetFormatUtils";
+import { setColumnWidths, setRowHeights, setMergedCells } from "./dimensionUtils";
 
 /**
  * Applies final comprehensive formatting to the worksheet
