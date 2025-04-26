@@ -1,5 +1,12 @@
+
 import * as XLSX from "xlsx";
-import { applyCellTextFormatting, applyRow2Formatting } from "./cellFormatUtils";
+import { 
+  applyCellTextFormatting, 
+  applyRow2Formatting,
+  applyCellBorders,
+  applyCellFont,
+  applyCellFill
+} from "./cellFormatUtils";
 import { ensureTimeFormatting } from "./timeConversionUtils";
 
 /**
@@ -200,3 +207,4 @@ export const applyFormattingToAllCells = (
     });
   }
 };
+
