@@ -31,7 +31,7 @@ export const setDeclarationContent = (
   // Set declaration text in cell A2 with enhanced wrapping and top-left alignment
   const textCell = XLSX.utils.encode_cell({ r: declarationRow + 1, c: 0 });
   
-  // Create cell with explicit text formatting for better wrapping
+  // Create cell with comprehensive text formatting for better wrapping
   ws[textCell] = { 
     t: 's', 
     v: declarationText,
@@ -50,14 +50,15 @@ export const setDeclarationContent = (
     }
   }];
   
-  // Explicitly set top-left alignment with forced text wrapping
+  // Apply comprehensive alignment settings for text wrapping
   ws[textCell].s = {
     alignment: {
       wrapText: true,
       vertical: 'top',
       horizontal: 'left',
       indent: 1,
-      readingOrder: 2   // Left-to-right reading
+      readingOrder: 2,   // Left-to-right reading
+      shrinkToFit: false  // Prevent Excel from shrinking text
     },
     font: {
       name: 'Calibri',
@@ -75,21 +76,22 @@ export const setDeclarationContent = (
   // Force text format to ensure proper text handling
   ws[textCell].z = '@';
   
-  // Apply wrapping to ALL cells in row 2 with improved text handling
+  // Enhanced text wrapping for ALL cells in row 2 to ensure wrap works across Excel versions
   for (let i = 1; i <= 5; i++) {
     const otherCellAddress = XLSX.utils.encode_cell({ r: declarationRow + 1, c: i });
     if (!ws[otherCellAddress]) {
       ws[otherCellAddress] = { t: 's', v: '' };
     }
     
-    // Apply same wrapping settings to all cells in row 2
+    // Apply comprehensive text wrapping settings to all cells in row 2
     ws[otherCellAddress].s = {
       alignment: {
         wrapText: true,
         vertical: 'top',
         horizontal: 'left',
         indent: 1,
-        readingOrder: 2 // Ensure consistent text direction
+        readingOrder: 2, // Ensure consistent text direction
+        shrinkToFit: false // Prevent Excel from shrinking text
       },
       font: {
         name: 'Calibri',
@@ -103,9 +105,20 @@ export const setDeclarationContent = (
       }
     };
     
-    // Ensure text format is set correctly
+    // Ensure proper text format is set
     ws[otherCellAddress].z = '@';
     ws[otherCellAddress].t = 's';
+    
+    // Add HTML formatting if needed
+    if (ws[otherCellAddress].v && typeof ws[otherCellAddress].v === 'string') {
+      ws[otherCellAddress].h = ws[otherCellAddress].v.replace(/\n/g, '<br>');
+      
+      // Add rich text formatting for better display
+      ws[otherCellAddress].r = [{
+        t: ws[otherCellAddress].v,
+        s: { font: { name: 'Calibri', sz: 11 } }
+      }];
+    }
   }
   
   // Explicitly set merged cells for declaration text

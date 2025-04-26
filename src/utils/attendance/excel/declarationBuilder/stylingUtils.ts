@@ -38,13 +38,14 @@ export const applyDeclarationStyles = (
         // Create style object if it doesn't exist
         if (!ws[cellAddress].s) ws[cellAddress].s = {};
         
-        // Force text wrapping with explicit settings
+        // Force text wrapping with comprehensive settings for Excel
         ws[cellAddress].s.alignment = {
           wrapText: true,
           vertical: 'top',
           horizontal: 'left',
           indent: 1,
-          readingOrder: 2 // Left-to-right reading
+          readingOrder: 2, // Left-to-right reading
+          shrinkToFit: false // Prevent Excel from shrinking text
         };
         
         // Set text format
@@ -57,7 +58,7 @@ export const applyDeclarationStyles = (
         if (ws[cellAddress].v && typeof ws[cellAddress].v === 'string') {
           ws[cellAddress].h = ws[cellAddress].v.replace(/\n/g, '<br>');
           
-          // Add rich text format for better wrapping
+          // Add rich text format for better wrapping across Excel versions
           ws[cellAddress].r = [{
             t: ws[cellAddress].v,
             s: { font: { name: "Calibri", sz: 11 } }

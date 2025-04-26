@@ -1,3 +1,4 @@
+
 import * as XLSX from "xlsx";
 import { applyCellTextFormatting, applyCellBorders, applyCellFont, applyCellFill, applyRow2Formatting } from "./cellFormatUtils";
 import { ensureTimeFormatting } from "./timeConversionUtils";
@@ -19,6 +20,7 @@ export const setColumnWidths = (
 
 /**
  * Set row heights for specific rows with enhanced precision for wrapped text
+ * Deliberately skips row 2 (index 1) to let Excel auto-size it based on content
  */
 export const setRowHeights = (
   ws: XLSX.WorkSheet,
@@ -28,6 +30,10 @@ export const setRowHeights = (
   
   Object.entries(rowHeights).forEach(([rowIndex, height]) => {
     const index = parseInt(rowIndex, 10);
+    
+    // Skip setting row height for row 2 (index 1)
+    if (index === 1) return;
+    
     // Use hpt (height-points) for precise control of row height
     ws['!rows'][index] = { 
       hpt: height, // Height in points
@@ -35,8 +41,8 @@ export const setRowHeights = (
     };
   });
   
-  // Deliberately NOT setting a row height for row 2 (index 1)
-  // to let Excel's auto-sizing handle it based on text wrapping
+  // CRITICAL: Explicitly remove any height setting for row 2 if it exists
+  // This ensures Excel auto-sizes based on content and wrapping
   delete ws['!rows'][1];
 };
 

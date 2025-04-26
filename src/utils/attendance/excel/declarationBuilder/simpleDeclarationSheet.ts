@@ -50,30 +50,33 @@ export const createSimpleDeclarationSheet = (
     { wch: 15 }  // Extra Hours (F)
   ];
   
-  // Set row heights - normal height for all rows
+  // Set row heights - but NEVER for row 2 (index 1)
   ws["!rows"] = [];
   
   // Declaration title row - normal height
   ws["!rows"][0] = { hpt: 30 };
   
-  // IMPORTANT: Don't set row height for row 2 (index 1) to let Excel handle wrapping naturally
+  // CRITICAL: We deliberately do NOT set a height for row 2 (index 1)
+  // This allows Excel to auto-size the row based on content and text wrapping
   
   // Apply enhanced styles with better text wrapping
   applyDeclarationStyles(ws, employeeReport.attendanceRecords.length + 10);
   
-  // Special handling for row 2 text wrapping - ensure all cells in row 2 have wrap text
+  // Enhanced handling for all cells in row 2 to ensure text wrapping works across Excel versions
   for (let c = 0; c <= 5; c++) {
     const cellAddress = XLSX.utils.encode_cell({ r: 1, c });
     if (ws[cellAddress]) {
       // Make sure we have a style object
       if (!ws[cellAddress].s) ws[cellAddress].s = {};
       
-      // Force text wrapping and left-top alignment
+      // Force text wrapping with comprehensive settings
       ws[cellAddress].s.alignment = {
         wrapText: true,
         vertical: 'top',
         horizontal: 'left',
-        indent: 1
+        indent: 1,
+        readingOrder: 2,
+        shrinkToFit: false
       };
       
       // Set text format
@@ -82,9 +85,15 @@ export const createSimpleDeclarationSheet = (
       // Set string type
       ws[cellAddress].t = 's';
       
-      // Ensure HTML formatting for any text content
+      // Add HTML formatting for better wrapping in Excel
       if (ws[cellAddress].v && typeof ws[cellAddress].v === 'string') {
         ws[cellAddress].h = ws[cellAddress].v.replace(/\n/g, '<br>');
+        
+        // Add rich text format for better handling
+        ws[cellAddress].r = [{
+          t: ws[cellAddress].v,
+          s: { font: { name: "Calibri", sz: 11 } }
+        }];
       }
     }
   }
