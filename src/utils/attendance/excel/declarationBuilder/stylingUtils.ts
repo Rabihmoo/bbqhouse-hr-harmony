@@ -34,16 +34,17 @@ export const applyDeclarationStyles = (
       if (r === 0) {
         applyTitleStyle(ws, cellAddress);
       } else if (r === 1) {
-        // For row 2 (index 1), apply special text wrapping without changing height
+        // For row 2 (index 1), apply special text wrapping without setting row height
         // Create style object if it doesn't exist
         if (!ws[cellAddress].s) ws[cellAddress].s = {};
         
-        // Set the wrap text property in the alignment
+        // Force text wrapping with explicit settings
         ws[cellAddress].s.alignment = {
           wrapText: true,
           vertical: 'top',
           horizontal: 'left',
-          indent: 1
+          indent: 1,
+          readingOrder: 2 // Left-to-right reading
         };
         
         // Set text format

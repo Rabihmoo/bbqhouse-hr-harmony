@@ -56,8 +56,7 @@ export const createSimpleDeclarationSheet = (
   // Declaration title row - normal height
   ws["!rows"][0] = { hpt: 30 };
   
-  // Do NOT set a specific height for row 2 (index 1) to let Excel handle wrapping
-  // Instead, we'll rely on the wrapText styling
+  // IMPORTANT: Don't set row height for row 2 (index 1) to let Excel handle wrapping naturally
   
   // Apply enhanced styles with better text wrapping
   applyDeclarationStyles(ws, employeeReport.attendanceRecords.length + 10);
@@ -82,6 +81,11 @@ export const createSimpleDeclarationSheet = (
       
       // Set string type
       ws[cellAddress].t = 's';
+      
+      // Ensure HTML formatting for any text content
+      if (ws[cellAddress].v && typeof ws[cellAddress].v === 'string') {
+        ws[cellAddress].h = ws[cellAddress].v.replace(/\n/g, '<br>');
+      }
     }
   }
   

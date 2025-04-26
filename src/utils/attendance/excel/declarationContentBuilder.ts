@@ -75,7 +75,7 @@ export const setDeclarationContent = (
   // Force text format to ensure proper text handling
   ws[textCell].z = '@';
   
-  // Apply wrapping to ALL cells in row 2
+  // Apply wrapping to ALL cells in row 2 with improved text handling
   for (let i = 1; i <= 5; i++) {
     const otherCellAddress = XLSX.utils.encode_cell({ r: declarationRow + 1, c: i });
     if (!ws[otherCellAddress]) {
@@ -88,7 +88,8 @@ export const setDeclarationContent = (
         wrapText: true,
         vertical: 'top',
         horizontal: 'left',
-        indent: 1
+        indent: 1,
+        readingOrder: 2 // Ensure consistent text direction
       },
       font: {
         name: 'Calibri',
@@ -102,7 +103,7 @@ export const setDeclarationContent = (
       }
     };
     
-    // Also set explicit text format
+    // Ensure text format is set correctly
     ws[otherCellAddress].z = '@';
     ws[otherCellAddress].t = 's';
   }

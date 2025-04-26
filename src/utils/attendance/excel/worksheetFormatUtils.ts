@@ -34,6 +34,10 @@ export const setRowHeights = (
       hidden: false
     };
   });
+  
+  // Deliberately NOT setting a row height for row 2 (index 1)
+  // to let Excel's auto-sizing handle it based on text wrapping
+  delete ws['!rows'][1];
 };
 
 /**
