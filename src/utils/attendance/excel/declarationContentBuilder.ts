@@ -1,6 +1,5 @@
-
 import * as XLSX from "xlsx";
-import { applyParagraphFormatting, applyCellFont, applyCellTextFormatting, applyCellBorders } from "./cellFormatUtils";
+import { applyParagraphFormatting, applyCellFont, applyCellTextFormatting, applyCellBorders, applyRow2Formatting } from "./cellFormatUtils";
 
 /**
  * Sets the declaration content in the worksheet with enhanced text wrapping
@@ -84,25 +83,12 @@ export const setDeclarationContent = (
     }
     
     // Apply comprehensive text wrapping settings to all cells in row 2
-    ws[otherCellAddress].s = {
-      alignment: {
-        wrapText: true,
-        vertical: 'top',
-        horizontal: 'left',
-        indent: 1,
-        readingOrder: 2, // Ensure consistent text direction
-        shrinkToFit: false // Prevent Excel from shrinking text
-      },
-      font: {
-        name: 'Calibri',
-        sz: 11
-      },
-      border: {
-        top: { style: 'thin', color: { auto: 1 } },
-        bottom: { style: 'thin', color: { auto: 1 } },
-        left: { style: 'thin', color: { auto: 1 } },
-        right: { style: 'thin', color: { auto: 1 } }
-      }
+    if (!ws[otherCellAddress].s) ws[otherCellAddress].s = {};
+    ws[otherCellAddress].s.alignment = {
+      wrapText: true,        // Critical for text wrapping
+      vertical: 'top',       // Align to top 
+      horizontal: 'left',    // Left align
+      shrinkToFit: false     // Prevent text from shrinking
     };
     
     // Ensure proper text format is set

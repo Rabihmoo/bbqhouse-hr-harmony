@@ -1,3 +1,4 @@
+
 import * as XLSX from "xlsx";
 
 /**
@@ -201,7 +202,7 @@ export const applyRow2Formatting = (
       wrapText: true,        // Critical for text wrapping
       vertical: 'top',       // Align to top for better text flow
       horizontal: 'left',    // Left align for better readability
-      indent: 1              // Small indent
+      shrinkToFit: false     // Prevent text from shrinking
     };
     
     // Force text format for better text display
@@ -210,6 +211,13 @@ export const applyRow2Formatting = (
     // Add HTML formatting for any text content
     if (ws[cellAddress].v && typeof ws[cellAddress].v === 'string') {
       ws[cellAddress].h = ws[cellAddress].v.replace(/\n/g, '<br>');
+      
+      // Add rich text format to improve rendering
+      ws[cellAddress].r = [{
+        t: ws[cellAddress].v,
+        s: { font: { name: 'Calibri', sz: 11 } }
+      }];
     }
   }
 };
+
