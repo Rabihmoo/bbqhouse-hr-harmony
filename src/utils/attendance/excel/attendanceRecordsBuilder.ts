@@ -1,7 +1,7 @@
 
 import * as XLSX from "xlsx";
 import { EmployeeAttendanceRecord, EmployeeReport } from "../types";
-import { applyCellBorders, applyCellTextFormatting, applyFolgaCellFormatting } from "./cellFormatUtils";
+import { applyCellBorders, applyCellTextFormatting, applyFolgaCellFormatting } from "./formatting";
 
 /**
  * Adds employee attendance records to the worksheet

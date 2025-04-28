@@ -1,7 +1,7 @@
 
 import * as XLSX from "xlsx";
 import { EmployeeReport } from "../types";
-import { applyCellBorders, applyCellFont, applyCellTextFormatting } from "./cellFormatUtils";
+import { applyCellBorders, applyCellFont, applyCellTextFormatting } from "./formatting";
 
 /**
  * Adds totals and working days rows to the worksheet

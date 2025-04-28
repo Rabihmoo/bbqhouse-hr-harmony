@@ -1,5 +1,6 @@
+
 import * as XLSX from "xlsx";
-import { applyParagraphFormatting, applyCellFont, applyCellTextFormatting, applyCellBorders, applyRow2Formatting } from "./cellFormatUtils";
+import { applyParagraphFormatting, applyCellFont, applyCellTextFormatting, applyCellBorders, applyRow2Formatting } from "./formatting";
 
 /**
  * Sets the declaration content in the worksheet with enhanced text wrapping

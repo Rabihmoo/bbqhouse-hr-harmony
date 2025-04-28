@@ -6,7 +6,7 @@ import {
   applyCellFont, 
   applyCellFill,
   applyRow2Formatting
-} from "./cellFormatUtils";
+} from "./formatting";
 
 /**
  * Apply comprehensive formatting to all cells in a worksheet

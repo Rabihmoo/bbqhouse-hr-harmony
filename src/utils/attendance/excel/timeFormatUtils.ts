@@ -1,6 +1,6 @@
 
 import * as XLSX from "xlsx";
-import { applyCellTextFormatting } from "./cellFormatUtils";
+import { applyCellTextFormatting } from "./formatting";
 import { ensureTimeFormatting } from "./timeConversionUtils";
 
 /**

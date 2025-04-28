@@ -1,6 +1,6 @@
 
 import * as XLSX from "xlsx";
-import { applyCellFont, applyParagraphFormatting } from "./cellFormatUtils";
+import { applyCellFont, applyParagraphFormatting } from "./formatting";
 import { getFormattedSignatureDate } from "../declarationGenerator";
 
 /**
